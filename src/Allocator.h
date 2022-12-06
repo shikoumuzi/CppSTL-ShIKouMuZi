@@ -29,6 +29,10 @@
 #define __MUZI_ALLOCAOTR_MOD_POOL_MAX_SPECIFICATION__ 128
 // 内存的边界
 #define __MUZI_ALLOCAOTR_MOD_POOL_MEM_BOARD_FLAG__ 3
+// 全局可申请的最大内存量 2gb
+#define __MUZI_ALLOCAOTR_MOD_POOL_APPLY_MEM_MAX_SIZE__  1024 * 1024 * 1024 * 2 
+// 获取内存在调整边界后的规格大小
+#define __MUZI_ALLOCAOTR_MOD_POOL_GET_SPECIFICATION_BY_INDEX__(x) (x + 1) * __MUZI_ALLOCAOTR_MOD_POOL_ALIGN__
 
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
 
@@ -72,7 +76,7 @@ namespace MUZI
 		// 追加量 调整数据大小上界，并且调整数据为8的边界
 		static size_t pool_RoundUp(size_t bytes);// 调整申请内存边界
 		static size_t pool_freelist_index(size_t bytes);// 获取对应freelist的数组下标
-		//static void* pool_mem_split();// 内存分片函数
+		static void pool_mem_split(MAllocatorRep* start_ptr, size_t mem_specification, size_t mem_block_count);// 内存分片函数, 返回尾指针
 	public:
 		static void* pool_allocate(size_t type_size);// 申请分配内存
 		static void pool_deallocate(void** ptr, size_t mem_size);// 回收内存, 在这里采用传入指针地址的方式，将原指针地址指向空以保证不会越权访问
