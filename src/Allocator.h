@@ -14,25 +14,31 @@
 #define __MUZI_ALLOCATOR_MOD_FIXED__ 
 
 // 每次申请大块内存的长度 20为经验值
-#define __MUZI_ALLOCAOTR_MEMORY_MALLOC_SIZE__ 20
+#define __MUZI_ALLOCATOR_MEMORY_MALLOC_SIZE__ 20
 
 // POOL模式下的一些预设宏定义
 #ifdef __MUZI_ALLOCATOR_MOD_POOL__
 
 // 可申请内存的规格数量
-#define __MUZI_ALLOCAOTR_MOD_POOL_SPECIFICATION_COUNT__ 16
+#define __MUZI_ALLOCATOR_MOD_POOL_SPECIFICATION_COUNT__ 16
 // 控制基础边界
-#define __MUZI_ALLOCAOTR_MOD_POOL_ROUNDUP__(x) x >> 4
+#define __MUZI_ALLOCATOR_MOD_POOL_ROUNDUP__(x) x >> 4
 // 边界控制大小（对齐内存）
-#define __MUZI_ALLOCAOTR_MOD_POOL_ALIGN__ 8
-// 可以接受的最大申请量
-#define __MUZI_ALLOCAOTR_MOD_POOL_MAX_SPECIFICATION__ 128
+#define __MUZI_ALLOCATOR_MOD_POOL_ALIGN__ 8
+// 可以接受的最小申请量, 申请规格按照字节作为单位
+#define __MUZI_ALLOCATOR_MOD_POOL_MIN_SPECIFICATION__ 128
+// 可以接受的最大申请量, 申请规格按照字节作为单位
+#define __MUZI_ALLOCATOR_MOD_POOL_MAX_SPECIFICATION__ 128
 // 内存的边界
-#define __MUZI_ALLOCAOTR_MOD_POOL_MEM_BOARD_FLAG__ 3
+#define __MUZI_ALLOCATOR_MOD_POOL_MEM_BOARD_FLAG__ 3
 // 全局可申请的最大内存量 2gb
-#define __MUZI_ALLOCAOTR_MOD_POOL_APPLY_MEM_MAX_SIZE__  1024 * 1024 * 1024 * 2 
+#define __MUZI_ALLOCATOR_MOD_POOL_APPLY_MEM_MAX_SIZE__  1024 * 1024 * 1024 * 2 
 // 获取内存在调整边界后的规格大小
-#define __MUZI_ALLOCAOTR_MOD_POOL_GET_SPECIFICATION_BY_INDEX__(x) (x + 1) * __MUZI_ALLOCAOTR_MOD_POOL_ALIGN__
+#define __MUZI_ALLOCATOR_MOD_POOL_GET_SPECIFICATION_BY_INDEX__(x) (x + 1) * __MUZI_ALLOCATOR_MOD_POOL_ALIGN__
+// 获取分割内存后的头指针
+#define __MUZI_ALLOCATOR_MOD_POOL_GET_FREE_POOL_STATR_PTR_BY_LAST_ELEMENT__(end_ptr, last_ptr, mem_specification) (MAllocatorRep*)((char*)end_ptr - ((char*)end_ptr - ((char*)last_ptr + mem_specification)))
+// 获取战备池大小(字节为单位)
+#define __MUZI_ALLOCATOR_MOD_POOL_GET_FREE_POOL_SIZE__(start_ptr, end_ptr) ((char*)end_ptr - (char*)start_ptr) / 8
 
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
 
@@ -45,7 +51,6 @@
 /*
 * author：shikoumuzi
 * date：2022-12-01
-* 
 */
 
 namespace MUZI
@@ -72,7 +77,7 @@ namespace MUZI
 		};
 	public://数据结构
 		// 不同规格的申请量所规定的数组序列， 内部的指针维持着一个单向链表
-		static union MAllocatorRep* pool_mem_pool[__MUZI_ALLOCAOTR_MOD_POOL_SPECIFICATION_COUNT__];
+		static union MAllocatorRep* pool_mem_pool[__MUZI_ALLOCATOR_MOD_POOL_SPECIFICATION_COUNT__];
 		static size_t pool_mem_total;// 分配出去的内存总量
 		static size_t pool_mem_from_sys_total;// 向系统申请的内存总量
 		static union MAllocatorRep* pool_start_free_pool_ptr;// 控制战备池头部元素的地址
@@ -82,7 +87,7 @@ namespace MUZI
 		// 追加量 调整数据大小上界，并且调整数据为8的边界
 		static size_t pool_RoundUp(size_t bytes);// 调整申请内存边界
 		static size_t pool_freelist_index(size_t bytes);// 获取对应freelist的数组下标
-		static MAllocatorRep* pool_mem_split(MAllocatorRep* start_ptr, size_t mem_specification, size_t mem_block_count);// 内存分片函数, 返回尾指针
+		static MAllocatorRep* pool_mem_split(MAllocatorRep* start_ptr, size_t mem_specification, size_t mem_block_count);// 内存分片函数, 返回尾元素的指针
 	public:
 		static void* pool_allocate(size_t type_size);// 申请分配内存
 		static void pool_deallocate(void** ptr, size_t mem_size);// 回收内存, 在这里采用传入指针地址的方式，将原指针地址指向空以保证不会越权访问
