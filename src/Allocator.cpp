@@ -2,6 +2,11 @@
 
 namespace MUZI {
 
+	MAllocator::MemoryCtrlFunction MAllocator::mcf[__MUZI_ALLOCATOR_MOD_SIZE__]												= { nullptr };
+	void* MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__]														= { nullptr };
+	MAllocator::clearMemoryFunction MAllocator::cmf[__MUZI_ALLOCATOR_MOD_SIZE__]								= { nullptr };
+	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__]														= { nullptr };
+
 	MAllocator::MAllocator()
 	{
 		if (object_num == 0)
@@ -41,10 +46,7 @@ namespace MUZI {
 				MAllocator::cmf[i](MAllocator::cmf_arg[i]);
 		}
 	}
-	MAllocator::MemoryCtrlFunction mcf[__MUZI_ALLOCATOR_MOD_SIZE__]												= { nullptr };
-	void* MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__]														= { nullptr };
-	MAllocator::clearMemoryFunction MAllocator::cmf[__MUZI_ALLOCATOR_MOD_SIZE__]								= { nullptr };
-	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__]														= { nullptr };
+
 
 #ifdef __MUZI_ALLOCATOR_MOD_POOL__
 
@@ -82,6 +84,7 @@ namespace MUZI {
 				return i;
 			}
 		}
+		return -1;
 	}
 	// 规约内存大小
 	inline size_t MAllocator::pool_RoundUp(size_t bytes)
@@ -119,9 +122,9 @@ namespace MUZI {
 	}
 	inline void* MAllocator::pool_apply_mem_from_sys(size_t mem_size)
 	{
-		// 如果剩余可申请量大于需求量，那么可以直接从系统申请，否则返回nullptr告诉调用者无法再向系统申请，同时将调用内存量及时记录，以便后续统一释放
+		// 如果剩余可申请量大于需求量，那么可以直接从系统申请并记录申请总量，否则返回nullptr告诉调用者无法再向系统申请，同时将调用内存量及时记录，以便后续统一释放
 		return (__MUZI_ALLOCATOR_MOD_POOL_APPLY_MEM_MAX_SIZE__ - MAllocator::pool_mem_from_sys_total > mem_size) ?\
-			(MAllocator::sys_memory_block[MAllocator::pool_get_mem_array_free_index()] = (MAllocatorRep*)::operator new(mem_size)): nullptr;
+			(MAllocator::pool_mem_from_sys_total += mem_size, MAllocator::sys_memory_block[MAllocator::pool_get_mem_array_free_index()] = (MAllocatorRep*)::operator new(mem_size)): nullptr;
 	}
 
 	void* MAllocator::pool_allocate(size_t type_size)
@@ -187,10 +190,7 @@ namespace MUZI {
 
 				// 获取战备池
 				MAllocator::pool_start_free_pool_ptr	= MAllocator::pool_mem_pool[pool_index] + (alloc_len + 1) * type_size;
-				MAllocator::pool_end_free_pool_ptr		= MAllocator::pool_start_free_pool_ptr + alloc_len * type_size;
-
-				// 记录申请总量
-				MAllocator::pool_mem_from_sys_total		+= alloc_len * type_size * 2;
+				MAllocator::pool_end_free_pool_ptr		= (MAllocatorRep*)((char*)MAllocator::pool_start_free_pool_ptr + alloc_len * type_size);
 
 				// 将申请到的内存进行切割
 				MAllocator::pool_mem_split
@@ -239,7 +239,7 @@ namespace MUZI {
 						}
 
 						MAllocator::pool_mem_pool[free_pool_2_mem_pool_index]	= MAllocator::pool_start_free_pool_ptr;
-						int difference_value									= (MAllocator::pool_end_free_pool_ptr - last_ptr) / 8;
+						int difference_value									= ((char*)MAllocator::pool_end_free_pool_ptr - (char*)last_ptr) / 8;
 
 						if (difference_value != 0)// 将剩余碎片保留至战备池
 						{
@@ -261,7 +261,22 @@ namespace MUZI {
 						}
 					}
 					// 这里重新为其申请内存
-					
+					MAllocator::pool_mem_pool[pool_index] = (MAllocatorRep*)MAllocator::pool_apply_mem_from_sys\
+						(type_size + __MUZI_ALLOCATOR_MOD_POOL_ROUNDUP__(MAllocator::pool_mem_from_sys_total));
+					if (MAllocator::pool_mem_pool[pool_index] != nullptr)
+					{
+						size_t mem_index = MAllocator::pool_freelist_index(type_size);
+						size_t mem_specification = __MUZI_ALLOCATOR_MOD_POOL_GET_SPECIFICATION_BY_INDEX__(mem_index);
+						MAllocatorRep* end_ptr =  MAllocator::pool_mem_split(MAllocator::pool_mem_pool[pool_index], mem_specification, type_size / mem_specification);
+						
+						ret_mem_ptr = MAllocator::pool_mem_pool[pool_index];
+						pool_mem_pool[pool_index] = pool_mem_pool[pool_index]->next;
+						MAllocator::pool_start_free_pool_ptr = (MAllocatorRep*)((char*)end_ptr + mem_specification);
+						MAllocator::pool_end_free_pool_ptr = (MAllocatorRep*)((char*)MAllocator::pool_start_free_pool_ptr + __MUZI_ALLOCATOR_MOD_POOL_ROUNDUP__(MAllocator::pool_mem_from_sys_total));
+						goto POOL_ALLOCATE_END;
+					}
+
+
 				}
 				else// 有剩余 但已经小于最小值了
 				{
@@ -274,12 +289,11 @@ namespace MUZI {
 		}
 		else// 如果已经分配过且仍然有空余
 		{
-			POOL_NO_RESIDUAL_VALUE:
 			ret_mem_ptr								= MAllocator::pool_mem_pool[pool_index];
 			MAllocator::pool_mem_pool[pool_index]	= MAllocator::pool_mem_pool[pool_index]->next;
 			MAllocator::pool_mem_total				+= __MUZI_ALLOCATOR_MOD_POOL_GET_SPECIFICATION_BY_INDEX__(pool_index);
 		}
-
+		POOL_ALLOCATE_END:
 		if(ret_mem_ptr != nullptr)
 			ret_mem_ptr->data[0] = 0;
 		return static_cast<void*>(ret_mem_ptr);

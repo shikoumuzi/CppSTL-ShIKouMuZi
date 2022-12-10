@@ -23,7 +23,7 @@
 // 可申请内存的规格数量
 #define __MUZI_ALLOCATOR_MOD_POOL_SPECIFICATION_COUNT__ 16
 // 控制基础边界
-#define __MUZI_ALLOCATOR_MOD_POOL_ROUNDUP__(x) x >> 4 /*向系统申请内存这块存在问题*/
+#define __MUZI_ALLOCATOR_MOD_POOL_ROUNDUP__(x) (x >> 4) /*向系统申请内存这块存在问题*/
 // 边界控制大小（对齐内存）
 #define __MUZI_ALLOCATOR_MOD_POOL_ALIGN__ 8
 // 可以接受的最小申请量, 申请规格按照字节作为单位
@@ -38,7 +38,7 @@
 #define __MUZI_ALLOCATOR_MOD_POOL_GET_SPECIFICATION_BY_INDEX__(x) (x + 1) * __MUZI_ALLOCATOR_MOD_POOL_ALIGN__
 // 获取分割内存后的头指针
 #define __MUZI_ALLOCATOR_MOD_POOL_GET_FREE_POOL_STATR_PTR_BY_LAST_ELEMENT__(end_ptr, last_ptr, mem_specification)\
-		 (MAllocatorRep*)((char*)end_ptr - ((char*)end_ptr - ((char*)last_ptr + mem_specification)))
+		 (MAllocatorRep*)((char*)end_ptr - (int)((char*)end_ptr - ((char*)last_ptr + mem_specification)))
 // 获取战备池大小(字节为单位)
 #define __MUZI_ALLOCATOR_MOD_POOL_GET_FREE_POOL_SIZE__(start_ptr, end_ptr) ((char*)end_ptr - (char*)start_ptr) / 8
 
