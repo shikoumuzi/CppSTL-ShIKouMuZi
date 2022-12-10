@@ -4,38 +4,47 @@ namespace MUZI {
 
 	MAllocator::MAllocator()
 	{
+		if (object_num == 0)
+		{
+#ifdef __MUZI_ALLOCATOR_MOD_POOL__
+			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_POOL__] = MAllocator::pool_init;
+			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_POOL__] = nullptr;
+#elif define __MUZI_ALLOCATOR_MOD_BITMAP__
+			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_BITMAP__] = MAllocator::bitmap_init;
+			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_BITMAP__] = nullptr;
+#elif define __MUZI_ALLOCATOR_MOD_FIXED__
+			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_FIXED__] = MAllocator::fixed_init;
+			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_FIXED__] = nullptr;
+#endif
+		}
 		// 采用引用计数 确保所有程序退出后 内存得到释放
 		MAllocator::object_num += 1;
-		//atexit(MAllocator::callCMF);
+		atexit(MAllocator::atexitDestruct);
 	}
 	MAllocator::~MAllocator()
 	{
 		MAllocator::object_num -= 1;
 		if (MAllocator::object_num == 0)
 		{
-			MAllocator::callCMF();
-		}
-	}
-	void MAllocator::callCMF()
-	{
-		for (int i = 0; i < __MUZI_ALLOCATOR_MOD_SIZE__; ++i)
-		{
-			if(MAllocator::cmf[i] != nullptr)
-				MAllocator::cmf[i](MAllocator::cmf_arg[i]);
-		}
-	}
-	void MAllocator::setClearMemoryFunction(clearMemoryFunction fun, void* arg)
-	{
-		for (int i = 0; i < __MUZI_ALLOCATOR_MOD_SIZE__; ++i)
-		{
-			if (MAllocator::cmf[i] == nullptr)
+			for (int i = 0; i < __MUZI_ALLOCATOR_MOD_SIZE__; ++i)
 			{
-				MAllocator::cmf[i] = fun;
-				MAllocator::cmf_arg[i] = arg;
-				break;
+				if (MAllocator::cmf[i] != nullptr)
+					MAllocator::cmf[i](MAllocator::cmf_arg[i]);
 			}
 		}
 	}
+	void MAllocator::atexitDestruct()
+	{
+		for (int i = 0; i < __MUZI_ALLOCATOR_MOD_SIZE__; ++i)
+		{
+			if (MAllocator::cmf[i] != nullptr)
+				MAllocator::cmf[i](MAllocator::cmf_arg[i]);
+		}
+	}
+	MAllocator::MemoryCtrlFunction mcf[__MUZI_ALLOCATOR_MOD_SIZE__]												= { nullptr };
+	void* MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__]														= { nullptr };
+	MAllocator::clearMemoryFunction MAllocator::cmf[__MUZI_ALLOCATOR_MOD_SIZE__]								= { nullptr };
+	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__]														= { nullptr };
 
 #ifdef __MUZI_ALLOCATOR_MOD_POOL__
 
@@ -45,9 +54,35 @@ namespace MUZI {
 	union MAllocator::MAllocatorRep* MAllocator::pool_mem_pool[__MUZI_ALLOCATOR_MOD_POOL_SPECIFICATION_COUNT__] = { nullptr };
 	union MAllocator::MAllocatorRep* MAllocator::pool_start_free_pool_ptr										= nullptr;
 	union MAllocator::MAllocatorRep* MAllocator::pool_end_free_pool_ptr											= nullptr;
-	MAllocator::clearMemoryFunction MAllocator::cmf[__MUZI_ALLOCATOR_MOD_SIZE__]								= { nullptr };
-	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__]														= { nullptr };
+	MAllocator::MAllocatorRep** MAllocator::sys_memory_block														= (MAllocator::MAllocatorRep**)malloc
+																													(sizeof(MAllocator::MAllocatorRep*) * __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__);
 
+	void MAllocator::pool_init(void*)
+	{
+		memset(MAllocator::sys_memory_block,  (int)nullptr, __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__);
+	}
+	void MAllocator::pool_delete(void*)
+	{
+		for (int i = 0; i < __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__; ++i)
+		{
+			if (MAllocator::sys_memory_block[i] != nullptr)
+			{
+				free(MAllocator::sys_memory_block[i]);
+				MAllocator::sys_memory_block[i] = nullptr;
+			}
+		}
+	}
+
+	size_t MAllocator::pool_get_mem_array_free_index()
+	{
+		for (int i = 0; i < __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__; ++i) 
+		{
+			if (MAllocator::sys_memory_block[i] == nullptr)
+			{
+				return i;
+			}
+		}
+	}
 	// 规约内存大小
 	inline size_t MAllocator::pool_RoundUp(size_t bytes)
 	{
@@ -81,6 +116,12 @@ namespace MUZI {
 		list_next_ptr->data[0]		|= __MUZI_ALLOCATOR_MOD_POOL_MEM_BOARD_FLAG__;// 添加内存标识符
 		return list_next_ptr;
 
+	}
+	inline void* MAllocator::pool_apply_mem_from_sys(size_t mem_size)
+	{
+		// 如果剩余可申请量大于需求量，那么可以直接从系统申请，否则返回nullptr告诉调用者无法再向系统申请，同时将调用内存量及时记录，以便后续统一释放
+		return (__MUZI_ALLOCATOR_MOD_POOL_APPLY_MEM_MAX_SIZE__ - MAllocator::pool_mem_from_sys_total > mem_size) ?\
+			(MAllocator::sys_memory_block[MAllocator::pool_get_mem_array_free_index()] = (MAllocatorRep*)::operator new(mem_size)): nullptr;
 	}
 
 	void* MAllocator::pool_allocate(size_t type_size)
@@ -142,7 +183,7 @@ namespace MUZI {
 			{
 				// 一半用以正常申请内容 一半用以战备池
 				MAllocator::pool_mem_pool[pool_index]	= static_cast<MAllocatorRep*>
-															(::operator new(alloc_len * type_size * 2));
+															(MAllocator::pool_apply_mem_from_sys(alloc_len * type_size * 2));
 
 				// 获取战备池
 				MAllocator::pool_start_free_pool_ptr	= MAllocator::pool_mem_pool[pool_index] + (alloc_len + 1) * type_size;
@@ -219,7 +260,8 @@ namespace MUZI {
 							pool_size								= 0;
 						}
 					}
-					// 缺少
+					// 这里重新为其申请内存
+					
 				}
 				else// 有剩余 但已经小于最小值了
 				{
