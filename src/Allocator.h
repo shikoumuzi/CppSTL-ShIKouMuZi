@@ -42,6 +42,11 @@
 #define __MUZI_MEM_SMALL_BOARD_ITEARTOR_ADVANCE__(x, y) x + y
 #define __MUZI_MEM_SMALL_BOARD_ITEARTOR_BACK__(x, y) x - y
 
+/*
+* author：shikoumuzi
+* date：2022-12-01
+* 
+*/
 
 namespace MUZI
 {
@@ -68,15 +73,16 @@ namespace MUZI
 	public://数据结构
 		// 不同规格的申请量所规定的数组序列， 内部的指针维持着一个单向链表
 		static union MAllocatorRep* pool_mem_pool[__MUZI_ALLOCAOTR_MOD_POOL_SPECIFICATION_COUNT__];
-		static size_t pool_mem_total;
+		static size_t pool_mem_total;// 分配出去的内存总量
+		static size_t pool_mem_from_sys_total;// 向系统申请的内存总量
 		static union MAllocatorRep* pool_start_free_pool_ptr;// 控制战备池头部元素的地址
-		static union MAllocatorRep* pool_end_free_pool_ptr;// 控制战备池尾部元素的地址
+		static union MAllocatorRep* pool_end_free_pool_ptr;// 控制战备池尾部元素的地址 -> 改战备池的末地址
 
 	private:
 		// 追加量 调整数据大小上界，并且调整数据为8的边界
 		static size_t pool_RoundUp(size_t bytes);// 调整申请内存边界
 		static size_t pool_freelist_index(size_t bytes);// 获取对应freelist的数组下标
-		static void pool_mem_split(MAllocatorRep* start_ptr, size_t mem_specification, size_t mem_block_count);// 内存分片函数, 返回尾指针
+		static MAllocatorRep* pool_mem_split(MAllocatorRep* start_ptr, size_t mem_specification, size_t mem_block_count);// 内存分片函数, 返回尾指针
 	public:
 		static void* pool_allocate(size_t type_size);// 申请分配内存
 		static void pool_deallocate(void** ptr, size_t mem_size);// 回收内存, 在这里采用传入指针地址的方式，将原指针地址指向空以保证不会越权访问
