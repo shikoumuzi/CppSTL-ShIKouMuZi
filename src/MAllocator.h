@@ -102,7 +102,7 @@ namespace MUZI
 		static MAllocatorRep* pool_mem_split(MAllocatorRep* start_ptr, size_t mem_specification, size_t mem_block_count);// 内存分片函数, 返回尾元素的指针
 		static inline size_t pool_get_mem_array_free_index();
 		static void* pool_apply_mem_from_sys(size_t mem_size);// 管理从系统申请的每一个元素
-		static bool is_error_sys_mem(void* mem_ptr);//检查不是nullptr的错误分配内存 即sys_memory_block的第一个元素地址
+		static bool is_error_sys_mem(void** mem_ptr);//检查不是nullptr的错误分配内存 即sys_memory_block的第一个元素地址
 
 	public:
 		static void* pool_allocate(size_t type_size);// 申请分配内存

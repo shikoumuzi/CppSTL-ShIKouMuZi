@@ -120,7 +120,7 @@ namespace MUZI {
 		return list_next_ptr;
 
 	}
-	inline static bool is_error_sys_mem(void** mem_ptr)
+	inline bool MAllocator::is_error_sys_mem(void** mem_ptr)
 	{
 		return (&mem_ptr == (void*)MAllocator::sys_memory_block)?(delete *mem_ptr, *mem_ptr = nullptr, true):false;
 	}
@@ -268,7 +268,7 @@ namespace MUZI {
 					// 这里重新为其申请内存
 					MAllocator::pool_mem_pool[pool_index] = (MAllocatorRep*)MAllocator::pool_apply_mem_from_sys\
 						(type_size + __MUZI_ALLOCATOR_MOD_POOL_ROUNDUP__(MAllocator::pool_mem_from_sys_total));
-					if (MAllocator::pool_mem_pool[pool_index] != nullptr && !MAllocator::is_error_sys_mem(&MAllocator::pool_mem_pool[pool_index]))//申请成功
+					if (MAllocator::pool_mem_pool[pool_index] != nullptr && !MAllocator::is_error_sys_mem((void**)&MAllocator::pool_mem_pool[pool_index]))//申请成功
 					{
 						size_t mem_index = MAllocator::pool_freelist_index(type_size);
 						size_t mem_specification = __MUZI_ALLOCATOR_MOD_POOL_GET_SPECIFICATION_BY_INDEX__(mem_index);
