@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __MUZI_ALLOCATOR_H__
-#define __MUZI_ALLOCATOR_H__
+#ifndef __MUZI_MALLOCATOR_H__
+#define __MUZI_MALLOCATOR_H__
 
 #include<stdlib.h>
 #include<memory>
@@ -120,4 +120,4 @@ namespace MUZI
 
 
 
-#endif // __MUZI_ALLOCATOR_H__
+#endif // __MUZI_MALLOCATOR_H__

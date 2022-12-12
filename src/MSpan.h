@@ -1,19 +1,19 @@
 #pragma
-#ifndef __MUZI_SPAN_H__
-#define __MUZI_SPAN_H__
+#ifndef __MUZI_MSPAN_H__
+#define __MUZI_MSPAN_H__
 #include<concepts>
 #include<string>
-
+#include"MIterator.h"
 namespace MUZI
 {
 	template<typename T>
 	concept __muzi_span_stl_type__ = requires(T x)
 	{
-		typename T::iterator;
-		x.size();
-		x.begin();
-		x.end();
-		/*std::is_same<typename T::iterator, x.begin()>(x.begin());*/
+		// deriver_from表示派生自某个基类
+		{T::iterator}->std::derived_from<MIterator>;
+		{x.size()}->std::same_as<size_t>;
+		{x.begin()}->std::derived_from<MIterator>;
+		{x.end()}->std::derived_from<MIterator>;
 	};
 	
 	
