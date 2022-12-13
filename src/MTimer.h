@@ -6,7 +6,8 @@
 namespace MUZI
 {
 #define __MUZI_MTIMER_MAX_TASK_SIZE__ 1016
-#define __MUZI_MTIMER_MAX_THREAD_SIZE__ 1016
+#define __MUZI_MTIMER_MAX_THREAD_SIZE__ 8
+#define __MUZI_MTIMER_TOTAL_THREAD__ __MUZI_MTIMER_MAX_THREAD_SIZE__ + 1
 	using Task = struct MTimerTaskStatus;
 	enum TASK
 	{
@@ -18,6 +19,7 @@ namespace MUZI
 	{
 	public:
 		static MTimer* getMTimer();
+		static void delMTimer(MTimer* mtimer);
 	private:
 		MTimer();
 		~MTimer();
@@ -34,6 +36,7 @@ namespace MUZI
 		size_t size();// 任务数
 		size_t maxsize();// 最大任务数
 		bool is_full();
+		uint64_t work_time();
 	private:
 		class MTimerData* data;
 	};
