@@ -81,9 +81,9 @@ namespace MUZI
 	void __MUZI_MTIMER_CHILD_THREAD_FUN__(void* job_ptr)
 	{
 		struct MTimerChildThread& child_thread = *static_cast<struct MTimerChildThread*>(job_ptr);
+		std::unique_lock<std::mutex> cond_lock(*child_thread.cond_lock);
 		while (!__MUZI_MTIMER_DATA__->exit_flag)
 		{
-			std::unique_lock<std::mutex> cond_lock(*child_thread.cond_lock);
 			// 子线程 处于等待状态，等待主线程抵达下一时间单元的命令
 			child_thread.cond->wait(cond_lock);
 			for (size_t i = child_thread.min_pos; i <= child_thread.max_pos; ++i)
@@ -92,7 +92,7 @@ namespace MUZI
 				{
 					struct MTimerTaskStatus& task_data = __MUZI_MTIMER_DATA__->tasks_status[i];
 					++task_data.wake_times;
-					if (task_data.wake_times % task_data.activate_times == 0)
+					if ((task_data.wake_times % task_data.activate_times) <= (__MUZI_MTIMER_MIN_TIME_UNIT__))
 					{
 						task_data.task_cond.notify_all();
 					}
@@ -120,12 +120,24 @@ namespace MUZI
 		main_thread.work_start_time = std::chrono::steady_clock::now();
 		static std::unique_lock<std::mutex> main_thread_lock(main_thread.contributing_lock);
 		// 根据最小单位叠加，等到抵达下一个单元的时候向其他线程提醒动作
+#ifdef WINDOWS
 		while (((main_thread.cond.
 			wait_for(main_thread_lock, main_thread.timeout_standnrd) == std::cv_status::timeout)
-			|| errno == ETIMEDOUT) && (!__MUZI_MTIMER_DATA__->exit_flag))
+			|| ::GetLastError() == ETIMEDOUT) && (!__MUZI_MTIMER_DATA__->exit_flag))
 		{
 			main_thread.cond.notify_all();
 		}
+#elif define LINUX
+		while (((main_thread.cond.
+			wait_for(main_thread_lock, main_thread.timeout_standnrd) == std::cv_status::timeout)) 
+			&& (!__MUZI_MTIMER_DATA__->exit_flag))
+		{
+			main_thread.cond.notify_all();
+		}
+
+#endif // WINDOWS
+
+
 	}
 
 	// 静态变量初始化和 函数定义
@@ -160,8 +172,9 @@ namespace MUZI
 
 			// 设定任务开始时间
 			main_thread.work_start_time = std::chrono::steady_clock::now();
-			// 初始化为10微秒作为一个时间单位
-			main_thread.timeout_standnrd = std::chrono::duration<uint64_t, __MUZI_MTIMER_MIN_TIME_UNIT_TYPE_RATIONAL__>(__MUZI_MTIMER_MIN_TIME_UNIT__);
+			// 初始化为__MUZI_MTIMER_MIN_TIME_UNIT__作为一个时间单位
+			//main_thread.timeout_standnrd = std::chrono::duration<uint32_t, __MUZI_MTIMER_MIN_TIME_UNIT_TYPE_RATIONAL__>(__MUZI_MTIMER_MIN_TIME_UNIT__);
+			main_thread.timeout_standnrd = std::chrono::milliseconds(__MUZI_MTIMER_MIN_TIME_UNIT__);
 			main_thread.main_th = std::move(std::thread(__MUZI_MTIMER_MAIN_THREAD_FUN__, &__MUZI_MTIMER_DATA__->main_thread));
 
 			// 初始化子线程
@@ -260,12 +273,12 @@ namespace MUZI
 	}
 
 	// 操作函数
-	const Task& MTimer::set_task(uint32_t microsecond)// 设置定时任务,返回一个标号
+	const Task& MTimer::set_task(uint32_t milisecond)// 设置定时任务,返回一个标号
 	{
 		Task& ret_task = this->data->get_free_task();
 		if (!this->is_error_task(ret_task))
 		{
-			ret_task.activate_times = microsecond / __MUZI_MTIMER_MIN_TIME_UNIT__;
+			ret_task.activate_times = milisecond / __MUZI_MTIMER_MIN_TIME_UNIT__;
 			ret_task.work_status = MTimerTaskStatusFlag::BUSYTASK | MTimerTaskStatusFlag::NOWORKINGNOW;
 			__MUZI_MTIMER_DATA__->task_size += 1;
 		}
