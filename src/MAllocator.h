@@ -118,9 +118,12 @@ namespace MUZI
 		static void* pool_refill();// 充值战备池
 		static bool pool_is_possible_mem_board(void* p);//查看当前指针所指向的一个字节是否包含内存边界
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
+
 #ifdef __MUZI_ALLOCATOR_MOD_LOKI__
-		
-		class FixedAllocator
+		// 相比起普通POOL 这里采用数组代替链表的方式保管内存块
+		// 优点是可以随时将内存资源归还给操作系统、简单精简、有延缓归还能力
+		// 
+		class MFixedAllocator
 		{
 		public:
 			class MChunk
@@ -128,21 +131,33 @@ namespace MUZI
 			public:
 				unsigned char* p_data;
 				unsigned char first_available_block;//索引 指向接下来所要供应的区块
-				unsigned char blocks_available;//目前能供应多少个区块
+				unsigned char blocks_available;//目前能供应多少个区块, 当该数字重回到设定值时，代表着可以随时归还这一内存块
+			public:
+				MChunk();
+				~MChunk();
+			public:
 				void Init(size_t block_size, unsigned char blocks); 
 				void Reset(size_t block_size, unsigned char blocks);
 				void Release();
 				void* Allocate(size_t block_size);
-				void* Deallocate(void* p, size_t blocks);
+				void Deallocate(void* p, size_t blocks);
 			};
 		public:
 			std::vector<MChunk> chunks;
-			MChunk* allocChunk;
-			MChunk* deallocChunk;
+			MChunk* allocChunk;// 标出最近的一次分配
+			MChunk* deallocChunk;// 标出最近一次的归还
+		public:
+			MFixedAllocator();
+			~MFixedAllocator();
+		public:
+			void* Allocate(size_t block_size, unsigned char blocks);
+			void* Deallocate(void *p);
+			MChunk* VicinityFind(void* p);// 查找到对应Chunk
+			void DoDeallocate(void* p);// 执行归还操作
 		};
-		std::vector<FixedAllocator> pool;
-		FixedAllocator* p_last_alloc;
-		FixedAllocator* p_last_dealloc;
+		std::vector<MFixedAllocator> pool;
+		MFixedAllocator* p_last_alloc;
+		MFixedAllocator* p_last_dealloc;
 		size_t chunk_size;
 		size_t max_object_size;
 
