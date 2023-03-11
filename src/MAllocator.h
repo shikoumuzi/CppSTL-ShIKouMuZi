@@ -9,9 +9,15 @@
 
 //编译模式选择，即选择需要数据结构
 #define __MUZI_ALLOCATOR_MOD_SIZE__ 3
-#define __MUZI_ALLOCATOR_MOD_POOL__ 0
+//#define __MUZI_ALLOCATOR_MOD_POOL__ 0
 //#define __MUZI_ALLOCATOR_MOD_BITMAP__ 1
-//#define __MUZI_ALLOCATOR_MOD_FIXED__ 2
+#define __MUZI_ALLOCATOR_MOD_LOKI__ 2
+
+#ifdef __MUZI_ALLOCATOR_MOD_LOKI__
+#include<vector>
+#endif // __MUZI_ALLOCATOR_MOD_LOKI__
+
+
 
 // 每次申请大块内存的长度 20为经验值
 #define __MUZI_ALLOCATOR_MEMORY_MALLOC_SIZE__ 20
@@ -112,6 +118,36 @@ namespace MUZI
 		static void* pool_refill();// 充值战备池
 		static bool pool_is_possible_mem_board(void* p);//查看当前指针所指向的一个字节是否包含内存边界
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
+#ifdef __MUZI_ALLOCATOR_MOD_LOKI__
+		
+		class FixedAllocator
+		{
+		public:
+			class MChunk
+			{
+			public:
+				unsigned char* p_data;
+				unsigned char first_available_block;//索引 指向接下来所要供应的区块
+				unsigned char blocks_available;//目前能供应多少个区块
+				void Init(size_t block_size, unsigned char blocks); 
+				void Reset(size_t block_size, unsigned char blocks);
+				void Release();
+				void* Allocate(size_t block_size);
+				void* Deallocate(void* p, size_t blocks);
+			};
+		public:
+			std::vector<MChunk> chunks;
+			MChunk* allocChunk;
+			MChunk* deallocChunk;
+		};
+		std::vector<FixedAllocator> pool;
+		FixedAllocator* p_last_alloc;
+		FixedAllocator* p_last_dealloc;
+		size_t chunk_size;
+		size_t max_object_size;
+
+#endif // __MUZI_ALLOCATOR_MOD_LOKI__
+
 
 	};
 

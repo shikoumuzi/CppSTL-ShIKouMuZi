@@ -17,7 +17,7 @@ namespace MUZI {
 #elif define __MUZI_ALLOCATOR_MOD_BITMAP__
 			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_BITMAP__] = MAllocator::bitmap_init;
 			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_BITMAP__] = nullptr;
-#elif define __MUZI_ALLOCATOR_MOD_FIXED__
+#elif define __MUZI_ALLOCATOR_MOD_LOKI__
 			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_FIXED__] = MAllocator::fixed_init;
 			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_FIXED__] = nullptr;
 #endif
@@ -320,6 +320,45 @@ namespace MUZI {
 	}
 
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
+#ifdef __MUZI_ALLOCATOR_MOD_LOKI__
+	void MAllocator::FixedAllocator::MChunk::Init(size_t block_size, unsigned char blocks)
+	{
+		this->p_data = new unsigned char[blocks * block_size];
+		Reset(block_size, blocks);
+	}
+	void MAllocator::FixedAllocator::MChunk::Reset(size_t block_size, unsigned char blocks)
+	{
+		this->first_available_block = 0;
+		this->blocks_available = blocks;
+
+		// 创造嵌入式指针
+		unsigned char i = 0;
+		unsigned char* p = this->p_data;
+		for (; i != blocks; p += block_size)
+			*p = ++i;
+		// 在每个分配内存块里头的前一个字节中记录内存块的索引号
+	}
+	void MAllocator::FixedAllocator::MChunk::Release()
+	{
+		delete[] this->p_data;// 释放自己
+		p_data = nullptr;// 解除索引 
+	}
+	void* MAllocator::FixedAllocator::MChunk::Allocate(size_t block_size)
+	{
+		if (!this->blocks_available)
+			return nullptr;
+		unsigned char* p_result = this->p_data + (this->first_available_block * block_size);
+		this->first_available_block = *p_result;
+		--blocks_available;
+		
+		return p_result;
+	}
+	void MAllocator::FixedAllocator::MChunk::Deallocate(void* p, size_t blocks)
+	{
+
+	}
+
+#endif // __MUZI_ALLOCATOR_MOD_LOKI__
 
 
 }
