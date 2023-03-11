@@ -332,20 +332,20 @@ namespace MUZI {
 	{
 		delete[] this->p_data;
 	}
-	void MAllocator::MFixedAllocator::MChunk::Init(size_t block_size, unsigned char blocks)
+	void MAllocator::MFixedAllocator::MChunk::Init(size_t block_size, unsigned char block_num)
 	{
-		this->p_data = new unsigned char[blocks * block_size];
-		Reset(block_size, blocks);
+		this->p_data = new unsigned char[block_num * block_size];
+		Reset(block_size, block_num);
 	}
-	void MAllocator::MFixedAllocator::MChunk::Reset(size_t block_size, unsigned char blocks)
+	void MAllocator::MFixedAllocator::MChunk::Reset(size_t block_size, unsigned char block_num)
 	{
 		this->first_available_block = 0;
-		this->blocks_available = blocks;
+		this->blocks_available = block_num;
 
 		// 创造嵌入式指针
 		unsigned char i = 0;
 		unsigned char* p = this->p_data;
-		for (; i != blocks; p += block_size)
+		for (; i != block_num; p += block_size)
 			*p = ++i;
 		// 在每个分配内存块里头的前一个字节中记录内存块的索引号
 	}
@@ -365,38 +365,33 @@ namespace MUZI {
 		
 		return p_result;
 	}
-	void MAllocator::MFixedAllocator::MChunk::Deallocate(void* p, size_t blocks)
+	void MAllocator::MFixedAllocator::MChunk::Deallocate(void* p, size_t block_num)
 	{
 		// 该函数由上层函数确定是落在该chunk后，再调用该函数进行回收资源
 		unsigned char* to_release = static_cast<unsigned char*>(p);
 
-		*to_release = first_available_block;
-		first_available_block = static_cast<unsigned char>(to_release - this->p_data) / blocks;
-
+		*to_release = this->first_available_block;
+		this->first_available_block = static_cast<unsigned char>(to_release - this->p_data) / block_num;
 		++this->blocks_available;
-		
 	}
+
 	// FixedAllocator(中间件)
-	MAllocator::MFixedAllocator::MFixedAllocator(size_t block_size, unsigned char blocks)
+	MAllocator::MFixedAllocator::MFixedAllocator(size_t block_size, unsigned char block_num)
 	{
 		this->block_size = block_size;
-		this->blocks = blocks;
-		this->allocChunk = nullptr;
-		this->deallocChunk = nullptr;
-		this->chunks.resize(blocks, MChunk());
-		for (auto chunk : this->chunks)
-		{
-			chunk.Init(block_size, blocks);
-		}
+		this->block_num = block_num;
+		this->alloc_chunk = nullptr;
+		this->dealloc_chunk = nullptr;
+		this->chunks.reserve(block_num); 
 	}
 	MAllocator::MFixedAllocator::~MFixedAllocator()
 	{
-		this->allocChunk = nullptr;
-		this->deallocChunk = nullptr;
+		this->alloc_chunk = nullptr;
+		this->dealloc_chunk = nullptr;
 	}
-	void* MAllocator::MFixedAllocator::Allocate(size_t block_size, unsigned char blocks)
+	void* MAllocator::MFixedAllocator::Allocate()
 	{
-		if (this->allocChunk != nullptr || this->allocChunk->blocks_available != 0)
+		if (this->alloc_chunk != nullptr || this->alloc_chunk->blocks_available != 0)
 		{
 			// 目前没有标定chunk或者该chunk已经没有空闲区块了
 			for (auto chunk : this->chunks)
@@ -404,54 +399,100 @@ namespace MUZI {
 				if (chunk.blocks_available > 0)
 				{
 					// 有可用区块
-					this->allocChunk = &chunk;
+					this->alloc_chunk = &chunk;
 					goto __MAllocator_MFixedAllocator_Allocate_Ret__;
 				}
 			}
 			this->chunks.emplace_back(MChunk());
 			MChunk& newChunk = this->chunks.back();// 指向末端chunk
-			newChunk.Init(block_size, blocks);// 设置索引
-			this->allocChunk = &newChunk;// 标定，稍后调用该区块allocate函数获取内存块
-			deallocChunk = &this->chunks.front();// 因为vector可能内部会对数据进行搬动，每次都需要重新设置，所以需要标定头）
+			newChunk.Init(this->block_size, this->block_num);// 设置索引
+			this->alloc_chunk = &newChunk;// 标定，稍后调用该区块allocate函数获取内存块
+			dealloc_chunk = &this->chunks.front();// 因为vector可能内部会对数据进行搬动，每次都需要重新设置，所以需要标定头）
 		}
 __MAllocator_MFixedAllocator_Allocate_Ret__:
-		return allocChunk->Allocate(block_size);
+		return alloc_chunk->Allocate(block_size);
 		// 在此找到chunk后下次优先在此找起
 	}
 	void* MAllocator::MFixedAllocator::Deallocate(void* p)
 	{
-		this->deallocChunk = this->VicinityFind(p);
+		this->dealloc_chunk = this->VicinityFind(p);
 		this->DoDeallocate(p);
 	}
 	MAllocator::MFixedAllocator::MChunk* MAllocator::MFixedAllocator::VicinityFind(void *p)// 临近查找法，由LOKI作者撰写
 	{
-		const size_t chunk_length = 0;
+		const size_t chunk_length =  this->block_size * this->block_num;
 
 		// 采用同VC6中malloc查找的方式 通过首地址 + 整个区块大小 得出对应指针是否存在于某个Chunk当中
-		MChunk* lo = this->deallocChunk;// 标识上一次归还
-		MChunk* hi = this->deallocChunk + 1; // 标识上一次归还的chunk标识后一个标识
+		MChunk* lo = this->dealloc_chunk;// 标识上一次归还
+		MChunk* hi = this->dealloc_chunk + 1; // 标识上一次归还的chunk标识后一个标识
 		MChunk* lo_bound = &this->chunks.front();// lo查找的终点
 		MChunk* hi_bound = &this->chunks.back() + 1;// hi查找的终点
 
+		// 主要思想为从上次回收的地方向两边寻找 会更大概率碰到空的
 		while (1)
 		{
 			if (lo)
 			{
-				if (p >= lo->p_data && p < lo->p_data)
-				{
+				if (p >= lo->p_data && p < lo->p_data + chunk_length)
+					return lo;
+				
+				if (lo == lo_bound) lo = nullptr;
+				else
+					--lo;
 
-				}
 			}
 			if (hi)
 			{
-
+				if (p >= hi->p_data && p < hi->p_data + chunk_length)
+					return hi;
+				
+				if (hi == hi_bound) hi = nullptr;
+				else
+					++hi;
+			}
+			if (lo == hi)// 只有当两个都为nullptr时才会相等 
+			{
+				return nullptr;
 			}
 		}
-
 	}
 	void MAllocator::MFixedAllocator::DoDeallocate(void* p)
 	{
-
+		this->dealloc_chunk->Deallocate(p, this->block_size);
+		if (this->dealloc_chunk->blocks_available == this->block_num)
+		{
+			// 因为是要找全归还的chunk 所以back()一定是一个空闲块
+			MChunk& last_chunk = this->chunks.back();
+			// 确认在该Chunk中内存块已经全部回收
+			// 确保有两个全回收的内存块后才会归还一个给操作系统
+			if (&last_chunk == dealloc_chunk)
+			{
+				// 如果当前dealloc的chunk正是已经全回收的第二个
+				if (this->chunks.size() > 1 &&
+					(this->dealloc_chunk - 1)->blocks_available == this->block_num)
+				{
+					// 如果
+					last_chunk.Release();
+					this->chunks.pop_back();
+					this->alloc_chunk = this->dealloc_chunk = &this->chunks.front();
+				}
+				return;
+			}
+			if (last_chunk.blocks_available == this->block_num)
+			{
+				// 有两个全回收的 chunk就直接抛弃最后一个
+				last_chunk.Release();
+				chunks.pop_back();
+				this->alloc_chunk = this->dealloc_chunk;
+				// 此时回收的并不是最后一个入队的
+			}
+			else
+			{
+				// 代表并没有两个全回收的模块
+				std::swap(*dealloc_chunk, last_chunk);
+				this->alloc_chunk = &this->chunks.back();
+			}
+		}
 	}
 #endif // __MUZI_ALLOCATOR_MOD_LOKI__
 

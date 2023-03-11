@@ -136,23 +136,23 @@ namespace MUZI
 				MChunk();
 				~MChunk();
 			public:
-				void Init(size_t block_size, unsigned char blocks); 
-				void Reset(size_t block_size, unsigned char blocks);
+				void Init(size_t block_size, unsigned char block_num); 
+				void Reset(size_t block_size, unsigned char block_num);
 				void Release();
 				void* Allocate(size_t block_size);
-				void Deallocate(void* p, size_t blocks);
+				void Deallocate(void* p, size_t block_num);
 			};
 		public:
 			std::vector<MChunk> chunks;
-			MChunk* allocChunk;// 标出最近的一次分配
-			MChunk* deallocChunk;// 标出最近一次的归还
+			MChunk* alloc_chunk;// 标出最近的一次分配
+			MChunk* dealloc_chunk;// 标出最近一次的归还
 			size_t block_size;// chunk的p_data申请大小
-			unsigned char blocks;// 单个内存块数目
+			unsigned char block_num;// 单个内存块数目
 		public:
-			MFixedAllocator(size_t block_size, unsigned char blocks);
+			MFixedAllocator(size_t block_size, unsigned char block_num);
 			~MFixedAllocator();
 		public:
-			void* Allocate(size_t block_size, unsigned char blocks);
+			void* Allocate();
 			void* Deallocate(void *p);
 			MChunk* VicinityFind(void* p);// 查找到对应Chunk
 			void DoDeallocate(void* p);// 执行归还操作
