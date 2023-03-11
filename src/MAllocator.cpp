@@ -324,11 +324,13 @@ namespace MUZI {
 	// Chunk管理模块（最底层）
 	MAllocator::MFixedAllocator::MChunk::MChunk()
 	{
-
+		this->p_data = nullptr;
+		this->first_available_block = 0;
+		this->blocks_available = 0;
 	}
 	MAllocator::MFixedAllocator::MChunk::~MChunk()
 	{
-
+		delete[] this->p_data;
 	}
 	void MAllocator::MFixedAllocator::MChunk::Init(size_t block_size, unsigned char blocks)
 	{
@@ -375,13 +377,22 @@ namespace MUZI {
 		
 	}
 	// FixedAllocator(中间件)
-	MAllocator::MFixedAllocator::MFixedAllocator()
+	MAllocator::MFixedAllocator::MFixedAllocator(size_t block_size, unsigned char blocks)
 	{
-
+		this->block_size = block_size;
+		this->blocks = blocks;
+		this->allocChunk = nullptr;
+		this->deallocChunk = nullptr;
+		this->chunks.resize(blocks, MChunk());
+		for (auto chunk : this->chunks)
+		{
+			chunk.Init(block_size, blocks);
+		}
 	}
 	MAllocator::MFixedAllocator::~MFixedAllocator()
 	{
-
+		this->allocChunk = nullptr;
+		this->deallocChunk = nullptr;
 	}
 	void* MAllocator::MFixedAllocator::Allocate(size_t block_size, unsigned char blocks)
 	{
@@ -401,19 +412,42 @@ namespace MUZI {
 			MChunk& newChunk = this->chunks.back();// 指向末端chunk
 			newChunk.Init(block_size, blocks);// 设置索引
 			this->allocChunk = &newChunk;// 标定，稍后调用该区块allocate函数获取内存块
-			deallocChunk = &this->chunks.front();// 标定即将返回内容
+			deallocChunk = &this->chunks.front();// 因为vector可能内部会对数据进行搬动，每次都需要重新设置，所以需要标定头）
 		}
 __MAllocator_MFixedAllocator_Allocate_Ret__:
 		return allocChunk->Allocate(block_size);
+		// 在此找到chunk后下次优先在此找起
 	}
 	void* MAllocator::MFixedAllocator::Deallocate(void* p)
 	{
 		this->deallocChunk = this->VicinityFind(p);
 		this->DoDeallocate(p);
 	}
-	MAllocator::MFixedAllocator::MChunk* MAllocator::MFixedAllocator::VicinityFind(void *p)
+	MAllocator::MFixedAllocator::MChunk* MAllocator::MFixedAllocator::VicinityFind(void *p)// 临近查找法，由LOKI作者撰写
 	{
+		const size_t chunk_length = 0;
+
 		// 采用同VC6中malloc查找的方式 通过首地址 + 整个区块大小 得出对应指针是否存在于某个Chunk当中
+		MChunk* lo = this->deallocChunk;// 标识上一次归还
+		MChunk* hi = this->deallocChunk + 1; // 标识上一次归还的chunk标识后一个标识
+		MChunk* lo_bound = &this->chunks.front();// lo查找的终点
+		MChunk* hi_bound = &this->chunks.back() + 1;// hi查找的终点
+
+		while (1)
+		{
+			if (lo)
+			{
+				if (p >= lo->p_data && p < lo->p_data)
+				{
+
+				}
+			}
+			if (hi)
+			{
+
+			}
+		}
+
 	}
 	void MAllocator::MFixedAllocator::DoDeallocate(void* p)
 	{

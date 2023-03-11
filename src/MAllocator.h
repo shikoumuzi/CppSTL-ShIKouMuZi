@@ -146,8 +146,10 @@ namespace MUZI
 			std::vector<MChunk> chunks;
 			MChunk* allocChunk;// 标出最近的一次分配
 			MChunk* deallocChunk;// 标出最近一次的归还
+			size_t block_size;// chunk的p_data申请大小
+			unsigned char blocks;// 单个内存块数目
 		public:
-			MFixedAllocator();
+			MFixedAllocator(size_t block_size, unsigned char blocks);
 			~MFixedAllocator();
 		public:
 			void* Allocate(size_t block_size, unsigned char blocks);
