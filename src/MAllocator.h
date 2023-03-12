@@ -50,6 +50,15 @@
 
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
 
+#ifdef __MUZI_ALLOCATOR_MOD_LOKI__
+// 可申请的最大对象
+#define __MUZI_ALLOCATOR_MOD_LOKI_MAX_OBJECT_SIZE__ 256
+
+#define __MUZI_ALLOCATOR_MOD_LOKI_CHUNK_SIZE__ 512
+
+#endif // __MUZI_ALLOCATOR_MOD_LOKI__
+
+
 // 为了匹配大小端机器所创立的指针传递方式 x为操作指针，y为需要和指针相加减的值
 #define __MUZI_MEM_BIG_BOARD_ITEARTOR_ADVANCE__(x, y) x - y
 #define __MUZI_MEM_BIG_BOARD_ITEARTOR_BACK__(x, y) x + y

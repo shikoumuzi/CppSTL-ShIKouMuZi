@@ -1,11 +1,16 @@
 #include"MAllocator.h"
 
 namespace MUZI {
+#ifdef __MUZI_ALLOCATOR_MOD_POOL__
+#elif define __MUZI_ALLOCATOR_MOD_LOKI__
+#elif define __MUZI_ALLOCATOR_MOD_BITMAP__
+#endif // __MUZI_ALLOCATOR_MOD_POOL__
+
 
 	MAllocator::MemoryCtrlFunction MAllocator::mcf[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
 	void* MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
 	MAllocator::clearMemoryFunction MAllocator::cmf[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
-	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
+	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr,  };
 
 	MAllocator::MAllocator()
 	{
@@ -416,7 +421,12 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 	void* MAllocator::MFixedAllocator::Deallocate(void* p)
 	{
 		this->dealloc_chunk = this->VicinityFind(p);
+		if (this->dealloc_chunk == nullptr)
+		{
+			return nullptr;
+		}
 		this->DoDeallocate(p);
+		return static_cast<void*>(this->dealloc_chunk);
 	}
 	MAllocator::MFixedAllocator::MChunk* MAllocator::MFixedAllocator::VicinityFind(void *p)// 临近查找法，由LOKI作者撰写
 	{
@@ -496,14 +506,15 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		}
 	}
 
+	// LOKI最上层构建
+
 	void MAllocator::fixed_init(void*)
 	{
-
+		this->max_object_size = __MUZI_ALLOCATOR_MOD_LOKI_MAX_OBJECT_SIZE__;
+		this->chunk_size = __MUZI_ALLOCATOR_MOD_LOKI_CHUNK_SIZE__;
 	}
 	void MAllocator::fixed_delete()
-	{
-
-	}
+	{}
 	size_t MAllocator::find_matched_fixedallocate(size_t block_size)
 	{
 		size_t block_volume = block_size;// 申请内存大小
@@ -530,7 +541,10 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 	}
 	void MAllocator::fixed_dellocate(void* p)
 	{
-		 
+		for (auto pool : this->fixedallocate_pools)
+		{
+			pool.Deallocate(p);
+		}
 	}
 #endif // __MUZI_ALLOCATOR_MOD_LOKI__
 
