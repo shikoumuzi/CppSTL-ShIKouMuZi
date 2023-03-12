@@ -421,6 +421,7 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 	MAllocator::MFixedAllocator::MChunk* MAllocator::MFixedAllocator::VicinityFind(void *p)// 临近查找法，由LOKI作者撰写
 	{
 		const size_t chunk_length =  this->block_size * this->block_num;
+		unsigned char* p_tmp = static_cast<unsigned char*>(p);
 
 		// 采用同VC6中malloc查找的方式 通过首地址 + 整个区块大小 得出对应指针是否存在于某个Chunk当中
 		MChunk* lo = this->dealloc_chunk;// 标识上一次归还
@@ -433,7 +434,7 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		{
 			if (lo)
 			{
-				if (p >= lo->p_data && p < lo->p_data + chunk_length)
+				if (p_tmp >= lo->p_data && p_tmp < lo->p_data + chunk_length)
 					return lo;
 				
 				if (lo == lo_bound) lo = nullptr;
@@ -443,7 +444,7 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 			}
 			if (hi)
 			{
-				if (p >= hi->p_data && p < hi->p_data + chunk_length)
+				if (p_tmp >= hi->p_data && p_tmp < hi->p_data + chunk_length)
 					return hi;
 				
 				if (hi == hi_bound) hi = nullptr;
@@ -493,6 +494,43 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 				this->alloc_chunk = &this->chunks.back();
 			}
 		}
+	}
+
+	void MAllocator::fixed_init(void*)
+	{
+
+	}
+	void MAllocator::fixed_delete()
+	{
+
+	}
+	size_t MAllocator::find_matched_fixedallocate(size_t block_size)
+	{
+		size_t block_volume = block_size;// 申请内存大小
+		size_t applied_pos = 0;// 申请内存块大小所匹配位置
+		while (applied_pos >= this->max_object_size)
+		{
+			block_volume >>= 1;
+			applied_pos += 1;
+		}
+		if (this->fixedallocate_pools[applied_pos].block_size < block_volume)
+		{
+			applied_pos += 1;
+		}
+		return applied_pos;
+	}
+	void* MAllocator::fixed_allocate(size_t block_size)
+	{
+		if (block_size > this->max_object_size)
+		{
+			return ::operator new(block_size);
+		}
+		size_t applized_pos = this->find_matched_fixedallocate(block_size);
+		return this->fixedallocate_pools[block_size].Allocate();
+	}
+	void MAllocator::fixed_dellocate(void* p)
+	{
+		 
 	}
 #endif // __MUZI_ALLOCATOR_MOD_LOKI__
 
