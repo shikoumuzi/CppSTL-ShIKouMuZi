@@ -10,7 +10,7 @@ namespace MUZI {
 	MAllocator::MemoryCtrlFunction MAllocator::mcf[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
 	void* MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
 	MAllocator::clearMemoryFunction MAllocator::cmf[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
-	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr,  };
+	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
 
 	MAllocator::MAllocator()
 	{
@@ -19,13 +19,20 @@ namespace MUZI {
 #ifdef __MUZI_ALLOCATOR_MOD_POOL__
 			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_POOL__] = MAllocator::pool_init;
 			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_POOL__] = nullptr;
-#elif define __MUZI_ALLOCATOR_MOD_BITMAP__
+#endif
+#ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
 			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_BITMAP__] = MAllocator::bitmap_init;
 			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_BITMAP__] = nullptr;
-#elif define __MUZI_ALLOCATOR_MOD_LOKI__
+#endif
+#ifdef __MUZI_ALLOCATOR_MOD_LOKI__
 			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_FIXED__] = MAllocator::fixed_init;
 			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_FIXED__] = nullptr;
 #endif
+#ifdef __MUZI_ALLOCATOR_MOD_ARRAY__
+
+#endif // __MUZI_ALLOCATOR_MOD_ARRAY__
+
+
 		}
 		// 采用引用计数 确保所有程序退出后 内存得到释放
 		MAllocator::object_num += 1;
@@ -547,6 +554,30 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		}
 	}
 #endif // __MUZI_ALLOCATOR_MOD_LOKI__
+#ifdef __MUZI_ALLOCATOR_MOD_ARRAY__
+	// ArraryAllocateArgs件
+	MAllocator::ArraryAllocateArgs::ArraryAllocateArgs(void* p_array, size_t type_size, size_t array_length)
+		:arg_array(p_array), block_size(type_size), arg_array_length(array_length){}
+	
+	// Array_Allocate件
+	void MAllocator::array_init(void* p)
+	{
+		MAllocator::ArraryAllocateArgs* p_args = static_cast<MAllocator::ArraryAllocateArgs*>(p);
+		this->array_data = static_cast<unsigned char*>(p_args->arg_array);
+		this->array_block_size = p_args->block_size;
+		this->array_data_length = p_args->arg_array_length;
+		this->array_last_alloc = static_cast<unsigned char*>(p_args->arg_array);
+		this->array_bitmap = new unsigned char[(p_args->arg_array_length / 8) + 1];
+	}
+	void* MAllocator::array_allocate(size_t block_num)
+	{
+		
+	}
+	void MAllocator::array_deallocate(void* p)
+	{
+
+	}
+#endif // __MUZI_ALLOCATOR_MOD_ARRAY__
 
 
 }

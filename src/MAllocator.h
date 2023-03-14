@@ -8,10 +8,11 @@
 #include<new>
 
 //编译模式选择，即选择需要数据结构
-#define __MUZI_ALLOCATOR_MOD_SIZE__ 3
+#define __MUZI_ALLOCATOR_MOD_SIZE__ 4
 //#define __MUZI_ALLOCATOR_MOD_POOL__ 0
 //#define __MUZI_ALLOCATOR_MOD_BITMAP__ 1
-#define __MUZI_ALLOCATOR_MOD_LOKI__ 2
+//#define __MUZI_ALLOCATOR_MOD_LOKI__ 2
+#define __MUZI_ALLOCATOR_MOD_ARRAY__ 3
 
 #ifdef __MUZI_ALLOCATOR_MOD_LOKI__
 #include<vector>
@@ -57,6 +58,10 @@
 #define __MUZI_ALLOCATOR_MOD_LOKI_CHUNK_SIZE__ 512
 
 #endif // __MUZI_ALLOCATOR_MOD_LOKI__
+
+#ifdef __MUZI_ALLOCATOR_MOD_ARRAY__
+#define __MUZI_ALLOCATOR_MOD_ARRAY_REDEALLOCATED_TIMES__ 5
+#endif // __MUZI_ALLOCATOR_MOD_ARRAY__
 
 
 // 为了匹配大小端机器所创立的指针传递方式 x为操作指针，y为需要和指针相加减的值
@@ -185,6 +190,41 @@ namespace MUZI
 		void fixed_dellocate(void* p);
 
 #endif // __MUZI_ALLOCATOR_MOD_LOKI__
+
+#ifdef __MUZI_ALLOCATOR_MOD_ARRAY__
+	public:
+		class ArraryAllocateArgs
+		{
+		public:
+			friend class MAllocator;
+		public:
+			ArraryAllocateArgs(void* p_array, size_t type_size, size_t array_length);
+		private:
+			void* arg_array;
+			size_t block_size;
+			size_t arg_array_length;
+		};
+	private:
+		struct ArrayMemoryRecord
+		{
+			unsigned char* start;
+			size_t status;
+			unsigned char* end;
+		};
+	public:
+		void array_init(void*);
+		void* array_allocate(size_t block_num);
+		void array_deallocate(void* p);
+	private:
+		size_t array_block_size;
+		unsigned char* array_data;
+		size_t array_data_length;
+		size_t array_dealloc_times;
+		unsigned char* array_last_alloc;
+		unsigned char* array_bitmap;
+		
+
+#endif // __MUZI_ALLOCATOR_MOD_ARRAY__
 
 
 	};
