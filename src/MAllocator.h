@@ -10,9 +10,9 @@
 //编译模式选择，即选择需要数据结构
 #define __MUZI_ALLOCATOR_MOD_SIZE__ 4
 //#define __MUZI_ALLOCATOR_MOD_POOL__ 0
-//#define __MUZI_ALLOCATOR_MOD_BITMAP__ 1
+#define __MUZI_ALLOCATOR_MOD_BITMAP__ 1
 //#define __MUZI_ALLOCATOR_MOD_LOKI__ 2
-#define __MUZI_ALLOCATOR_MOD_ARRAY__ 3
+//#define __MUZI_ALLOCATOR_MOD_ARRAY__ 3
 
 #ifdef __MUZI_ALLOCATOR_MOD_LOKI__
 #include<vector>
@@ -62,6 +62,17 @@
 #ifdef __MUZI_ALLOCATOR_MOD_ARRAY__
 #define __MUZI_ALLOCATOR_MOD_ARRAY_REDEALLOCATED_TIMES__ 5
 #endif // __MUZI_ALLOCATOR_MOD_ARRAY__
+
+#ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
+#define __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__ 4194304U
+#define __MUZI_ALLOCATOR_MOD_BITMAP_BITMAP_VECTORS_SIZE__ 64
+#define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ 64
+#define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__ uint64_t
+#define __MUZI_ALLOCATOR_MOD_BITMAP_FIRST_ALLOCATED_ARRAY_SIZE__ 128
+#define __MUZI_ALLOCATOR_MOD_BITMAP_INCREASEING_MULTIPLE__ 2
+#endif // __MUZI_ALLOCATOR_MOD_BITMAP__
+
+
 
 
 // 为了匹配大小端机器所创立的指针传递方式 x为操作指针，y为需要和指针相加减的值
@@ -208,24 +219,65 @@ namespace MUZI
 		struct ArrayMemoryRecord
 		{
 			unsigned char* start;
-			size_t status;
 			unsigned char* end;
 		};
 	public:
 		void array_init(void*);
 		void* array_allocate(size_t block_num);
 		void array_deallocate(void* p);
+		void dellocate_Rep();
 	private:
 		size_t array_block_size;
 		unsigned char* array_data;
 		size_t array_data_length;
 		size_t array_dealloc_times;
-		unsigned char* array_last_alloc;
+		unsigned char* array_array_memory_record_head;
 		unsigned char* array_bitmap;
 		
 
 #endif // __MUZI_ALLOCATOR_MOD_ARRAY__
 
+#ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
+		class BitMapVector
+		{
+		public:
+			friend class BitMapVectors;
+		public:
+			BitMapVector();
+			~BitMapVector();
+			void push_back();
+			void pop_back();
+		private:
+			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_start;
+			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_end;
+			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_end_storage;
+		};
+		class BitMapVectors
+		{
+		public:
+			BitMapVectors();
+			~BitMapVectors();
+			int push_back(size_t array_size);
+			void pop_back();
+			bool compare_by_array_size();
+			void swap();
+		private:
+			void deallocate(BitMapVector* p);
+			void allocate(size_t array_size);
+		private:
+			BitMapVector** p_free_list; // 全回收的
+			BitMapVector** p_mem_list; // 已分配的
+			BitMapVector* p_start;
+			BitMapVector* p_end;
+			BitMapVector* p_end_stoage;
+			int last_allocated_size;
+		};
+		BitMapVectors bitmap_data;
+		void* allocate(size_t block_num);
+		void deallocate(void *p);
+		 
+
+#endif //__MUZI_ALLOCATOR_MOD_BITMAP__
 
 	};
 

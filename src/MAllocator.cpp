@@ -566,12 +566,18 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		this->array_data = static_cast<unsigned char*>(p_args->arg_array);
 		this->array_block_size = p_args->block_size;
 		this->array_data_length = p_args->arg_array_length;
-		this->array_last_alloc = static_cast<unsigned char*>(p_args->arg_array);
-		this->array_bitmap = new unsigned char[(p_args->arg_array_length / 8) + 1];
+		this->array_array_memory_record_head = new unsigned char[p_args->arg_array_length + 1];
+		this->array_dealloc_times = __MUZI_ALLOCATOR_MOD_ARRAY_REDEALLOCATED_TIMES__;
+	}
+	void MAllocator::dellocate_Rep()
+	{
+
 	}
 	void* MAllocator::array_allocate(size_t block_num)
 	{
 		
+		
+
 	}
 	void MAllocator::array_deallocate(void* p)
 	{
