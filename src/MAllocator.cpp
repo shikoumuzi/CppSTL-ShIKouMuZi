@@ -584,6 +584,124 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 
 	}
 #endif // __MUZI_ALLOCATOR_MOD_ARRAY__
+#ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
+	// BitMapVector
+	MAllocator::BitMapVector::BitMapVector(size_t capacity):p_data(nullptr)//输入的是有多少块
+	{
+		// 在前件保证capacity为__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__的倍数
+		this->capacity = 0;
+		if(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ * capacity < __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__)
+			this->capacity = capacity;
+	}
+	MAllocator::BitMapVector::BitMapVector(BitMapVector&& object) noexcept
+	{
+		this->p_data = object.p_data;
+		object.p_data = nullptr;
+		this->capacity = object.capacity;
+		object.capacity = 0;
+	}
+	MAllocator::BitMapVector::~BitMapVector()
+	{
+		if (nullptr != this->p_data)
+		{
+			delete[] this->p_data->p_bitmap;
+			this->p_data->p_bitmap = nullptr;
+			this->p_data->p_start = this->p_data->p_end 
+				= this->p_data->p_end_storage = this->p_data->p_bitmap = nullptr;
+			delete this->p_data;
+			this->p_data = nullptr;
+		}
+	}
+	bool MAllocator::BitMapVector::isValid()
+	{
+		return  0 == this->capacity || nullptr == this->p_data;
+	}
+	void MAllocator::BitMapVector::isNull()
+	{
+		if (nullptr == this->p_data)
+		{
+			this->bitmap_size = this->capacity / __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__;
+			this->p_data->p_bitmap = new __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__[this->capacity + this->bitmap_size];
+			this->p_data = new BitMapVectorData;
+			this->p_data->p_start = this->p_data->p_bitmap + this->bitmap_size;
+			this->p_data->p_end = this->p_data->p_end;
+			this->p_data->p_end_storage = this->p_data->p_start + this->capacity + 1;
+			memset(this->p_data->p_start, 0, this->capacity);
+			memset(this->p_data->p_bitmap, 0, this->bitmap_size);
+		}
+	}
+	bool MAllocator::BitMapVector::isAllDealloced()
+	{
+		if(this->p_data == nullptr)
+			return false;
+		uint64_t tmp_full_bit = static_cast<uint64_t>(-1);
+		for (size_t i = 0; i < this->bitmap_size; ++i)
+		{
+			if (0 != (this->p_data->p_bitmap[i] | tmp_full_bit))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	void MAllocator::BitMapVector::push_back()
+	{
+		this->isNull();
+		uint64_t tmp_full_bit = static_cast<uint64_t>(-1);
+		uint64_t tmp_bit = (1 << (64 * 8));
+		for (size_t i = 0; i < this->bitmap_size; ++i)
+		{
+			
+		}
+	}
+	void MAllocator::BitMapVector::pop_back()
+	{
+		this->isNull();
+
+	}
+	size_t MAllocator::BitMapVector::earse(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__ *p)
+	{
+		size_t distance  = (p - this->p_data->p_start) / __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__;
+		if (distance > this->capacity)
+		{
+			return -1;
+		}
+		// 这里记录除法的余数和结果
+		size_t distance_remainder = distance % __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__;
+		size_t distance_result = distance % __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__;
+		// 将对应位置为0
+		uint64_t tmp_bitmap = ~(1 << distance_remainder);
+		this->p_data->p_bitmap[distance_result] &= tmp_bitmap;
+	}
+	void  MAllocator::BitMapVector::swap(BitMapVector&& object)
+	{
+		BitMapVectorData* p_tmp = this->p_data;
+		this->p_data = object.p_data;
+		object.p_data = p_tmp;
+	}
+	// BitMapVectors
+	MAllocator::BitMapVectors::BitMapVectors()
+	{
+
+	}
+	int MAllocator::BitMapVectors::push_back(size_t array_size)
+	{
+
+	}
+	void MAllocator::BitMapVectors::pop_back()
+	{
+
+	}
+	bool MAllocator::BitMapVectors::compare_by_array_size()
+	{
+
+	}
+	void MAllocator::BitMapVectors::swap()
+	{
+
+	}
+#endif // __MUZI_ALLOCATOR_MOD_BITMAP__
+
 
 
 }

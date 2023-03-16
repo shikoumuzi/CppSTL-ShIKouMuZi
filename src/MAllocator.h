@@ -66,8 +66,9 @@
 #ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
 #define __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__ 4194304U
 #define __MUZI_ALLOCATOR_MOD_BITMAP_BITMAP_VECTORS_SIZE__ 64
-#define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ 64
 #define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__ uint64_t
+#define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ sizeof(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__)
+#define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_BIT_SIZE__ __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ * 8
 #define __MUZI_ALLOCATOR_MOD_BITMAP_FIRST_ALLOCATED_ARRAY_SIZE__ 128
 #define __MUZI_ALLOCATOR_MOD_BITMAP_INCREASEING_MULTIPLE__ 2
 #endif // __MUZI_ALLOCATOR_MOD_BITMAP__
@@ -240,17 +241,33 @@ namespace MUZI
 #ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
 		class BitMapVector
 		{
+		public: 
+			struct BitMapVectorData
+			{
+				__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_bitmap;
+				__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_start;
+				__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_end;
+				__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_end_storage;
+			};
 		public:
 			friend class BitMapVectors;
 		public:
-			BitMapVector();
+			BitMapVector(size_t capacity);
+			BitMapVector(BitMapVector&& object);
+			BitMapVector(BitMapVector&) = delete;
 			~BitMapVector();
 			void push_back();
 			void pop_back();
+			size_t earse(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p);
+			inline bool isValid();
+			bool isAllDealloced();
+			void swap(BitMapVector&& object);
 		private:
-			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_start;
-			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_end;
-			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_end_storage;
+			void isNull();
+		private:
+			BitMapVectorData* p_data;
+			size_t capacity;
+			size_t bitmap_size;
 		};
 		class BitMapVectors
 		{
