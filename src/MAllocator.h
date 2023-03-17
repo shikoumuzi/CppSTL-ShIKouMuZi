@@ -256,14 +256,16 @@ namespace MUZI
 			BitMapVector(BitMapVector&& object);
 			BitMapVector(BitMapVector&) = delete;
 			~BitMapVector();
-			void push_back();
+			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* operator[](size_t);
+			int push_back();
 			void pop_back();
 			size_t earse(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p);
 			inline bool isValid();
 			bool isAllDealloced();
 			void swap(BitMapVector&& object);
 		private:
-			void isNull();
+			bool isNull();
+			int find_no_full_bitmap(size_t reverse = 0);
 		private:
 			BitMapVectorData* p_data;
 			size_t capacity;

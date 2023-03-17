@@ -616,7 +616,7 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 	{
 		return  0 == this->capacity || nullptr == this->p_data;
 	}
-	void MAllocator::BitMapVector::isNull()
+	bool MAllocator::BitMapVector::isNull()
 	{
 		if (nullptr == this->p_data)
 		{
@@ -628,13 +628,15 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 			this->p_data->p_end_storage = this->p_data->p_start + this->capacity + 1;
 			memset(this->p_data->p_start, 0, this->capacity);
 			memset(this->p_data->p_bitmap, 0, this->bitmap_size);
+			return true;
 		}
+		return false;
 	}
 	bool MAllocator::BitMapVector::isAllDealloced()
 	{
 		if(this->p_data == nullptr)
 			return false;
-		uint64_t tmp_full_bit = static_cast<uint64_t>(-1);
+		uint64_t tmp_full_bit = static_cast<__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__>(-1);
 		for (size_t i = 0; i < this->bitmap_size; ++i)
 		{
 			if (0 != (this->p_data->p_bitmap[i] | tmp_full_bit))
@@ -644,20 +646,86 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		}
 		return true;
 	}
-	void MAllocator::BitMapVector::push_back()
+	__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* MAllocator::BitMapVector::operator[](size_t pos)
+	{
+		if (pos < (this->p_data->p_end - this->p_data->p_start) / __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ && pos > 0)
+		{
+			return &this->p_data->p_start[pos];
+		}
+		return nullptr;
+	}
+
+	int MAllocator::BitMapVector::push_back()
 	{
 		this->isNull();
-		uint64_t tmp_full_bit = static_cast<uint64_t>(-1);
-		uint64_t tmp_bit = (1 << (64 * 8));
-		for (size_t i = 0; i < this->bitmap_size; ++i)
+		uint64_t tmp_bit = (1 << (__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_BIT_SIZE__));
+		size_t no_full_bitmap = 0;
+		if ((no_full_bitmap = this->find_no_full_bitmap()) == -1)
 		{
-			
+			return -1;
 		}
+		size_t pos = 0;
+		for (; pos < __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_BIT_SIZE__; ++pos)
+		{
+			if ((tmp_bit & this->p_data->p_bitmap[no_full_bitmap]) == 0)
+			{
+				if (this->p_data->p_bitmap[no_full_bitmap] == 0)
+				{
+					// 每开辟一个新的模块使得end+1
+					// 每回收一次end前一个模块就向前检查，调整end至新的已分配模块
+					this->p_data->p_end = this->p_data->p_start + pos + 1;
+				}
+				this->p_data->p_bitmap[no_full_bitmap] |= tmp_bit;
+				
+			}
+			tmp_bit >>= 1;
+		}
+		return pos;
+	}
+	int MAllocator::BitMapVector::find_no_full_bitmap(size_t reverse)
+	{
+		size_t i = (this->bitmap_size - 1) & reverse;
+		auto judged_fun = [&i, this]()->bool {
+			return this->p_data->p_bitmap[i] != static_cast<__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__>(-1); };
+
+		if (reverse)
+		{
+			for (; i >= 0; i -= 1)
+			{
+				if (judged_fun()) return i;
+			}
+		}
+		else
+		{
+			for (; i < this->bitmap_size; i += 1)
+			{
+				if(judged_fun()) return i;
+			}
+		}
+
+		return -1;
 	}
 	void MAllocator::BitMapVector::pop_back()
 	{
-		this->isNull();
-
+		if(this->isNull()) return;
+		this->earse(this->p_data->p_end -= __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__);
+		uint64_t tmp_bit = (1 << (__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_BIT_SIZE__));
+		size_t no_full_bitmap = 0;
+		if ((no_full_bitmap = this->find_no_full_bitmap()) == -1)return;
+		size_t pos = __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_BIT_SIZE__;
+		for (; pos  > 0; --pos)
+		{
+			if ((tmp_bit & this->p_data->p_bitmap[no_full_bitmap]) == 0)
+			{
+				if (this->p_data->p_bitmap[no_full_bitmap] == 0)
+				{
+					// 每开辟一个新的模块使得end+1
+					// 每回收一次end前一个模块就向前检查，调整end至新的已分配模块
+					this->p_data->p_end = this->p_data->p_start + pos + 1;
+				}
+			}
+			tmp_bit >>= 1;
+		}
 	}
 	size_t MAllocator::BitMapVector::earse(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__ *p)
 	{
