@@ -65,7 +65,7 @@
 
 #ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
 #define __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__ 4194304U
-#define __MUZI_ALLOCATOR_MOD_BITMAP_BITMAP_VECTORS_SIZE__ 64
+#define __MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__ 64
 #define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__ uint64_t
 #define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ sizeof(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__)
 #define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_BIT_SIZE__ __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ * 8
@@ -252,14 +252,16 @@ namespace MUZI
 		public:
 			friend class BitMapVectors;
 		public:
+			BitMapVector();
 			BitMapVector(size_t capacity);
 			BitMapVector(BitMapVector&& object);
-			BitMapVector(BitMapVector&) = delete;
+			BitMapVector(const BitMapVector&) = delete;
 			~BitMapVector();
 			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* operator[](size_t);
 			int push_back();
 			void pop_back();
 			size_t earse(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p);
+			inline void setCapacity(size_t capacity);
 			inline bool isValid();
 			bool isAllDealloced();
 			void swap(BitMapVector&& object);
@@ -274,26 +276,34 @@ namespace MUZI
 		class BitMapVectors
 		{
 		public:
+			struct BitMapVectorsData
+			{
+				BitMapVectorsData* p_free_list; // 全回收的
+				BitMapVectorsData* p_mem_list; // 已分配的
+				BitMapVector* p_start;
+				BitMapVector* p_end;
+				BitMapVector* p_end_stoage;
+			};
+		public:
 			BitMapVectors();
+			BitMapVectors(const BitMapVectors&) = delete;
+			BitMapVectors(BitMapVectors&&);
 			~BitMapVectors();
 			int push_back(size_t array_size);
 			void pop_back();
-			bool compare_by_array_size();
+			bool compare_by_array_size();// 用于排满后进行和全回收内容的长度对比
 			void swap();
 		private:
-			void deallocate(BitMapVector* p);
-			void allocate(size_t array_size);
+			bool isNull();
 		private:
-			BitMapVector** p_free_list; // 全回收的
-			BitMapVector** p_mem_list; // 已分配的
-			BitMapVector* p_start;
-			BitMapVector* p_end;
-			BitMapVector* p_end_stoage;
-			int last_allocated_size;
+			void deallocate(BitMapVector* p);
+			void allocate();
+		private:
+			BitMapVectorsData* p_data;
 		};
 		BitMapVectors bitmap_data;
-		void* allocate(size_t block_num);
-		void deallocate(void *p);
+		void* bitmap_allocate();
+		void bitmap_deallocate(void *p);
 		 
 
 #endif //__MUZI_ALLOCATOR_MOD_BITMAP__

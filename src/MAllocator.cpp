@@ -586,6 +586,8 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 #endif // __MUZI_ALLOCATOR_MOD_ARRAY__
 #ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
 	// BitMapVector
+	MAllocator::BitMapVector::BitMapVector():p_data(nullptr),capacity(0)
+	{}
 	MAllocator::BitMapVector::BitMapVector(size_t capacity):p_data(nullptr)//输入的是有多少块
 	{
 		// 在前件保证capacity为__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__的倍数
@@ -611,6 +613,10 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 			delete this->p_data;
 			this->p_data = nullptr;
 		}
+	}
+	void MAllocator::BitMapVector::setCapacity(size_t capacity)
+	{
+		this->capacity = capacity;
 	}
 	bool MAllocator::BitMapVector::isValid()
 	{
@@ -748,13 +754,41 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		object.p_data = p_tmp;
 	}
 	// BitMapVectors
-	MAllocator::BitMapVectors::BitMapVectors()
+	MAllocator::BitMapVectors::BitMapVectors():p_data(this->p_data = new BitMapVectorsData)
 	{
-
+		this->p_data->p_start = new BitMapVector[__MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__];
+		this->p_data->p_end = this->p_data->p_start;
+		this->p_data->p_end_stoage = this->p_data->p_start + __MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__ + 1;
+		this->p_data->p_free_list = new BitMapVectorsData * [__MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__];
+		this->p_data->p_mem_list = new BitMapVectorsData*[__MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__];
+	}
+	MAllocator::BitMapVectors::BitMapVectors(BitMapVectors&& object) noexcept
+	{
+		BitMapVectorsData* p_tmp = this->p_data;
+		this->p_data = object.p_data;
+		object.p_data = p_tmp;
+	}
+	MAllocator::BitMapVectors::~BitMapVectors()
+	{
+		if (this->p_data != nullptr)
+		{
+			delete[] this->p_data->p_start;
+			delete[] this->p_data->p_mem_list;
+			delete[] this->p_data->p_free_list;
+			memset(this->p_data, reinterpret_cast<int>(nullptr), 5);
+			delete this->p_data;
+		}
+	}
+	bool MAllocator::BitMapVectors::isNull()
+	{
+		if (this->p_data->p_start == nullptr)
+		{
+			
+		}
 	}
 	int MAllocator::BitMapVectors::push_back(size_t array_size)
 	{
-
+		
 	}
 	void MAllocator::BitMapVectors::pop_back()
 	{
@@ -765,6 +799,22 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 
 	}
 	void MAllocator::BitMapVectors::swap()
+	{
+
+	}
+	void  MAllocator::BitMapVectors::allocate()
+	{
+
+	}
+	void  MAllocator::BitMapVectors::deallocate(BitMapVector* p)
+	{
+
+	}
+	void* MAllocator::bitmap_allocate()
+	{
+
+	}
+	void MAllocator::bitmap_deallocate(void* p)
 	{
 
 	}
