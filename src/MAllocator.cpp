@@ -591,9 +591,7 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 	MAllocator::BitMapVector::BitMapVector(size_t capacity):p_data(nullptr)//输入的是有多少块
 	{
 		// 在前件保证capacity为__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__的倍数
-		this->capacity = 0;
-		if(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ * capacity < __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__)
-			this->capacity = capacity;
+		this->setCapacity(capacity);
 	}
 	MAllocator::BitMapVector::BitMapVector(BitMapVector&& object) noexcept
 	{
@@ -616,7 +614,9 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 	}
 	void MAllocator::BitMapVector::setCapacity(size_t capacity)
 	{
-		this->capacity = capacity;
+		this->capacity = 0;
+		if (__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ * capacity < __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__)
+			this->capacity = capacity;
 	}
 	bool MAllocator::BitMapVector::isValid()
 	{
@@ -652,6 +652,24 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		}
 		return true;
 	}
+	bool MAllocator::BitMapVector::isNoFull()
+	{
+		uint64_t nops = static_cast<uint64_t>(-1);
+		for (size_t i = 0; i < this->bitmap_size; ++i)
+		{
+			if ((this->p_data->p_bitmap[i] & nops) != nops)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	bool MAllocator::BitMapVector::isSubPointer(void* p)
+	{
+		__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_tmp = static_cast<__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__*>(p);
+		return p_tmp < this->p_data->p_end&& p_tmp >= this->p_data->p_start;
+	}
+
 	__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* MAllocator::BitMapVector::operator[](size_t pos)
 	{
 		if (pos < (this->p_data->p_end - this->p_data->p_start) / __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ && pos > 0)
@@ -660,7 +678,6 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		}
 		return nullptr;
 	}
-
 	int MAllocator::BitMapVector::push_back()
 	{
 		this->isNull();
@@ -761,6 +778,8 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 		this->p_data->p_end_stoage = this->p_data->p_start + __MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__ + 1;
 		this->p_data->p_free_list = new BitMapVectorsData * [__MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__];
 		this->p_data->p_mem_list = new BitMapVectorsData*[__MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__];
+		memset(this->p_data->p_free_list, reinterpret_cast<int>(nullptr), __MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__);
+		memset(this->p_data->p_mem_list, reinterpret_cast<int>(nullptr), __MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__);
 	}
 	MAllocator::BitMapVectors::BitMapVectors(BitMapVectors&& object) noexcept
 	{
@@ -781,18 +800,19 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 	}
 	bool MAllocator::BitMapVectors::isNull()
 	{
-		if (this->p_data->p_start == nullptr)
-		{
-			
-		}
 	}
 	int MAllocator::BitMapVectors::push_back(size_t array_size)
 	{
-		
+		size_t pos = (this->p_data->p_end - this->p_data->p_start) / sizeof(BitMapVector);
+		if (pos > __MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__ || pos < 0)
+		{
+			// 越界情况
+		}
+		this->p_data->p_start[pos].setCapacity(array_size);
 	}
 	void MAllocator::BitMapVectors::pop_back()
 	{
-
+		
 	}
 	bool MAllocator::BitMapVectors::compare_by_array_size()
 	{
@@ -802,13 +822,30 @@ __MAllocator_MFixedAllocator_Allocate_Ret__:
 	{
 
 	}
-	void  MAllocator::BitMapVectors::allocate()
+	void*  MAllocator::BitMapVectors::allocate()
 	{
-
+		size_t i = 0;
+		for (; i < __MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__; ++i)
+		{
+			if (this->p_data->p_start[i].isNoFull())// 寻找不是全分配的 不是就直接在这分配一块出去
+			{
+				return static_cast<__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__*>(this->p_data->p_start[i][this->p_data->p_start[i].push_back()]);
+			}
+			// 如果都是全分配的那就新创建一个
+			// this->push_back();
+		}
+		return nullptr;
 	}
-	void  MAllocator::BitMapVectors::deallocate(BitMapVector* p)
+	void  MAllocator::BitMapVectors::deallocate(void* p)
 	{
-
+		size_t bitmap_vector_count = (this->p_data->p_end - this->p_data->p_start) / sizeof(BitMapVector);
+		for (size_t i = 0; i < bitmap_vector_count; ++i)
+		{
+			if (this->p_data->p_start[i].isSubPointer(p))
+			{
+				this->p_data->p_start[i].earse(static_cast<uint64_t*>(p));
+			}
+		}
 	}
 	void* MAllocator::bitmap_allocate()
 	{

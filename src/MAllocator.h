@@ -64,7 +64,8 @@
 #endif // __MUZI_ALLOCATOR_MOD_ARRAY__
 
 #ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
-#define __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__ 4194304U
+#define __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__ 4194304U /*一个分配出去的数组最大长度为4k 即一页*/
+#define __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_COUNT__ 32768U /*一个数组最多的元素个数*/
 #define __MUZI_ALLOCATOR_MOD_BITMAP_BITMAPVECTORS_SIZE__ 64
 #define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__ uint64_t
 #define __MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ sizeof(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__)
@@ -258,13 +259,15 @@ namespace MUZI
 			BitMapVector(const BitMapVector&) = delete;
 			~BitMapVector();
 			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* operator[](size_t);
-			int push_back();
-			void pop_back();
+			int push_back();// 标记最后一个能用的
+			void pop_back();// 标记最后一个为已回收内存块
 			size_t earse(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p);
-			inline void setCapacity(size_t capacity);
-			inline bool isValid();
-			bool isAllDealloced();
-			void swap(BitMapVector&& object);
+			inline void setCapacity(size_t capacity);// 设置容量
+			inline bool isValid();// 检查是否有效
+			bool isAllDealloced();// 检查是否为全回收
+			bool isNoFull();// 检查是否填充满了
+			void swap(BitMapVector&& object);// 交换数据
+			bool isSubPointer(void *p);
 		private:
 			bool isNull();
 			int find_no_full_bitmap(size_t reverse = 0);
@@ -278,8 +281,8 @@ namespace MUZI
 		public:
 			struct BitMapVectorsData
 			{
-				BitMapVectorsData* p_free_list; // 全回收的
-				BitMapVectorsData* p_mem_list; // 已分配的
+				BitMapVectorsData** p_free_list; // 全回收的
+				BitMapVectorsData** p_mem_list; // 已分配的
 				BitMapVector* p_start;
 				BitMapVector* p_end;
 				BitMapVector* p_end_stoage;
@@ -289,25 +292,24 @@ namespace MUZI
 			BitMapVectors(const BitMapVectors&) = delete;
 			BitMapVectors(BitMapVectors&&);
 			~BitMapVectors();
-			int push_back(size_t array_size);
-			void pop_back();
+			int push_back(size_t array_size);// 负责创建对应的BitmapVector
+			void pop_back();// 负责标记最后一个为0
 			bool compare_by_array_size();// 用于排满后进行和全回收内容的长度对比
 			void swap();
 		private:
 			bool isNull();
 		private:
-			void deallocate(BitMapVector* p);
-			void allocate();
+			void* allocate();
+			void deallocate(void* p);
 		private:
 			BitMapVectorsData* p_data;
+			size_t allocated_num;
 		};
 		BitMapVectors bitmap_data;
 		void* bitmap_allocate();
 		void bitmap_deallocate(void *p);
-		 
-
+		
 #endif //__MUZI_ALLOCATOR_MOD_BITMAP__
-
 	};
 
 };
