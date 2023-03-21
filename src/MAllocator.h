@@ -9,10 +9,10 @@
 
 //编译模式选择，即选择需要数据结构
 #define __MUZI_ALLOCATOR_MOD_SIZE__ 4
-//#define __MUZI_ALLOCATOR_MOD_POOL__ 0
+#define __MUZI_ALLOCATOR_MOD_POOL__ 0
 #define __MUZI_ALLOCATOR_MOD_BITMAP__ 1
-//#define __MUZI_ALLOCATOR_MOD_LOKI__ 2
-//#define __MUZI_ALLOCATOR_MOD_ARRAY__ 3
+#define __MUZI_ALLOCATOR_MOD_LOKI__ 2
+#define __MUZI_ALLOCATOR_MOD_ARRAY__ 3
 
 #ifdef __MUZI_ALLOCATOR_MOD_LOKI__
 #include<vector>
@@ -92,22 +92,20 @@ namespace MUZI
 {
 	class MAllocator
 	{
-	public:// 公用数据
-		static size_t object_num;
-		// 规定每种模式都需要传递一个初始化函数到此处
-		using MemoryCtrlFunction = void(*)(void*);
-		static MemoryCtrlFunction mcf[__MUZI_ALLOCATOR_MOD_SIZE__];
-		static void* mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__];
-		// 规定每种模式都需要传递一个清理函数到此处
-		using clearMemoryFunction = void(*)(void*);
-		static clearMemoryFunction cmf[__MUZI_ALLOCATOR_MOD_SIZE__];
-		static void* cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__];
-
-	public:// 公用构造函数
-		MAllocator();
-		~MAllocator();
-		static void atexitDestruct();
+	public:
+		virtual void* allocate(size_t size)
+		{
+			return ::operator new(size);
+		}
+		virtual void deallocate(void* p, size_t size)
+		{
+			operator delete(p, size);
+		}
+	};
 #ifdef __MUZI_ALLOCATOR_MOD_POOL__ // 不同模式下的不同数据结构和对应算法
+
+	class MPoolAllocator:public MAllocator
+	{
 	public://数据模型
 		union MAllocatorRep
 		{
@@ -127,7 +125,6 @@ namespace MUZI
 	private:
 		static void pool_init(void*);
 		static void pool_delete(void*);
-
 	private:
 		// 追加量 调整数据大小上界，并且调整数据为8的边界
 		static size_t pool_RoundUp(size_t bytes);// 调整申请内存边界
@@ -139,17 +136,31 @@ namespace MUZI
 
 	public:
 		static void* pool_allocate(size_t type_size);// 申请分配内存
-		static void pool_deallocate(void** ptr, size_t mem_size);// 回收内存, 在这里采用传入指针地址的方式，将原指针地址指向空以保证不会越权访问
+		static void pool_deallocate(void* ptr, size_t mem_size);// 回收内存, 在这里采用传入指针地址的方式，将原指针地址指向空以保证不会越权访问
 		static void* pool_reallocate();// 延长原先申请的内存空间
 		static void* pool_chunk_allocate();// 大块内存分配请求
 		static void* pool_refill();// 充值战备池
 		static bool pool_is_possible_mem_board(void* p);//查看当前指针所指向的一个字节是否包含内存边界
+	public:
+		void* allocate(size_t size) override
+		{
+			return pool_allocate(size);
+		}
+		void deallocate(void* p, size_t size) override
+		{
+			pool_deallocate(p, size);
+		}
+	};
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
 
 #ifdef __MUZI_ALLOCATOR_MOD_LOKI__
-		// 相比起普通POOL 这里采用数组代替链表的方式保管内存块
-		// 优点是可以随时将内存资源归还给操作系统、简单精简、有延缓归还能力
-		// 
+
+	class MLOKIAllocator:public MAllocator
+	{
+	public:
+		MLOKIAllocator();
+		~MLOKIAllocator();
+	public:
 		class MFixedAllocator
 		{
 		public:
@@ -167,7 +178,7 @@ namespace MUZI
 				MChunk();
 				~MChunk();
 			public:
-				void Init(size_t block_size, unsigned char block_num); 
+				void Init(size_t block_size, unsigned char block_num);
 				void Reset(size_t block_size, unsigned char block_num);
 				void Release();
 				void* Allocate(size_t block_size);
@@ -184,7 +195,7 @@ namespace MUZI
 			~MFixedAllocator();
 		public:
 			void* Allocate();
-			void* Deallocate(void *p);
+			void* Deallocate(void* p);
 			MChunk* VicinityFind(void* p);// 查找到对应Chunk
 			void DoDeallocate(void* p);// 执行归还操作
 		};
@@ -200,18 +211,32 @@ namespace MUZI
 		void fixed_init(void*);
 		void fixed_delete();
 		void* fixed_allocate(size_t block_size);
-		void fixed_dellocate(void* p);
+		void fixed_deallocate(void* p);
 
+		void* allocate(size_t size) override
+		{
+			return this->fixed_allocate(size);
+		}
+		void deallocate(void* p, size_t size = 0) override
+		{
+			fixed_deallocate(p);
+		}
+
+	};
 #endif // __MUZI_ALLOCATOR_MOD_LOKI__
 
 #ifdef __MUZI_ALLOCATOR_MOD_ARRAY__
+	class MArrayAllocate: public MAllocator
+	{
 	public:
 		class ArraryAllocateArgs
 		{
 		public:
-			friend class MAllocator;
+			friend class MArrayAllocate;
 		public:
-			ArraryAllocateArgs(void* p_array, size_t type_size, size_t array_length);
+			// ArraryAllocateArgs件
+			ArraryAllocateArgs(void* p_array, size_t type_size, size_t array_length)
+				:arg_array(p_array), block_size(type_size), arg_array_length(array_length) {}
 		private:
 			void* arg_array;
 			size_t block_size;
@@ -224,7 +249,15 @@ namespace MUZI
 			unsigned char* end;
 		};
 	public:
-		void array_init(void*);
+		void array_init(void* p)
+		{
+			ArraryAllocateArgs* p_args = static_cast<ArraryAllocateArgs*>(p);
+			this->array_data = static_cast<unsigned char*>(p_args->arg_array);
+			this->array_block_size = p_args->block_size;
+			this->array_data_length = p_args->arg_array_length;
+			this->array_array_memory_record_head = new unsigned char[p_args->arg_array_length + 1];
+			this->array_dealloc_times = __MUZI_ALLOCATOR_MOD_ARRAY_REDEALLOCATED_TIMES__;
+		}
 		void* array_allocate(size_t block_num);
 		void array_deallocate(void* p);
 		void dellocate_Rep();
@@ -235,14 +268,28 @@ namespace MUZI
 		size_t array_dealloc_times;
 		unsigned char* array_array_memory_record_head;
 		unsigned char* array_bitmap;
-		
+	public:
+		void* allocate(size_t size) override
+		{
+			return array_allocate(1);
+		}
+		void deallocate(void* p, size_t size = 0) override
+		{
+			array_deallocate(p);
+		}
 
+	};
 #endif // __MUZI_ALLOCATOR_MOD_ARRAY__
 
 #ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
+	// 相比起普通POOL 这里采用数组代替链表的方式保管内存块
+	// 优点是可以随时将内存资源归还给操作系统、简单精简、有延缓归还能力
+	// 
+	class MBitmapAllocate:public MAllocator
+	{
 		class BitMapVector
 		{
-		public: 
+		public:
 			struct BitMapVectorData
 			{
 				__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p_bitmap;
@@ -253,21 +300,48 @@ namespace MUZI
 		public:
 			friend class BitMapVectors;
 		public:
-			BitMapVector();
-			BitMapVector(size_t capacity);
-			BitMapVector(BitMapVector&& object);
+			BitMapVector() :p_data(nullptr), capacity(0)
+			{}
+			BitMapVector(size_t capacity) :p_data(nullptr)//输入的是有多少块
+			{
+				// 在前件保证capacity为__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__的倍数
+				this->setCapacity(capacity);
+			}
+			BitMapVector(BitMapVector&& object) noexcept
+			{
+				this->p_data = object.p_data;
+				object.p_data = nullptr;
+				this->capacity = object.capacity;
+				object.capacity = 0;
+			}
 			BitMapVector(const BitMapVector&) = delete;
-			~BitMapVector();
+			~BitMapVector()
+			{
+				if (nullptr != this->p_data)
+				{
+					delete[] this->p_data->p_bitmap;
+					this->p_data->p_bitmap = nullptr;
+					this->p_data->p_start = this->p_data->p_end
+						= this->p_data->p_end_storage = this->p_data->p_bitmap = nullptr;
+					delete this->p_data;
+					this->p_data = nullptr;
+				}
+			}
 			__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* operator[](size_t);
 			int push_back();// 标记最后一个能用的
 			void pop_back();// 标记最后一个为已回收内存块
 			size_t earse(__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_TYPE__* p);
-			inline void setCapacity(size_t capacity);// 设置容量
+			inline void setCapacity(size_t capacity)// 设置容量
+			{
+				this->capacity = 0;
+				if (__MUZI_ALLOCATOR_MOD_BITMAP_BLOCK_SIZE__ * capacity < __MUZI_ALLOCATOR_MOD_BITMAP_VECTOR_MAX_SIZE__)
+					this->capacity = capacity;
+			}
 			inline bool isValid();// 检查是否有效
 			bool isAllDealloced();// 检查是否为全回收
 			bool isNoFull();// 检查是否填充满了
 			void swap(BitMapVector&& object);// 交换数据
-			bool isSubPointer(void *p);
+			bool isSubPointer(void* p);
 		private:
 			bool isNull();
 			int find_no_full_bitmap(size_t reverse = 0);
@@ -305,11 +379,28 @@ namespace MUZI
 			BitMapVectorsData* p_data;
 			size_t allocated_num;
 		};
+	private:
 		BitMapVectors bitmap_data;
 		void* bitmap_allocate();
-		void bitmap_deallocate(void *p);
-		
+		void bitmap_deallocate(void* p);
+	};
 #endif //__MUZI_ALLOCATOR_MOD_BITMAP__
+
+
+	class MAllocator1
+	{
+	public:// 公用数据
+		static size_t object_num;
+		// 规定每种模式都需要传递一个初始化函数到此处
+		using MemoryCtrlFunction = void(*)(void*);
+		static MemoryCtrlFunction mcf[__MUZI_ALLOCATOR_MOD_SIZE__];
+		static void* mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__];
+		// 规定每种模式都需要传递一个清理函数到此处
+		using clearMemoryFunction = void(*)(void*);
+		static clearMemoryFunction cmf[__MUZI_ALLOCATOR_MOD_SIZE__];
+		static void* cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__];
+
+	public:// 公用构造函数
 	};
 
 };
