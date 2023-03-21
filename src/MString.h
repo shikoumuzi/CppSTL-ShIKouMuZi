@@ -1,20 +1,25 @@
 #pragma once
 #ifndef __MUZI_MSTRING_H__
 #define __MUZI_MSTRING_H__
-
-class MString
+namespace MUZI
 {
-public:
+	class MString
+	{
+	public:
 
-public:
-	MString();
-	~MString();
+	public:
+		MString();
+		MString(const MString&);
+		MString(MString&&);
+		~MString();
 
-private:
-	class MStringData* d;
+	private:
+		class MStringData* p_data;
+	};
+
+
+
+
 };
-
-
-
-
 #endif // !__MUZI_MSTRING_H__
+
