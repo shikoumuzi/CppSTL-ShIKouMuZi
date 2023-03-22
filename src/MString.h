@@ -12,6 +12,8 @@ namespace MUZI
 		MString(const MString&);
 		MString(MString&&);
 		~MString();
+	public:
+		bool setAllocation(MAllocator*);
 
 	private:
 		class MStringData* p_data;

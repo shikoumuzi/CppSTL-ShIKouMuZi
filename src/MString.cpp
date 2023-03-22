@@ -7,39 +7,66 @@ namespace MUZI
 	// MStringData 负责控制数据处理和内存申请
 	class MStringData
 	{
+	public:
+		friend class MString;
 	private:
-
+		struct DataPackeg
+		{
+			char32_t* data;// utf-32
+			size_t str_len;
+			size_t str_real_len;// 包括背后\0
+		};
 	public:
 		MStringData(const char32_t* cstr = nullptr)
 		{
-
+			
 		}
 		MStringData(const MStringData& str)
 		{
-
+			
 		}
 		MStringData(MStringData&& str)
 		{
-
+			
 		}
 		~MStringData()
 		{
-
+			this->allocate->deallocate(this->m_data.data, this->m_data.str_real_len);
+			
 		}
 	public:
-
-	private:// 浅拷贝和深拷贝函数
-		void shallow_copy()
+		// 设定内存管理方式 
+		bool setAllocation(MAllocator* allocator)
 		{
-
-		}
-		void deep_copy()
-		{
-
+			if (this->allocate != nullptr)
+			{
+				return false;
+			}
+			this->allocate = allocator;
+			return true;
 		}
 	private:
-		char32_t* data;// utf-32
+		inline size_t get_real_size()
+		{
+			return this->m_data.str_len + 1;
+		}
+
+	private:// 浅拷贝和深拷贝函数
+		void shallow_copy(DataPackeg& o_data)
+		{
+			if(this->m_data.data != nullptr)
+				this->allocate->deallocate(this->m_data.data, this->m_data.str_real_len);
+			memcpy(&this->m_data, &o_data, sizeof(struct DataPackeg));
+		}
+		void deep_copy(DataPackeg& o_data)
+		{
+			shallow_copy(o_data);
+			this->m_data.data = static_cast<char32_t*>(this->allocate->allocate(this->m_data.str_real_len));
+			memcpy(this->m_data.data, o_data.data, this->m_data.str_real_len);
+		}
+	private:
 		MAllocator* allocate;
+		DataPackeg m_data;
 	};
 
 
@@ -47,7 +74,7 @@ namespace MUZI
 
 
 
-	// MString 负责各种编码转换
+	// MString 负责各种编码转换 和基本数据获取
 	MString::MString():p_data(nullptr)
 	{}
 
