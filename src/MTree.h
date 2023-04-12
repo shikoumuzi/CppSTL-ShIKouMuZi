@@ -6,6 +6,7 @@
 #include<array>
 namespace MUZI
 {
+	// Node
 	template<typename T>
 	concept __Tree_Node_Inline_Ele_Type__ = requires(T x)
 	{
@@ -66,22 +67,58 @@ namespace MUZI
 	template<__Tree_Node_Inline_Ele_Type__ T>
 	MAllocator* __MTreeNode__<T>::alloc = MBitmapAllocate<T>::getMAllocator();
 
-	template<__Tree_Node_Inline_Ele_Type__ T>
+	// Tree
+	template<typename T>
+	concept __MTree_Type__ = requires(T x)
+	{
+		x.insert();
+		x.earse();
+		x.find();
+		x.set();
+		x.get();
+		x.size();
+
+	};
+
+	template<__Tree_Node_Inline_Ele_Type__ T, __MTree_Type__ Tree = nullptr_t>
 	class MTree
 	{
 	public:
-		MTree() = delete;
-		~MTree() = delete;
-		virtual void insert(const T&) = 0;
-		virtual void earse(const T&) = 0;
-		virtual bool find(const T&) = 0;
-		virtual bool set(const T&, const T&) = 0;
-		virtual T get() = 0;
-		virtual uint64_t size() = 0;
+		MTree()
+		{}
+		~MTree()
+		{}
+		inline void insert(const T& that)
+		{
+			this->tree.insert(that);
+		}
+		inline void earse(const T& that)
+		{
+			this->tree.earse(that);
+		}
+		inline bool find(const T& that)
+		{
+			return this->tree.find(that);
+		}
+		inline bool set(const T& old_this, const T& new_that)
+		{
+			return this->tree.set(old_this, new_that);
+		}
+		T get()
+		{
+			return this->tree.get();
+		}
+		uint64_t size()
+		{
+			return this->tree.size();
+		}
+	private:
+		Tree tree;
 	};
 
+	// AVLTree
 	template<__Tree_Node_Inline_Ele_Type__ T>
-	class MAVLTree: public MTree
+	class MAVLTree
 	{
 	public:
 		void insert(const T&) override
@@ -108,29 +145,50 @@ namespace MUZI
 		__MTreeNode__* root;
 	};
 
+	//RBTree
 	template<__Tree_Node_Inline_Ele_Type__ T>
-	class MRBTree: public MTree
+	class MRBTree
 	{
+	public:
+		using class_type = MRBTree;
 	private:
 		static MAllocator* alloc;
 	public:
-		MRBTree():root(nullptr),size(0){}
+		static MTree<T, class_type>* getTree()
+		{
+			return new MTree<T, class_type>();
+		}
+	private:
+		MRBTree() :root(nullptr), size(0) noexcept {}
+		MRBTree(const MRBTree<T>&) = delete;
+		MRBTree(MRBTree<T>&& that) noexcept
+		{
+			if (this->root != nullptr)
+			{
+				this->alloc->deallocate(this->root);
+			}
+			this->root = that.root;
+			this->size = that.size;
+			that.root = nullptr;
+			that.size = 0;
+		}
+	public:
 		~MRBTree()
 		{
 			this->alloc->deallocate(this->root);
 		}
 	public:
-		void insert(const T& ele) override
+		void insert(const T& ele)
 		{
 			if (root == nullptr)
 			{
-				this->root = this->alloc->allocate(1);
+				this->root = this->__createNode__();
 				this->root->ele = ele;
 			}
 
 			this->size += 1;
 		}
-		void earse(const T&) override
+		void earse(const T&) 
 		{
 			if (root == nullptr)
 			{
@@ -139,17 +197,13 @@ namespace MUZI
 
 			this->size -= 1;
 		}
-		bool find(const T& ele) override
+		inline bool find(const T& ele)
 		{
 			return (this->__findNode__(ele) != nullptr);
 		}
-		bool set(const T& ele, const T& o_ele) override
+		inline bool set(const T& ele, const T& o_ele)
 		{
-			if (this->__findNode__(ele) == nullptr)
-			{
-				return false;
-			}
-			this->__findNode__(ele)->ele = o_ele;
+			return this->__setNode__(ele, e_ele) != nullptr;
 		}
 		T get() override
 		{
@@ -168,13 +222,29 @@ namespace MUZI
 		{
 			return nullptr;
 		}
+		__MTreeNode__<T>* __insertNode__(const T& ele)
+		{
+			return nullptr;
+		}
+		__MTreeNode__<T>* __earseNode__(const T& ele)
+		{
+			return nullptr;
+		}
+		__MTreeNode__<T>* __setNode__(const T& ele, const T& o_ele)
+		{
+			__MTreeNode__<T>* p_tmp = this->__findNode__(ele);
+			if (p_tmp != nullptr)
+			{
+				return p_tmp;
+			}
+
+
+			return nullptr;
+		}
 	private:
 		__MTreeNode__<T>* root;
 		uint64_t size;
 	};
-
-
-
 	template<__Tree_Node_Inline_Ele_Type__ T>
 	MAllocator* MRBTree<T>::alloc = MBitmapAllocate<T>::getMAllocator();
 }

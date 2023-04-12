@@ -114,6 +114,7 @@ namespace MUZI
 	public:
 		MAllocator* getMAllocate(void* p = nullptr)  override
 		{
+			static class MPoolAllocator __MUZI_MPOOLALLOCATOR__;
 			return dynamic_cast<MAllocator*>(&__MUZI_MPOOLALLOCATOR__);
 		}
 	private:
@@ -165,7 +166,6 @@ namespace MUZI
 			pool_deallocate(p, size);
 		}
 	};
-	static class MPoolAllocator __MUZI_MPOOLALLOCATOR__;
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
 
 #ifdef __MUZI_ALLOCATOR_MOD_LOKI__
