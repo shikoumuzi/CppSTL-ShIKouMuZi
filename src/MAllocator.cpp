@@ -7,57 +7,57 @@ namespace MUZI {
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
 
 
-	MAllocator::MemoryCtrlFunction MAllocator::mcf[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
-	void* MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
-	MAllocator::clearMemoryFunction MAllocator::cmf[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
-	void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
-	size_t MAllocator::object_num = 0;
-	MAllocator::MAllocator()
-	{
-		if (object_num == 0)
-		{
-#ifdef __MUZI_ALLOCATOR_MOD_POOL__
-			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_POOL__] = MAllocator::pool_init;
-			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_POOL__] = nullptr;
-#endif
-#ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
-			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_BITMAP__] = MAllocator::bitmap_init;
-			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_BITMAP__] = nullptr;
-#endif
-#ifdef __MUZI_ALLOCATOR_MOD_LOKI__
-			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_FIXED__] = MAllocator::fixed_init;
-			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_FIXED__] = nullptr;
-#endif
-#ifdef __MUZI_ALLOCATOR_MOD_ARRAY__
-
-#endif // __MUZI_ALLOCATOR_MOD_ARRAY__
-
-
-		}
-		// 采用引用计数 确保所有程序退出后 内存得到释放
-		MAllocator::object_num += 1;
-		atexit(MAllocator::atexitDestruct);
-	}
-	MAllocator::~MAllocator()
-	{
-		MAllocator::object_num -= 1;
-		if (MAllocator::object_num == 0)
-		{
-			for (int i = 0; i < __MUZI_ALLOCATOR_MOD_SIZE__; ++i)
-			{
-				if (MAllocator::cmf[i] != nullptr)
-					MAllocator::cmf[i](MAllocator::cmf_arg[i]);
-			}
-		}
-	}
-	void MAllocator::atexitDestruct()
-	{
-		for (int i = 0; i < __MUZI_ALLOCATOR_MOD_SIZE__; ++i)
-		{
-			if (MAllocator::cmf[i] != nullptr)
-				MAllocator::cmf[i](MAllocator::cmf_arg[i]);
-		}
-	}
+	//MAllocator::MemoryCtrlFunction MAllocator::mcf[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
+	//void* MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
+	//MAllocator::clearMemoryFunction MAllocator::cmf[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
+	//void* MAllocator::cmf_arg[__MUZI_ALLOCATOR_MOD_SIZE__] = { nullptr };
+	//size_t MAllocator::object_num = 0;
+//	MAllocator::MAllocator()
+//	{
+//		if (object_num == 0)
+//		{
+//#ifdef __MUZI_ALLOCATOR_MOD_POOL__
+//			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_POOL__] = MAllocator::pool_init;
+//			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_POOL__] = nullptr;
+//#endif
+//#ifdef __MUZI_ALLOCATOR_MOD_BITMAP__
+//			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_BITMAP__] = MAllocator::bitmap_init;
+//			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_BITMAP__] = nullptr;
+//#endif
+//#ifdef __MUZI_ALLOCATOR_MOD_LOKI__
+//			MAllocator::mcf[__MUZI_ALLOCATOR_MOD_FIXED__] = MAllocator::fixed_init;
+//			MAllocator::mcf_arg[__MUZI_ALLOCATOR_MOD_FIXED__] = nullptr;
+//#endif
+//#ifdef __MUZI_ALLOCATOR_MOD_ARRAY__
+//
+//#endif // __MUZI_ALLOCATOR_MOD_ARRAY__
+//
+//
+//		}
+//		// 采用引用计数 确保所有程序退出后 内存得到释放
+//		MAllocator::object_num += 1;
+//		atexit(MAllocator::atexitDestruct);
+//	}
+//	MAllocator::~MAllocator()
+//	{
+//		MAllocator::object_num -= 1;
+//		if (MAllocator::object_num == 0)
+//		{
+//			for (int i = 0; i < __MUZI_ALLOCATOR_MOD_SIZE__; ++i)
+//			{
+//				if (MAllocator::cmf[i] != nullptr)
+//					MAllocator::cmf[i](MAllocator::cmf_arg[i]);
+//			}
+//		}
+//	}
+//	void MAllocator::atexitDestruct()
+//	{
+//		for (int i = 0; i < __MUZI_ALLOCATOR_MOD_SIZE__; ++i)
+//		{
+//			if (MAllocator::cmf[i] != nullptr)
+//				MAllocator::cmf[i](MAllocator::cmf_arg[i]);
+//		}
+//	}
 
 
 #ifdef __MUZI_ALLOCATOR_MOD_POOL__
