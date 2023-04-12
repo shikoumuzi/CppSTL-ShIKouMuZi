@@ -1,27 +1,76 @@
 #pragma once
 #ifndef __MUZI_MITERATOR_H__
+#define __MUZI_MITERATOR_H__
+#include<concepts>
+#include<compare>
 namespace MUZI
 {
+	template<typename T>
+	concept __MIterator_Type__ = requires(T x)
+	{
+		std::totally_ordered<T>;
+		x.operator++();  
+		x.operator--();
+		x.operator<=>();
+		x.operator==();
+		x.operator* ();
+		x.operator+=();
+		x.operator-=();
+		x.operator=();
+		x.data();
+	};
+
+	template<__MIterator_Type__ Iterator, typename T>
 	class MIterator
 	{
 	public:
-		virtual void operator++() = 0;
-		virtual void operator--() = 0;
-		virtual bool operator==(MIterator& item) = 0;
-		inline virtual bool operator!=(MIterator& item)
+		MIterator() = delete;
+		MIterator(const MIterator<Iterator>& that)
 		{
-			return !this->operator==(item);
+
 		}
-		//inline virtual bool operator<=(MIterator& item)
-		//{
-		//	return !this->operator>(item);
-		//}
-		//inline virtual bool operator>=(MIterator& item)
-		//{
-		//	return !this->operator<(item);
-		//}
-		//virtual bool operator<(MIterator& item) = 0;
-		//virtual bool operator>(MIterator& item) = 0;
+		MIterator(MIterator<Iterator>&& that)
+		{
+		}
+	public:
+		inline void operator++()
+		{
+			++this->iterator;
+		}
+		inline void operator--()
+		{
+			--this->iterator;
+		}
+		inline std::strong_ordering:: operator<=>(const MIterator& that)
+		{
+			return this->iterator.operator<=>(that.iterator);
+		}
+		inline bool operator==(const MIterator& that)
+		{
+			return this->iterator == that.iterator;
+		}
+		inline T operator* ()
+		{
+			return *this->iterator;
+		}
+		inline void operator+=(size_t n)
+		{
+			this->iterator += n;
+		}
+		inline void operator-=(size_t n)
+		{
+			this->iterator -= n;
+		}
+		inline void operator=(const MIterator& that)
+		{
+			this->iterator = that;
+		}
+		inline const T* data()
+		{
+			return iterator.data();
+		}
+	private:
+		Iterator iterator;
 	};
 };
 #endif // !__MUZI_MITERATOR_H__
