@@ -1,10 +1,6 @@
+
 #include<iostream>
-#include"MAllocator.h"
-#include"MSpan.h"
-#include<string>
-#include<vector>
-#include<chrono>
-#include"MTimer.h"
+#include"MTree.h"
 class a
 {
 
@@ -18,15 +14,14 @@ int main()
 	//for (auto x : a)
 	//{
 	//	std::cout << x ;
+	////}
+	//MUZI::MTimer* timer = MUZI::MTimer::getMTimer();
+	//MUZI::CTask task = timer->set_task(uint32_t(200));
+	//timer->start_task(task);
+	//int i = 0;
+	//while (timer->call_task(task))
+	//{
+	//	std::cout << "i: " << i++ << std::endl;
 	//}
-	MUZI::MTimer* timer = MUZI::MTimer::getMTimer();
-	MUZI::CTask task = timer->set_task(uint32_t(200));
-	timer->start_task(task);
-	int i = 0;
-	while (timer->call_task(task))
-	{
-		std::cout << "i: " << i++ << std::endl;
-	}
-
 
 }

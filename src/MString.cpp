@@ -35,6 +35,15 @@ namespace MUZI
 			
 		}
 	public:
+		MStringData& Read()
+		{
+
+		}
+		int Write(MStringData& other)
+		{
+
+		}
+	public:
 		// 设定内存管理方式 
 		bool setAllocation(MAllocator* allocator)
 		{
@@ -86,7 +95,7 @@ namespace MUZI
 		}
 	}
 
-	MString::MString(MString&& other)noexcept
+	MString::MString(MString&& other)
 	{
 		if (&other == this)
 		{

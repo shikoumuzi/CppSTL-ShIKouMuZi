@@ -11,19 +11,19 @@ namespace MUZI
 	};
 
 	template<__MMap_Pair_First_Ele_Type__  T, typename K>
-	struct __MMap_Pair__
+	struct __MMapPair__
 	{
 	public:
 		T key;
 		K value;
 	public:
-		std::weak_ordering operator<=>(const __MMap_Pair__& that)
+		std::weak_ordering operator<=>(const __MMapPair__& that)
 		{
 			if (this->key > that.key) return std::weak_ordering::greater;
 			if (this->key < that.key) return std::weak_ordering::less;
 			return std::weak_ordering::equivalent;
 		}
-		bool operator==(const __MMap_Pair__& that)
+		bool operator==(const __MMapPair__& that)
 		{
 			return (*this <=> that) == 0;
 		}
