@@ -279,9 +279,18 @@ namespace MUZI
 			this->array_array_memory_record_head = new unsigned char[p_args->arg_array_length + 1];
 			this->array_dealloc_times = __MUZI_ALLOCATOR_MOD_ARRAY_REDEALLOCATED_TIMES__;
 		}
-		void* array_allocate(size_t block_num);
-		void array_deallocate(void* p);
-		void dellocate_Rep();
+		void* array_allocate(size_t block_num)
+		{
+			return nullptr;
+		}
+		void array_deallocate(void* p)
+		{
+
+		}
+		void dellocate_Rep()
+		{
+
+		}
 	private:
 		size_t array_block_size;
 		unsigned char* array_data;

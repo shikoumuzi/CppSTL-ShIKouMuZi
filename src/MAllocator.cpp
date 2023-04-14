@@ -70,6 +70,15 @@ namespace MUZI {
 	MPoolAllocator::MAllocatorRep** MPoolAllocator::sys_memory_block = (MPoolAllocator::MAllocatorRep**)malloc
 	(sizeof(MPoolAllocator::MAllocatorRep*) * __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__);
 
+	MPoolAllocator::MPoolAllocator()
+	{
+
+	}
+	MPoolAllocator::~MPoolAllocator()
+	{
+
+	}
+
 	void MPoolAllocator::pool_init(void*)
 	{
 		memset(MPoolAllocator::sys_memory_block, (int)nullptr, __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__);
@@ -333,6 +342,16 @@ namespace MUZI {
 #endif // __MUZI_ALLOCATOR_MOD_POOL__
 
 #ifdef __MUZI_ALLOCATOR_MOD_LOKI__
+	MLOKIAllocator::MLOKIAllocator()
+	{
+
+	}
+
+	MLOKIAllocator::~MLOKIAllocator()
+	{
+
+	}
+
 	// Chunk管理模块（最底层）
 	MLOKIAllocator::MFixedAllocator::MChunk::MChunk()
 	{

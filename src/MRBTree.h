@@ -75,6 +75,7 @@ namespace MUZI
 			{
 				this->root = this->__createNode__();
 				this->root->ele = ele;
+
 			}
 
 			this->node_size += 1;
@@ -95,6 +96,15 @@ namespace MUZI
 		inline bool set(const T& ele, const T& o_ele)
 		{
 			return this->__setNode__(ele, o_ele) != nullptr;
+		}
+		bool set_value(const T& ele, const T& o_ele)
+		{
+			__MRBTreeNode__<T>* node_tmp = this->__findNode__(ele);
+			if (node_tmp == nullptr)
+			{
+				return false;
+			}
+			node_tmp->ele = o_ele;
 		}
 		T get() override
 		{
@@ -164,7 +174,20 @@ namespace MUZI
 			node->color = __MRBTREE_NODE_COLOR_RED__;
 			node->setElement(ele);
 
-			return this->__checkNode__(root_x);
+			x = node;
+			while (x)
+			{
+				if (x->parent->getChildNode(__CHILDE_NODE__::LEFT) == x)
+				{
+					x->parent->changeChildNode(__CHILDE_NODE__::LEFT) = this->__checkNode__(x);
+				}
+				else
+				{
+					x->parent->changeChildNode(__CHILDE_NODE__::RIGHT) = this->__checkNode__(x);
+				}
+				x = x->parent;
+			}
+			return node;
 		}
 		__MRBTreeNode__<T>* __earseNode__(const T& ele)
 		{
@@ -179,7 +202,25 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __checkNode__(__MRBTreeNode__<T>* node)
 		{
+			bool right_color = __MRBTreeNode__::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT));
+			bool left_color = __MRBTreeNode__::isRed(node->getChildNode(__CHILDE_NODE__::LEFT));
+			bool left_left_color = __MRBTreeNode__::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)
+				->getChildNode(__CHILDE_NODE__::LEFT));
 
+			if(right_color && !left_color)
+			{
+				node = this->rotateLeft(node);
+			}
+			else if (left_color && left_left_color)
+			{
+				node = this->rotateRight(node);
+			}
+			else if (right_color && left_color)
+			{
+				this->filpColor(node);
+			}
+
+			return node;
 		}
 	private:
 

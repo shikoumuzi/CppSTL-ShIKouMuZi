@@ -12,12 +12,14 @@ namespace MUZI
 	concept __Tree_Node_Inline_Ele_Type__ = requires(T x)
 	{
 		std::totally_ordered<T>; // 可比较的
+		x.operator=();
 	};
 
 	template<typename T>
 	concept __Tree_Node__Type__ = requires(T x)
 	{
 		x.parent;
+		x.ele;
 	};
 
 
@@ -29,6 +31,7 @@ namespace MUZI
 	public:
 		__MTreeNode__()
 		{
+			this->parent = nullptr;
 			for (__MTreeNode__& ele : this->node)
 			{
 				ele = nullptr;
@@ -37,6 +40,7 @@ namespace MUZI
 		__MTreeNode__(T ele)
 		{
 			this->ele = ele;
+			this->parent = nullptr;
 			for (__MTreeNode__& ele_ : this->node)
 			{
 				ele_ = nullptr;
@@ -78,13 +82,13 @@ namespace MUZI
 			}
 			return this->node.size;
 		}
-		int compareTo(const struct __MTreeNode__<T, Node_Type, LEN>& that)
+		int compareTo(const Node_Type& that)
 		{
 			if (this->ele < that.ele) return -1;
 			else if (this->ele > that.ele) return 1;
 			return 0;
 		}
-		int compareTo(const struct __MTreeNode__<T, Node_Type, LEN>* that)
+		int compareTo(const Node_Type* that)
 		{
 			if (this->ele < that->ele) return -1;
 			else if (this->ele > that->ele) return 1;
@@ -105,6 +109,10 @@ namespace MUZI
 			this->node[sign]->parent = this;
 			return this->node[sign];
 		}
+		Node_Type* changeChildNode(int sign, Node_Type* node)
+		{
+			this->node[sign] = node;
+		}
 	public:
 		T ele;
 		Node_Type* parent;
@@ -112,7 +120,7 @@ namespace MUZI
 	};
 	
 	template<__Tree_Node_Inline_Ele_Type__ T, __Tree_Node__Type__ Node_Type, size_t LEN>
-	MAllocator* __MTreeNode__<T, Node_Type, LEN>::alloc = MBitmapAllocate< __MTreeNode__<T, Array_Type>>::getMAllocator();
+	MAllocator* __MTreeNode__<T, Node_Type, LEN>::alloc = MBitmapAllocate< __MTreeNode__<T, Node_Type>>::getMAllocator();
 
 	// Tree
 	template<typename T>
