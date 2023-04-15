@@ -9,17 +9,17 @@ namespace MUZI
 {
 	// Node
 	template<typename T>
-	concept __Tree_Node_Inline_Ele_Type__ = requires(T x)
+	concept __Tree_Node_Inline_Ele_Type__ = requires(T x, T y)
 	{
 		std::totally_ordered<T>; // 可比较的
-		x.operator=();
+		x = y;
 	};
 
 	template<typename T>
 	concept __Tree_Node__Type__ = requires(T x)
 	{
-		x.parent;
 		x.ele;
+		x.parent;
 	};
 
 
@@ -109,7 +109,7 @@ namespace MUZI
 			this->node[sign]->parent = this;
 			return this->node[sign];
 		}
-		Node_Type* changeChildNode(int sign, Node_Type* node)
+		inline Node_Type* changeChildNode(int sign, Node_Type* node)
 		{
 			this->node[sign] = node;
 		}
@@ -135,7 +135,7 @@ namespace MUZI
 
 	};
 
-	template<__Tree_Node_Inline_Ele_Type__ T, __MTree_Type__ Tree = nullptr_t>
+	template<__Tree_Node_Inline_Ele_Type__ T, __MTree_Type__ Tree>
 	class MTree
 	{
 	public:
