@@ -15,15 +15,7 @@ namespace MUZI
 		x = y;
 	};
 
-	template<typename T>
-	concept __Tree_Node__Type__ = requires(T x)
-	{
-		x.ele;
-		x.parent;
-	};
-
-
-	template<__Tree_Node_Inline_Ele_Type__ T, __Tree_Node__Type__ Node_Type, size_t LEN = 4>
+	template<__Tree_Node_Inline_Ele_Type__ T, typename Node_Type, size_t LEN = 4>
 	struct __MTreeNode__
 	{
 	public:
@@ -119,31 +111,32 @@ namespace MUZI
 		std::array<Node_Type*, LEN> node;
 	};
 	
-	template<__Tree_Node_Inline_Ele_Type__ T, __Tree_Node__Type__ Node_Type, size_t LEN>
+	template<__Tree_Node_Inline_Ele_Type__ T, typename Node_Type, size_t LEN>
 	MAllocator* __MTreeNode__<T, Node_Type, LEN>::alloc = MBitmapAllocate< __MTreeNode__<T, Node_Type>>::getMAllocator();
 
 	// Tree
-	template<typename T>
-	concept __MTree_Type__ = requires(T x)
-	{
-		x.insert();
-		x.earse();
-		x.find();
-		x.set();
-		x.get();
-		x.size();
-
+	template<typename T, typename U>
+	concept __MTree_Type__ = requires(T x, U u1, U u2)
+	{	
+		{x.insert(u1)} -> std::same_as<void>;
+		{x.erase(u1)} -> std::same_as<void>;
+		{x.find(u1)} -> std::convertible_to<bool>;
+		{x.set(u1, u2)} -> std::convertible_to<bool>;
+	/*	{x.get()} -> std::same_as<U>;*/
+		{x.size()} -> std::convertible_to<uint64_t>;
 	};
 
-	template<__Tree_Node_Inline_Ele_Type__ T, __MTree_Type__ Tree>
+	template<__Tree_Node_Inline_Ele_Type__ T, __MTree_Type__<T> Tree>
 	class MTree
 	{
 	public:
 		using tree_type = Tree;
 		using ele_type = T;
 	public:
-		MTree()
-		{}
+		MTree(Tree tree)
+		{
+			this->tree = tree;
+		}
 		~MTree()
 		{}
 		inline void insert(const T& that)

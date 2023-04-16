@@ -93,7 +93,7 @@ namespace MUZI
 	class MAllocator
 	{
 	public:
-		virtual MAllocator* getMAllocate(void*p = nullptr)
+		static MAllocator* getMAllocator(void*p = nullptr)
 		{
 			return new MAllocator;
 		}
@@ -112,7 +112,7 @@ namespace MUZI
 	class MPoolAllocator:public MAllocator
 	{
 	public:
-		MAllocator* getMAllocate(void* p = nullptr)  override
+		static MAllocator* getMAllocator(void* p = nullptr)
 		{
 			static class MPoolAllocator __MUZI_MPOOLALLOCATOR__;
 			return dynamic_cast<MAllocator*>(&__MUZI_MPOOLALLOCATOR__);
@@ -173,7 +173,7 @@ namespace MUZI
 	class MLOKIAllocator:public MAllocator
 	{
 	public:
-		MAllocator* getMAllocate(void* p = nullptr) override
+		static MAllocator* getMAllocator(void* p = nullptr)
 		{
 			return dynamic_cast<MAllocator*>(new MLOKIAllocator);
 		}
@@ -326,14 +326,16 @@ namespace MUZI
 	class MBitmapAllocate:public MAllocator
 	{
 	public:
-		MAllocator* getMAllocator(void* p = nullptr) override
+		static MAllocator* getMAllocator(void* p = nullptr)
 		{
-			return dynamic_cast<MAllocator*>(new MBitmapAllocate);
+			return dynamic_cast<MAllocator*>(new MBitmapAllocate());
 		}
 	private:
-		MBitmapAllocate();
+		MBitmapAllocate()
+		{}
 	public:
-		~MBitmapAllocate();
+		~MBitmapAllocate()
+		{}
 	private:
 		class BitMapVector
 		{
@@ -626,8 +628,11 @@ namespace MUZI
 		};
 	private:
 		BitMapVectors bitmap_data;
-		void* bitmap_allocate(size_t size);
-		void bitmap_deallocate(void* p);
+		void* bitmap_allocate(size_t size)
+		{/*未实现*/ return nullptr;
+		}
+		void bitmap_deallocate(void* p)
+		{/*未实现*/}
 	public:
 		void* allocate(size_t size) override
 		{
@@ -637,6 +642,8 @@ namespace MUZI
 		{
 			bitmap_deallocate(p);
 		}
+
+
 	};
 #endif //__MUZI_ALLOCATOR_MOD_BITMAP__
 

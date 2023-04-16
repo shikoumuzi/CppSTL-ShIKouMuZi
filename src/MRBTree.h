@@ -32,7 +32,7 @@ namespace MUZI
 			static bool isRed(const __MRBTreeNode__* that)
 			{
 				if (that == nullptr) return __MRBTREE_NODE_COLOR_BLACK__;
-				return this->color == __MRBTREE_NODE_COLOR_RED__;
+				return that->color == __MRBTREE_NODE_COLOR_RED__;
 			}
 			inline bool isRed()
 			{
@@ -42,12 +42,6 @@ namespace MUZI
 
 	private:
 		static MAllocator* alloc;
-
-	public:
-		static MTree<T, MRBTree<T>>* getTree()
-		{
-			return new MTree<T, MRBTree<T>>();
-		}
 	public:
 		MRBTree() :root(nullptr), node_size(0) {}
 		MRBTree(const MRBTree<T>&) = delete;
@@ -75,10 +69,9 @@ namespace MUZI
 				this->root->ele = ele;
 
 			}
-
 			this->node_size += 1;
 		}
-		void earse(const T&)
+		void erase(const T& ele)
 		{
 			if (root == nullptr)
 			{
@@ -87,11 +80,11 @@ namespace MUZI
 
 			this->node_size -= 1;
 		}
-		inline bool find(const T& ele)
+		bool find(const T& ele)
 		{
 			return (this->__findNode__(ele) != nullptr);
 		}
-		inline bool set(const T& ele, const T& o_ele)
+		bool set(const T& ele, const T& o_ele)
 		{
 			return this->__setNode__(ele, o_ele) != nullptr;
 		}
@@ -104,10 +97,10 @@ namespace MUZI
 			}
 			node_tmp->ele = o_ele;
 		}
-		T get()
-		{
+		//T get()
+		//{
 
-		}
+		//}
 		uint64_t size()
 		{
 			return this->node_size;
@@ -154,7 +147,7 @@ namespace MUZI
 			int child = -1;
 			while (x)
 			{
-				x_ele = x->getEle();
+				x_ele = x->getElement();
 				last_x = x;
 				if (ele >= x_ele)// 将大于等于的选择在节点右边插入
 				{
@@ -187,14 +180,14 @@ namespace MUZI
 			}
 			return node;
 		}
-		__MRBTreeNode__<T>* __earseNode__(const T& ele)
+		__MRBTreeNode__<T>* __eraseNode__(const T& ele)
 		{
 			return nullptr;
 		}
 		__MRBTreeNode__<T>* __setNode__(const T& ele, const T& o_ele)
 		{
 			__MRBTreeNode__<T>* ret_ptr = nullptr;
-			if ((ret_ptr = this->__earseNode__(ele)) == nullptr) return nullptr;
+			if ((ret_ptr = this->__eraseNode__(ele)) == nullptr) return nullptr;
 			else if ((ret_ptr = this->__insertNode__(o_ele)) == nullptr) return nullptr;
 			return ret_ptr;
 		}
@@ -250,6 +243,13 @@ namespace MUZI
 	};
 	template<__Tree_Node_Inline_Ele_Type__ T>
 	MAllocator* MRBTree<T>::alloc = MBitmapAllocate<T>::getMAllocator();
+	
+	// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
+	template<__Tree_Node_Inline_Ele_Type__ T>
+	static MTree<T, MRBTree<T>>* getMRBTree2MTree()
+	{
+		return new MTree< T, MRBTree<T>>;
+	}
 };
 
 #endif // !__MUZI_MRBTREE_H__
