@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 #include<string.h>
-=======
->>>>>>> 5270042c6f209941ee8c2fd9fce36cbb1eb7f638
 #include"MAllocator.h"
 #include"MString.h"
 
