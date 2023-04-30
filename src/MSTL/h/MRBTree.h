@@ -198,18 +198,15 @@ namespace MUZI
 			bool left_left_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)
 				->getChildNode(__CHILDE_NODE__::LEFT));
 
-			if(__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT)) 
-				&& !__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)))
+			if(right_color && !left_color)
 			{
 				node = this->rotateLeft(node);
 			}
-			if (__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)) 
-				&& __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)))
+			else if (left_color && left_left_color)
 			{
 				node = this->rotateRight(node);
 			}
-			if (__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT))
-				&& __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)))
+			else if (right_color && left_color)
 			{
 				this->filpColor(node);
 			}

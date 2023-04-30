@@ -60,8 +60,12 @@ namespace MUZI {
 	{
 		this->data = new BitSetData(size);
 	}
+<<<<<<< HEAD
 	BitSet::BitSet(int, int)
 	{}
+=======
+	BitSet::BitSet(int, int);
+>>>>>>> 5270042c6f209941ee8c2fd9fce36cbb1eb7f638
 	BitSet::BitSet(const BitSet& other)
 	{
 		this->data->operator=(*other.data);
@@ -79,7 +83,11 @@ namespace MUZI {
 	void BitSet::operator=(std::string& other)
 	{
 		int i = 0;
+<<<<<<< HEAD
 		for (auto it = other.rbegin(); it != other.rend() && i < this->data->size; ++it)
+=======
+		for (auto it = other.rbegin(); it != other.rend() && i < this->size; ++it)
+>>>>>>> 5270042c6f209941ee8c2fd9fce36cbb1eb7f638
 		{
 			*(this->data->start + i) = *it - 48;
 		}
@@ -203,7 +211,11 @@ namespace MUZI {
 	{
 		BitSet reversal_other(other);
 		reversal_other = ~reversal_other;
+<<<<<<< HEAD
 		//reversal_other += (uint8_t)1;
+=======
+		reversal_other += 1;
+>>>>>>> 5270042c6f209941ee8c2fd9fce36cbb1eb7f638
 		this->operator+=(reversal_other);
 	}
 	void BitSet::operator*=(const BitSet& other)
@@ -299,7 +311,11 @@ namespace MUZI {
 	}
 	bool BitSet::operator<(BitSet& other)
 	{
+<<<<<<< HEAD
 		return !this->operator>=(other);
+=======
+		return !this->operator>=(other)
+>>>>>>> 5270042c6f209941ee8c2fd9fce36cbb1eb7f638
 	}
 	bool BitSet::operator<=(BitSet& other)
 	{
@@ -377,6 +393,7 @@ namespace MUZI {
 		{
 			ret += *(this->data->start + i) + 48;
 		}
+<<<<<<< HEAD
 		return ret;
 	} 
 	std::shared_ptr<size_t[]> BitSet::split(int bit_width, int len)
@@ -387,6 +404,16 @@ namespace MUZI {
 
 //评估接口
 	UINT BitSet::evalueBit(size_t start, size_t len) { return 0; }//该函数会按要求提取出二进制数，并且右移置最低位
+=======
+	} 
+	std::shared_ptr<size_t[]> BitSet::split(int bit_width, int len)
+	{
+
+	}
+
+//评估接口
+	UINT BitSet::evalueBit(size_t start, size_t len) {}//该函数会按要求提取出二进制数，并且右移置最低位
+>>>>>>> 5270042c6f209941ee8c2fd9fce36cbb1eb7f638
 
 };
 

@@ -24,6 +24,5 @@ int main()
 	//{
 	//	std::cout << "i: " << i++ << std::endl;
 	//}
-	
-	MUZI::MRBTree<int> data;
+
 }

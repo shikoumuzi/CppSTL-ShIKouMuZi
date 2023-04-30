@@ -284,7 +284,6 @@ namespace MUZI {
 							MPoolAllocator::pool_end_free_pool_ptr = nullptr;
 							pool_size = 0;
 						}
-						
 					}
 					// 这里重新为其申请内存
 					MPoolAllocator::pool_mem_pool[pool_index] = (MAllocatorRep*)MPoolAllocator::pool_apply_mem_from_sys\
@@ -294,7 +293,7 @@ namespace MUZI {
 						size_t mem_index = MPoolAllocator::pool_freelist_index(type_size);
 						size_t mem_specification = __MUZI_ALLOCATOR_MOD_POOL_GET_SPECIFICATION_BY_INDEX__(mem_index);
 						MAllocatorRep* end_ptr = MPoolAllocator::pool_mem_split(MPoolAllocator::pool_mem_pool[pool_index], mem_specification, type_size / mem_specification);
-						
+
 						ret_mem_ptr = MPoolAllocator::pool_mem_pool[pool_index];
 						pool_mem_pool[pool_index] = pool_mem_pool[pool_index]->next;
 						MPoolAllocator::pool_start_free_pool_ptr = (MAllocatorRep*)((char*)end_ptr + mem_specification);
