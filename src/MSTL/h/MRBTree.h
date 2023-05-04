@@ -73,7 +73,7 @@ namespace MUZI
 		}
 		void erase(const T& ele)
 		{
-			if (root == nullptr)
+			if (root == nullptr || this->__eraseNode__(ele) == nullptr)
 			{
 				return;
 			}
@@ -139,7 +139,7 @@ namespace MUZI
 			__MRBTreeNode__<T>* x = this->root, *last_x = nullptr, *root_x = this->root;
 			T x_ele;
 			int child = -1;
-			while (x)// 寻找到点
+			while (x)// 寻找到插入点的parent
 			{
 				x_ele = x->getElement();
 				last_x = x;
@@ -153,6 +153,7 @@ namespace MUZI
 					child = __CHILDE_NODE__::LEFT;
 					x = x->getChildNode(__CHILDE_NODE__::LEFT);
 				}
+				// 如果没有找到 x 会等于 nullptr
 				root_x = last_x;
 			}
 			__MRBTreeNode__<T>* node = (child == __CHILDE_NODE__::RIGHT) ? last_x->setChildNode(__CHILDE_NODE__::RIGHT) : node = last_x->setChildNode(__CHILDE_NODE__::LEFT);
@@ -199,9 +200,12 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __setNode__(const T& ele, const T& o_ele)
 		{
-			__MRBTreeNode__<T>* ret_ptr = nullptr;
-			if ((ret_ptr = this->__eraseNode__(ele)) == nullptr) return nullptr;
-			else if ((ret_ptr = this->__insertNode__(o_ele)) == nullptr) return nullptr;
+			__MRBTreeNode__<T>* ret_ptr = this->find(ele);
+			if (ret_ptr != nullptr)
+			{
+				ret_ptr->setElement(ele);
+			}
+			
 			return ret_ptr;
 		}
 		__MRBTreeNode__<T>* __insertCheck__(__MRBTreeNode__<T>* node)
