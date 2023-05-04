@@ -22,11 +22,11 @@ include_directories(src/MATimer)
 message(STATUS " H_FILE_PATH IS ${H_FILE_PATH}")
 
 # 将源代码添加到此项目的可执行文件。
-add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" ${SRC_PATH})
+add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" ${SRC_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp")
 
 include_directories(${H_FILE_PATH})
 # 将测试添加到此项目的可执行文件。
-add_executable (TESTMAIN ${TEST_PATH} ${H_FILE_PATH})
+add_executable (TESTMAIN ${TEST_PATH} ${H_FILE_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp")
 
 
 

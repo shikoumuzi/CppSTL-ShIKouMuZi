@@ -82,6 +82,10 @@ namespace MUZI
 		}
 		bool find(const T& ele)
 		{
+			if (root == nullptr)
+			{
+				return false;
+			}
 			return (this->__findNode__(ele) != nullptr);
 		}
 		bool set(const T& ele, const T& o_ele)
@@ -110,10 +114,6 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __findNode__(const T& ele)
 		{
-			if (this->root == nullptr)
-			{
-				return nullptr;
-			}
 			__MRBTreeNode__<T>* x = this->root;
 			T x_ele;
 			while (x)
