@@ -67,7 +67,7 @@ namespace MUZI
 			{
 				this->root = this->__createNode__();
 				this->root->ele = ele;
-
+				this->root->parent = nullptr;
 			}
 			this->node_size += 1;
 		}
@@ -182,20 +182,40 @@ namespace MUZI
 			{
 				return nullptr;
 			}
+			// 删除
+			// 第一种情况，删除的节点没有子节点，直接删除
 			if (node->getChildNode(__CHILDE_NODE__::LEFT) == nullptr && node->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr)
 			{
-				if (node == node->parent.getChildNode(__CHILDE_NODE__::RIGHT))
-				{
-					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
-				}
-				else
+				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
 				{
 					node->parent->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
 				}
-				this->alloc->deallocate(node);
-				
+				else
+				{
+					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
+				}
+			}
+			// 第二种情况，删除的节点只有一个子节点, 用子节点代替
+			else if (if (node->getChildNode(__CHILDE_NODE__::LEFT) != nullptr || node->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr))
+			{
+
+
+			}
+			// 第三种情况，删除的节点有两个子节点
+			else
+			{
+
 			}
 
+			// 调整
+			
+
+
+
+
+
+			// 归还被删除的节点
+			this->alloc->deallocate(node);
 			return nullptr;
 		}
 		__MRBTreeNode__<T>* __setNode__(const T& ele, const T& o_ele)
