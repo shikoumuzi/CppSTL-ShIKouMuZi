@@ -86,16 +86,11 @@ namespace MUZI
 		}
 		bool set(const T& ele, const T& o_ele)
 		{
-			return this->__setNode__(ele, o_ele) != nullptr;
-		}
-		bool set_value(const T& ele, const T& o_ele)
-		{
-			__MRBTreeNode__<T>* node_tmp = this->__findNode__(ele);
-			if (node_tmp == nullptr)
+			if{ele != o_ele}
 			{
 				return false;
 			}
-			node_tmp->ele = o_ele;
+			return this->__setNode__(ele, o_ele) != nullptr;
 		}
 		//T get()
 		//{
