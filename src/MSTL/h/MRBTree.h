@@ -132,15 +132,14 @@ namespace MUZI
 					x = x->getChildNode(__CHILDE_NODE__::LEFT);
 				}
 			}
-
-			return nullptr;
+			return x;
 		}
 		__MRBTreeNode__<T>* __insertNode__(const T& ele)
 		{
 			__MRBTreeNode__<T>* x = this->root, *last_x = nullptr, *root_x = this->root;
 			T x_ele;
 			int child = -1;
-			while (x)
+			while (x)// Ñ°ÕÒµ½µã
 			{
 				x_ele = x->getElement();
 				last_x = x;
@@ -165,11 +164,11 @@ namespace MUZI
 			{
 				if (x->parent->getChildNode(__CHILDE_NODE__::LEFT) == x)
 				{
-					x->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->__checkNode__(x));
+					x->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->__insertCheck__(x));
 				}
 				else
 				{
-					x->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->__checkNode__(x));
+					x->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->__insertCheck__(x));
 				}
 				x = x->parent;
 			}
@@ -177,6 +176,25 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __eraseNode__(const T& ele)
 		{
+			__MRBTreeNode__<T>* node = this->find(ele);
+			if (node == nullptr)
+			{
+				return nullptr;
+			}
+			if (node->getChildNode(__CHILDE_NODE__::LEFT) == nullptr && node->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr)
+			{
+				if (node == node->parent.getChildNode(__CHILDE_NODE__::RIGHT))
+				{
+					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
+				}
+				else
+				{
+					node->parent->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
+				}
+				this->alloc->deallocate(node);
+				
+			}
+
 			return nullptr;
 		}
 		__MRBTreeNode__<T>* __setNode__(const T& ele, const T& o_ele)
@@ -186,22 +204,23 @@ namespace MUZI
 			else if ((ret_ptr = this->__insertNode__(o_ele)) == nullptr) return nullptr;
 			return ret_ptr;
 		}
-		__MRBTreeNode__<T>* __checkNode__(__MRBTreeNode__<T>* node)
+		__MRBTreeNode__<T>* __insertCheck__(__MRBTreeNode__<T>* node)
 		{
 			bool right_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT));
 			bool left_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT));
 			bool left_left_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)
 				->getChildNode(__CHILDE_NODE__::LEFT));
 
-			if(right_color && !left_color)
+			if(__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT)) && __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)))
 			{
 				node = this->rotateLeft(node);
 			}
-			else if (left_color && left_left_color)
+			else if (__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)) && __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)
+				->getChildNode(__CHILDE_NODE__::LEFT));)
 			{
 				node = this->rotateRight(node);
 			}
-			else if (right_color && left_color)
+			else if (__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT)) && __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)))
 			{
 				this->filpColor(node);
 			}
