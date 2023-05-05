@@ -251,6 +251,11 @@ namespace MUZI
 						predecessor_node->parent = nullptr;
 						// 赋值 是得后续可以被释放
 						node = predecessor_node;
+						// 调整
+						if (node->color == __MRBTREE_NODE_COLOR_BLACK__)
+						{
+							this->__fixAfterEarse__(replacement);
+						}
 					}
 				}
 				// 删除节点为根节点
@@ -276,18 +281,12 @@ namespace MUZI
 					{
 						predecessor_node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
 					}
+					predecessor_node->parent = nullptr;
 					node = predecessor_node;
 				}
 
 
 			}
-
-			// 调整
-			
-
-
-
-
 
 			// 归还被删除的节点
 			this->alloc->deallocate(node);
