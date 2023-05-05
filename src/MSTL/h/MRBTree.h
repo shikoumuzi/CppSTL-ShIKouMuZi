@@ -165,11 +165,11 @@ namespace MUZI
 			{
 				if (x->parent->getChildNode(__CHILDE_NODE__::LEFT) == x)
 				{
-					x->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->__insertCheck__(x));
+					x->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->__fixAfterInsert__(x));
 				}
 				else
 				{
-					x->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->__insertCheck__(x));
+					x->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->__fixAfterInsert__(x));
 				}
 				x = x->parent;
 			}
@@ -220,15 +220,66 @@ namespace MUZI
 				T tmp_ele = predecessor_node->getElement();
 				predecessor_node->setElement(node->getElement());
 				node->setElement(ele);
-				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
+				
+				// 处理 存在一个子节点的 前驱节点
+				__MRBTreeNode__<T>* replacement 
+					= predecessor_node->getChildNode(__CHILDE_NODE__::LEFT) != nullptr 
+					? predecessor_node->getChildNode(__CHILDE_NODE__::LEFT)
+					: predecessor_node->getChildNode(__CHILDE_NODE__::RIGHT);
+				// 替代节点存在一个节点
+				if (replacement != nullptr)
 				{
-					node->parent->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
+					replacement->parent = predecessor_node->parent;
+					if (replacement->parent == nullptr)
+					{
+						// 如果是根节点
+						this->root = replacement;
+					}
+					else
+					{
+						if (predecessor_node == predecessor_node->parent->getChildNode(__CHILDE_NODE__::LEFT))
+						{
+							predecessor_node->parent->changeChildNode(__CHILDE_NODE__::LEFT, replacement);
+						}
+						else// 如果是父节点的右边节点
+						{
+							predecessor_node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, replacement);
+						}
+						// 释放前驱节点
+						predecessor_node->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
+						predecessor_node->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
+						predecessor_node->parent = nullptr;
+						// 赋值 是得后续可以被释放
+						node = predecessor_node;
+					}
 				}
-				else// 如果是父节点的右边节点
+				// 删除节点为根节点
+				else if (predecessor_node->parent == nullptr)
 				{
-					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
+					this->root = nullptr;
+				}
+				// 叶子节点，replacement为nullptr
+				else
+				{
+					// 调整
+					if (predecessor_node->color == __MRBTREE_NODE_COLOR_BLACK__)
+					{
+						this->__fixAfterEarse__(predecessor_node);
+					}
 
+					// 然后删除
+					if (predecessor_node == predecessor_node->parent->getChildNode(__CHILDE_NODE__::LEFT))
+					{
+						predecessor_node->parent->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
+					}
+					else// 如果是父节点的右边节点
+					{
+						predecessor_node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
+					}
+					node = predecessor_node;
 				}
+
+
 			}
 
 			// 调整
@@ -252,7 +303,7 @@ namespace MUZI
 			
 			return ret_ptr;
 		}
-		__MRBTreeNode__<T>* __insertCheck__(__MRBTreeNode__<T>* node)
+		__MRBTreeNode__<T>* __fixAfterInsert__(__MRBTreeNode__<T>* node)
 		{
 			bool right_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT));
 			bool left_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT));
@@ -274,6 +325,10 @@ namespace MUZI
 			}
 
 			return node;
+		}
+		__MRBTreeNode__<T>* __fixAfterEarse__(__MRBTreeNode__<T>* node)
+		{
+			return nullptr;
 		}
 		// 寻找前驱节点，小于node的最大值
 		__MRBTreeNode__<T>* __findPredecessorNode__(__MRBTreeNode__<T>* node)
