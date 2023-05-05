@@ -178,6 +178,7 @@ namespace MUZI
 		__MRBTreeNode__<T>* __eraseNode__(const T& ele)
 		{
 			__MRBTreeNode__<T>* node = this->find(ele);
+			int flag = -1;
 			if (node == nullptr)
 			{
 				return nullptr;
@@ -186,25 +187,48 @@ namespace MUZI
 			// 第一种情况，删除的节点没有子节点，直接删除
 			if (node->getChildNode(__CHILDE_NODE__::LEFT) == nullptr && node->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr)
 			{
+				// 如果是父节点的左节点
 				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
 				{
 					node->parent->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
 				}
-				else
+				else// 如果是父节点的右边节点
 				{
 					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
 				}
 			}
 			// 第二种情况，删除的节点只有一个子节点, 用子节点代替
-			else if (if (node->getChildNode(__CHILDE_NODE__::LEFT) != nullptr || node->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr))
+			else if ((flag = __CHILDE_NODE__::LEFT, node->getChildNode(__CHILDE_NODE__::LEFT)) != nullptr 
+				|| (flag = __CHILDE_NODE__::RIGHT, node->getChildNode(__CHILDE_NODE__::RIGHT)) != nullptr)
 			{
+				// 如果是父节点的左节点
+				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
+				{
+					node->parent->changeChildNode(__CHILDE_NODE__::LEFT, node->getChildNode(flag));
+				}
+				else// 如果是父节点的右边节点
+				{
+					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, node->getChildNode(flag));
 
-
+				}
 			}
-			// 第三种情况，删除的节点有两个子节点
+			// 第三种情况，删除的节点有两个子节点, 先找前驱或者后驱节点替换
 			else
 			{
+				__MRBTreeNode__<T>* predecessor_node = this->__findPredecessorNode__(node);
+				// 互换值，相当于互换两个节点
+				T tmp_ele = predecessor_node->getElement();
+				predecessor_node->setElement(node->getElement());
+				node->setElement(ele);
+				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
+				{
+					node->parent->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
+				}
+				else// 如果是父节点的右边节点
+				{
+					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
 
+				}
 			}
 
 			// 调整
@@ -250,6 +274,30 @@ namespace MUZI
 			}
 
 			return node;
+		}
+		// 寻找前驱节点，小于node的最大值
+		__MRBTreeNode__<T>* __findPredecessorNode__(__MRBTreeNode__<T>* node)
+		{
+			__MRBTreeNode__<T>* predecessor_node = nullptr;
+			if ((predecessor_node = node->getChildNode(__CHILDE_NODE__::LEFT)) != nullptr)
+			{
+				// 寻找左子树中的最大点
+				while (predecessor_node)
+				{
+					predecessor_node = predecessor_node->getChildNode(__CHILDE_NODE__::RIGHT);
+				}
+			}
+			else
+			{
+				predecessor_node = node;
+				//寻找父节点中的第一个 子节点作为父节点的右节点存在的人
+				while (predecessor_node == node->parent->getChildNode(__CHILDE_NODE__::RIGHT))
+				{
+					predecessor_node = predecessor_node->parent;
+				}
+				predecessor_node = predecessor_node->parent;
+			}
+			return predecessor_node;
 		}
 	private:
 
