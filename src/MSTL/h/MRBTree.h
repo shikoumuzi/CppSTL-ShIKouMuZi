@@ -333,13 +333,45 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __fixAfterEarse__(__MRBTreeNode__<T>* node)
 		{
+			// 黑色
 			if (node != root && !__MRBTreeNode__<T>::isRed(node))
 			{
+				// node 是左孩子
+				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
+				{
+					__MRBTreeNode__<T>* rnode = node->parent->getChildNode(__CHILDE_NODE__::RIGHT);
+
+					// // 找兄弟要，兄弟为2节点
+					if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::LEFT)) 
+						&& !__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::RIGHT)))
+					{
+
+					}
+					// 找兄弟要，兄弟为3/4节点
+					else
+					{
+						// 四节点
+						if (rnode->getChildNode(__CHILDE_NODE__::LEFT) != nullptr && rnode->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
+						{
+
+						}
+						//三节点
+						else
+						{
+
+						}
+					}
+				}
+				else
+				{
+
+				}
+
+
 
 			}
 			// 如果是红色的则直接染黑即可
 			node->color = __MRBTREE_NODE_COLOR_BLACK__;
-
 			return nullptr;
 		}
 		// 寻找前驱节点，小于node的最大值
