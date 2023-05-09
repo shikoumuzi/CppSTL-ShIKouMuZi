@@ -185,7 +185,7 @@ namespace MUZI
 			}
 			// 删除
 			// 第一种情况，删除的节点没有子节点，直接删除
-			if (node->getChildNode(__CHILDE_NODE__::LEFT) == nullptr && node->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr)
+			if (node->getChildNode(__CHILDE_NODE__::LEFT) == nullptr && node->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr && __MRBTreeNode__<T>::isRed(node))
 			{
 				// 如果是父节点的左节点
 				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
@@ -215,6 +215,7 @@ namespace MUZI
 			// 第三种情况，删除的节点有两个子节点, 先找前驱或者后驱节点替换
 			else
 			{
+				// 找前驱节点
 				__MRBTreeNode__<T>* predecessor_node = this->__findPredecessorNode__(node);
 				// 互换值，相当于互换两个节点
 				T tmp_ele = predecessor_node->getElement();
@@ -226,6 +227,7 @@ namespace MUZI
 					= predecessor_node->getChildNode(__CHILDE_NODE__::LEFT) != nullptr 
 					? predecessor_node->getChildNode(__CHILDE_NODE__::LEFT)
 					: predecessor_node->getChildNode(__CHILDE_NODE__::RIGHT);
+
 				// 替代节点存在一个节点
 				if (replacement != nullptr)
 				{
@@ -235,7 +237,7 @@ namespace MUZI
 						// 如果是根节点
 						this->root = replacement;
 					}
-					else
+					else// 如果这个replacement存在
 					{
 						if (predecessor_node == predecessor_node->parent->getChildNode(__CHILDE_NODE__::LEFT))
 						{
@@ -263,7 +265,7 @@ namespace MUZI
 				{
 					this->root = nullptr;
 				}
-				// 叶子节点，replacement为nullptr
+				// 替换节点为叶子节点，replacement为nullptr
 				else
 				{
 					// 调整
