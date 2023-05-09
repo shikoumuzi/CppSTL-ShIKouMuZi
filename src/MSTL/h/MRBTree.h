@@ -198,8 +198,8 @@ namespace MUZI
 				}
 			}
 			// 第二种情况，删除的节点只有一个子节点, 用子节点代替
-			else if ((flag = __CHILDE_NODE__::LEFT, node->getChildNode(__CHILDE_NODE__::LEFT)) != nullptr 
-				|| (flag = __CHILDE_NODE__::RIGHT, node->getChildNode(__CHILDE_NODE__::RIGHT)) != nullptr)
+			else if (((flag = __CHILDE_NODE__::LEFT, node->getChildNode(__CHILDE_NODE__::LEFT)) != nullptr && node->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr)
+				|| ((flag = __CHILDE_NODE__::RIGHT, node->getChildNode(__CHILDE_NODE__::RIGHT)) != nullptr && node->getChildNode(__CHILDE_NODE__::LEFT) == nullptr))
 			{
 				// 如果是父节点的左节点
 				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
@@ -379,7 +379,7 @@ namespace MUZI
 		}
 	private:
 		__MRBTreeNode__<T>* root;
-		uint64_t node_size;
+		uint64_t node_size;    
 	};
 	template<__Tree_Node_Inline_Ele_Type__ T>
 	MAllocator* MRBTree<T>::alloc = MBitmapAllocate<T>::getMAllocator();
