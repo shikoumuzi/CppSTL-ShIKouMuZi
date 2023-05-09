@@ -184,7 +184,7 @@ namespace MUZI
 				return nullptr;
 			}
 			// 删除
-			// 第一种情况，删除的节点没有子节点，直接删除
+			// 第一种情况，删除的节点没有子节点，直接删除，对应3，4节点的删除叶子
 			if (node->getChildNode(__CHILDE_NODE__::LEFT) == nullptr && node->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr && __MRBTreeNode__<T>::isRed(node))
 			{
 				// 如果是父节点的左节点
@@ -197,7 +197,7 @@ namespace MUZI
 					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
 				}
 			}
-			// 第二种情况，删除的节点只有一个子节点, 用子节点代替
+			// 第二种情况，删除的节点只有一个子节点, 用子节点代替，对应3节点删除中心
 			else if (((flag = __CHILDE_NODE__::LEFT, node->getChildNode(__CHILDE_NODE__::LEFT)) != nullptr && node->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr)
 				|| ((flag = __CHILDE_NODE__::RIGHT, node->getChildNode(__CHILDE_NODE__::RIGHT)) != nullptr && node->getChildNode(__CHILDE_NODE__::LEFT) == nullptr))
 			{
@@ -209,8 +209,9 @@ namespace MUZI
 				else// 如果是父节点的右边节点
 				{
 					node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, node->getChildNode(flag));
-
 				}
+				node->getChildNode(flag)->parent = node->parent;
+				node->color = __MRBTREE_NODE_COLOR_BLACK__;
 			}
 			// 第三种情况，删除的节点有两个子节点, 先找前驱或者后驱节点替换
 			else
@@ -291,6 +292,9 @@ namespace MUZI
 			}
 
 			// 归还被删除的节点
+			node->parent = nullptr;
+			node->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
+			node->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
 			this->alloc->deallocate(node);
 			return nullptr;
 		}
@@ -329,6 +333,13 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __fixAfterEarse__(__MRBTreeNode__<T>* node)
 		{
+			if (node != root && !__MRBTreeNode__<T>::isRed(node))
+			{
+
+			}
+			// 如果是红色的则直接染黑即可
+			node->color = __MRBTREE_NODE_COLOR_BLACK__;
+
 			return nullptr;
 		}
 		// 寻找前驱节点，小于node的最大值
