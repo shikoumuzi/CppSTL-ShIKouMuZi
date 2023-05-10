@@ -16,9 +16,10 @@ file(GLOB_RECURSE TEST_PATH test/*.h test/*.cpp)
 file(GLOB_RECURSE H_FILE_PATH src/*.h)
 
 # 导入头文件搜索路径
-include_directories(src/*/h)
+include_directories(src/MSTL/h)
 include_directories(src/MAllocator)
-include_directories(src/MATimer)
+include_directories(src/MTimer)
+include_directories(src/)
 message(STATUS " H_FILE_PATH IS ${H_FILE_PATH}")
 
 # 将源代码添加到此项目的可执行文件。
@@ -28,7 +29,8 @@ include_directories(${H_FILE_PATH})
 # 将测试添加到此项目的可执行文件。
 add_executable (TESTMAIN ${TEST_PATH} ${H_FILE_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp")
 
-
+# 设置cpp标准
+set(CMAKE_CXX_STANDARD 20)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CppSTL-shikounuzi PROPERTY CXX_STANDARD 20)
