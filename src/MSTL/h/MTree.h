@@ -3,6 +3,7 @@
 #define __MUZI_MTREE_H__
 #include<concepts>
 #include"MAllocator.h"
+#include"MBitmapAllocator.h"
 #include<array>
 #include<new>
 namespace MUZI
@@ -122,7 +123,7 @@ namespace MUZI
 	};
 	
 	template<__Tree_Node_Inline_Ele_Type__ T, typename Node_Type, size_t LEN>
-	MAllocator* __MTreeNode__<T, Node_Type, LEN>::alloc = MBitmapAllocate< __MTreeNode__<T, Node_Type>>::getMAllocator();
+	MAllocator* __MTreeNode__<T, Node_Type, LEN>::alloc = MBitmapAllocator< __MTreeNode__<T, Node_Type>>::getMAllocator();
 
 	// Tree
 	template<typename T, typename U>

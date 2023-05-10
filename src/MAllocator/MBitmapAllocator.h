@@ -16,13 +16,13 @@ namespace MUZI {
 	public:
 		static MAllocator* getMAllocator(void* p = nullptr)
 		{
-			return dynamic_cast<MAllocator*>(new MBitmapAllocate());
+			return dynamic_cast<MAllocator*>(new MBitmapAllocator());
 		}
 	private:
-		MBitmapAllocate()
+		MBitmapAllocator()
 		{}
 	public:
-		~MBitmapAllocate()
+		~MBitmapAllocator()
 		{}
 	private:
 		class BitMapVector
