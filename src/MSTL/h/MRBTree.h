@@ -63,6 +63,7 @@ namespace MUZI
 			}
 			std::queue<__MRBTreeNode__<T>*> node_queue;
 			node_queue.push(this->root);
+
 			while (node_queue.size != 0)
 			{
 				if (node_queue.front()->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
@@ -73,14 +74,11 @@ namespace MUZI
 				{
 					node_queue.push(node_queue.front()->getChildNode(__CHILDE_NODE__::RIGHT));
 				}
-				__MRBTreeNode__<T>::alloc->deallocate(node_queue.front());
+				__MRBTreeNode__<T>::deleteNode(node_queue.front());
 				node_queue.pop();
 			}
 
-
-			__MRBTreeNode__<T>::alloc->deallocate(this->root);
-
-
+			__MRBTreeNode__<T>::deleteNode(this->root);
 		}
 	public:
 		void insert(const T& ele)
@@ -398,6 +396,7 @@ namespace MUZI
 						}
 					}
 				}
+				// nodeÊÇÓÒº¢×Ó
 				else
 				{
 

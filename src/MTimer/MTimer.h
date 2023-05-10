@@ -1,10 +1,7 @@
 #pragma once
 #ifndef __MUZI_MTIMER_H__
 #define __MUZI_MTIMER_H__
-<<<<<<< HEAD
 #include"MObjectBase.h"
-=======
->>>>>>> 5270042c6f209941ee8c2fd9fce36cbb1eb7f638
 #include<stdint.h>
 #include<chrono>
 namespace MUZI
