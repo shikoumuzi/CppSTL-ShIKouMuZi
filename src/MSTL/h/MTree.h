@@ -18,7 +18,8 @@ namespace MUZI
 	template<__Tree_Node_Inline_Ele_Type__ T, typename Node_Type, size_t LEN = 4>
 	struct __MTreeNode__
 	{
-	public:
+	private:
+		friend class MRBTree;
 		static MAllocator* alloc;
 	public:
 		__MTreeNode__()
@@ -104,6 +105,15 @@ namespace MUZI
 		inline Node_Type* changeChildNode(int sign, Node_Type* node)
 		{
 			this->node[sign] = node;
+		}
+	public:
+		static void* allocNode()
+		{
+			return static_cast<void*>(alloc->allocate(1));
+		}
+		static void deleteNode(Node_Type* node)
+		{
+			alloc->deallocate(node);
 		}
 	public:
 		T ele;

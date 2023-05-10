@@ -1,6 +1,7 @@
 #ifndef __MUZI_MRBTREE_H__
 #define __MUZI_MRBTREE_H__
 #include"MTree.h"
+#include<queue>
 namespace MUZI
 {
 	//RBTree
@@ -40,8 +41,6 @@ namespace MUZI
 			}
 		};
 
-	private:
-		static MAllocator* alloc;
 	public:
 		MRBTree() :root(nullptr), node_size(0) {}
 		MRBTree(const MRBTree<T>&) = delete;
@@ -58,7 +57,30 @@ namespace MUZI
 		}
 		~MRBTree()
 		{
-			this->alloc->deallocate(this->root, 0);
+			if (this->root == nullptr)
+			{
+				return;
+			}
+			std::queue<__MRBTreeNode__<T>*> node_queue;
+			node_queue.push(this->root);
+			while (node_queue.size != 0)
+			{
+				if (node_queue.front()->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+				{
+					node_queue.push(node_queue.front()->getChildNode(__CHILDE_NODE__::LEFT));
+				}
+				if (node_queue.front()->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
+				{
+					node_queue.push(node_queue.front()->getChildNode(__CHILDE_NODE__::RIGHT));
+				}
+				__MRBTreeNode__<T>::alloc->deallocate(node_queue.front());
+				node_queue.pop();
+			}
+
+
+			__MRBTreeNode__<T>::alloc->deallocate(this->root);
+
+
 		}
 	public:
 		void insert(const T& ele)
@@ -108,7 +130,7 @@ namespace MUZI
 	private:
 		__MRBTreeNode__<T>* __createNode__()
 		{
-			__MRBTreeNode__<T>* ret_ptr = static_cast<__MRBTreeNode__<T>*>(this->alloc->allocate(1));
+			__MRBTreeNode__<T>* ret_ptr = static_cast<__MRBTreeNode__<T>*>(__MRBTreeNode__<T>::allocNode());
 			ret_ptr = new(ret_ptr) __MRBTreeNode__<T>();
 			return ret_ptr;
 		}
@@ -295,7 +317,7 @@ namespace MUZI
 			node->parent = nullptr;
 			node->changeChildNode(__CHILDE_NODE__::LEFT, nullptr);
 			node->changeChildNode(__CHILDE_NODE__::RIGHT, nullptr);
-			this->alloc->deallocate(node);
+			__MRBTreeNode__<T>::deleteNode(node);
 			return nullptr;
 		}
 		__MRBTreeNode__<T>* __setNode__(const T& ele, const T& o_ele)
@@ -333,13 +355,27 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __fixAfterEarse__(__MRBTreeNode__<T>* node)
 		{
-			// 黑色
+			// 黑色,不能为root 因为需要parent
 			if (node != root && !__MRBTreeNode__<T>::isRed(node))
 			{
 				// node 是左孩子
 				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
 				{
+					// 兄弟节点
 					__MRBTreeNode__<T>* rnode = node->parent->getChildNode(__CHILDE_NODE__::RIGHT);
+
+					// 判断兄弟节点是否是真正的兄弟节点(不为黑色)（基于2-3-4树）
+					if (__MRBTreeNode__<T>::isRed(rnode))
+					{
+						// 如果不是需要左旋节点，使得位置在同一层
+						rnode->color = __MRBTREE_NODE_COLOR_BLACK__;
+						rnode->parent->color = __MRBTREE_NODE_COLOR_RED__;
+						// 左旋
+						node->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->rotateLeft(node));
+						//重新回到右孩子
+						rnode = node->getChildNode(__CHILDE_NODE__::RIGHT);
+					}
+
 
 					// // 找兄弟要，兄弟为2节点
 					if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::LEFT)) 
@@ -350,12 +386,12 @@ namespace MUZI
 					// 找兄弟要，兄弟为3/4节点
 					else
 					{
-						// 四节点
+						//三节点
 						if (rnode->getChildNode(__CHILDE_NODE__::LEFT) != nullptr && rnode->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
 						{
 
 						}
-						//三节点
+						// 四节点
 						else
 						{
 
@@ -426,8 +462,6 @@ namespace MUZI
 		__MRBTreeNode__<T>* root;
 		uint64_t node_size;    
 	};
-	template<__Tree_Node_Inline_Ele_Type__ T>
-	MAllocator* MRBTree<T>::alloc = MBitmapAllocate<T>::getMAllocator();
 	
 	// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
 	template<__Tree_Node_Inline_Ele_Type__ T>
