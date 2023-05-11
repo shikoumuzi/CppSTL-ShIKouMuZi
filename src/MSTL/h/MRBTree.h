@@ -48,7 +48,7 @@ namespace MUZI
 		{
 			if (this->root != nullptr)
 			{
-				this->alloc->deallocate(this->root, 0);
+				this->__delete__();
 			}
 			this->root = that.root;
 			this->node_size = that.node_size;
@@ -57,28 +57,7 @@ namespace MUZI
 		}
 		~MRBTree()
 		{
-			if (this->root == nullptr)
-			{
-				return;
-			}
-			std::queue<__MRBTreeNode__<T>*> node_queue;
-			node_queue.push(this->root);
-
-			while (node_queue.size != 0)
-			{
-				if (node_queue.front()->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
-				{
-					node_queue.push(node_queue.front()->getChildNode(__CHILDE_NODE__::LEFT));
-				}
-				if (node_queue.front()->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
-				{
-					node_queue.push(node_queue.front()->getChildNode(__CHILDE_NODE__::RIGHT));
-				}
-				__MRBTreeNode__<T>::deleteNode(node_queue.front());
-				node_queue.pop();
-			}
-
-			__MRBTreeNode__<T>::deleteNode(this->root);
+			this->__delete__();
 		}
 	public:
 		void insert(const T& ele)
@@ -110,7 +89,7 @@ namespace MUZI
 		}
 		bool set(const T& ele, const T& o_ele)
 		{
-			if{ele != o_ele}
+			if(ele != o_ele)
 			{
 				return false;
 			}
@@ -197,7 +176,7 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __eraseNode__(const T& ele)
 		{
-			__MRBTreeNode__<T>* node = this->find(ele);
+			__MRBTreeNode__<T>* node = this->__findNode__(ele);
 			int flag = -1;
 			if (node == nullptr)
 			{
@@ -320,7 +299,7 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __setNode__(const T& ele, const T& o_ele)
 		{
-			__MRBTreeNode__<T>* ret_ptr = this->find(ele);
+			__MRBTreeNode__<T>* ret_ptr = this->__findNode__(ele);
 			if (ret_ptr != nullptr)
 			{
 				ret_ptr->setElement(ele);
@@ -332,15 +311,14 @@ namespace MUZI
 		{
 			bool right_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT));
 			bool left_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT));
-			bool left_left_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)
-				->getChildNode(__CHILDE_NODE__::LEFT));
+			bool left_left_color = __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)->getChildNode(__CHILDE_NODE__::LEFT));
 
-			if(__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT)) && __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)))
+			if (__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::RIGHT)) && __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)))
 			{
 				node = this->rotateLeft(node);
 			}
 			else if (__MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)) && __MRBTreeNode__<T>::isRed(node->getChildNode(__CHILDE_NODE__::LEFT)
-				->getChildNode(__CHILDE_NODE__::LEFT));)
+				->getChildNode(__CHILDE_NODE__::LEFT)))
 			{
 				node = this->rotateRight(node);
 			}
@@ -390,13 +368,11 @@ namespace MUZI
 							rnode->getChildNode(__CHILDE_NODE__::LEFT)->color = __MRBTREE_NODE_COLOR_BLACK__;
 							rnode->color = __MRBTREE_NODE_COLOR_RED__;
 							rnode->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->rotateRight(rnode));
-							rnode = 
+							rnode = node->parent->getChildNode(__CHILDE_NODE__::RIGHT);
 						}
 						// 四节点
-						else
-						{
-
-						}
+						
+						
 					}
 				}
 				// node是右孩子
@@ -436,6 +412,31 @@ namespace MUZI
 			}
 			return predecessor_node;
 		}
+		void __delete__()
+		{
+			if (this->root == nullptr)
+			{
+				return;
+			}
+			std::queue<__MRBTreeNode__<T>*> node_queue;
+			node_queue.push(this->root);
+
+			while (node_queue.size() != 0)
+			{
+				if (node_queue.front()->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+				{
+					node_queue.push(node_queue.front()->getChildNode(__CHILDE_NODE__::LEFT));
+				}
+				if (node_queue.front()->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
+				{
+					node_queue.push(node_queue.front()->getChildNode(__CHILDE_NODE__::RIGHT));
+				}
+				__MRBTreeNode__<T>::deleteNode(node_queue.front());
+				node_queue.pop();
+			}
+
+			__MRBTreeNode__<T>::deleteNode(this->root);
+		}
 	private:
 
 		__MRBTreeNode__<T>* rotateLeft(__MRBTreeNode__<T>* node)
@@ -444,6 +445,7 @@ namespace MUZI
 			__MRBTreeNode__<T>* right_left_child = right_child->getChildNode(__CHILDE_NODE__::LEFT);
 			right_child->changeChildNode(__CHILDE_NODE__::LEFT, node);
 			node->changeChildNode(__CHILDE_NODE__::RIGHT, right_left_child);
+
 			right_child->parent = node->parent;
 			node->parent = right_child;
 			right_left_child->parent = node;
@@ -455,6 +457,7 @@ namespace MUZI
 			__MRBTreeNode__<T>* left_right_child = left_child->getChildNode(__CHILDE_NODE__::RIGHT);
 			node->changeChildNode(__CHILDE_NODE__::LEFT, left_right_child);
 			left_child->changeChildNode(__CHILDE_NODE__::RIGHT, node);
+
 			left_child->parent = node->parent;
 			left_right_child->parent = node;
 			node->parent = left_child;
@@ -471,12 +474,12 @@ namespace MUZI
 		uint64_t node_size;    
 	};
 	
-	//// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
-	//template<__Tree_Node_Inline_Ele_Type__ T>
-	//static MTree<T, MRBTree<T>>* getMRBTree2MTree()
-	//{
-	//	return new MTree< T, MRBTree<T>>;
-	//}
+	// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
+	template<__Tree_Node_Inline_Ele_Type__ T>
+	static MTree<T, MRBTree<T>>* getMRBTree2MTree()
+	{
+		return new MTree< T, MRBTree<T>>;
+	}
 };
 
 #endif // !__MUZI_MRBTREE_H__
