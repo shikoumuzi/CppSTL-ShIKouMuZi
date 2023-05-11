@@ -31,7 +31,7 @@ add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" 
 
 include_directories(${H_FILE_PATH})
 # 将测试添加到此项目的可执行文件。
-add_executable (TESTMAIN ${TEST_PATH} ${H_FILE_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp")
+# add_executable (TESTMAIN ${TEST_PATH} ${H_FILE_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp")
 
 
 

@@ -20,7 +20,6 @@ namespace MUZI
 	struct __MTreeNode__
 	{
 	private:
-		friend class MRBTree;
 		static MAllocator* alloc;
 	public:
 		__MTreeNode__()

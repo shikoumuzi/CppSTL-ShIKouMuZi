@@ -385,9 +385,12 @@ namespace MUZI
 					else
 					{
 						//三节点
-						if (rnode->getChildNode(__CHILDE_NODE__::LEFT) != nullptr && rnode->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
+						if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::RIGHT)))
 						{
-
+							rnode->getChildNode(__CHILDE_NODE__::LEFT)->color = __MRBTREE_NODE_COLOR_BLACK__;
+							rnode->color = __MRBTREE_NODE_COLOR_RED__;
+							rnode->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->rotateRight(rnode));
+							rnode = 
 						}
 						// 四节点
 						else
@@ -441,6 +444,9 @@ namespace MUZI
 			__MRBTreeNode__<T>* right_left_child = right_child->getChildNode(__CHILDE_NODE__::LEFT);
 			right_child->changeChildNode(__CHILDE_NODE__::LEFT, node);
 			node->changeChildNode(__CHILDE_NODE__::RIGHT, right_left_child);
+			right_child->parent = node->parent;
+			node->parent = right_child;
+			right_left_child->parent = node;
 			return right_child;
 		}
 		__MRBTreeNode__<T>* rotateRight(__MRBTreeNode__<T>* node)
@@ -449,6 +455,9 @@ namespace MUZI
 			__MRBTreeNode__<T>* left_right_child = left_child->getChildNode(__CHILDE_NODE__::RIGHT);
 			node->changeChildNode(__CHILDE_NODE__::LEFT, left_right_child);
 			left_child->changeChildNode(__CHILDE_NODE__::RIGHT, node);
+			left_child->parent = node->parent;
+			left_right_child->parent = node;
+			node->parent = left_child;
 			return left_child;
 		}
 		void filpColor(__MRBTreeNode__<T>* node)
@@ -462,12 +471,12 @@ namespace MUZI
 		uint64_t node_size;    
 	};
 	
-	// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
-	template<__Tree_Node_Inline_Ele_Type__ T>
-	static MTree<T, MRBTree<T>>* getMRBTree2MTree()
-	{
-		return new MTree< T, MRBTree<T>>;
-	}
+	//// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
+	//template<__Tree_Node_Inline_Ele_Type__ T>
+	//static MTree<T, MRBTree<T>>* getMRBTree2MTree()
+	//{
+	//	return new MTree< T, MRBTree<T>>;
+	//}
 };
 
 #endif // !__MUZI_MRBTREE_H__
