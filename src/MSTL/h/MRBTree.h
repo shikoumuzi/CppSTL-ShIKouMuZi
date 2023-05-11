@@ -332,7 +332,7 @@ namespace MUZI
 		__MRBTreeNode__<T>* __fixAfterEarse__(__MRBTreeNode__<T>* node)
 		{
 			// 黑色,不能为root 因为需要parent
-			if (node != root && !__MRBTreeNode__<T>::isRed(node))
+			while (node != root && !__MRBTreeNode__<T>::isRed(node))
 			{
 				// node 是左孩子
 				if (node == node->parent->getChildNode(__CHILDE_NODE__::LEFT))
@@ -362,17 +362,33 @@ namespace MUZI
 					// 找兄弟要，兄弟为3/4节点
 					else
 					{
-						//三节点
+						//三节点的特殊处理
 						if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::RIGHT)))
 						{
 							rnode->getChildNode(__CHILDE_NODE__::LEFT)->color = __MRBTREE_NODE_COLOR_BLACK__;
 							rnode->color = __MRBTREE_NODE_COLOR_RED__;
+							// 先把三节点中较小值换上来
 							rnode->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->rotateRight(rnode));
 							rnode = node->parent->getChildNode(__CHILDE_NODE__::RIGHT);
 						}
-						// 四节点
-						
-						
+						rnode->color = rnode->parent->color;
+						rnode->parent->color = __MRBTREE_NODE_COLOR_RED__;
+						rnode->getChildNode(__CHILDE_NODE__::RIGHT)->color = __MRBTREE_NODE_COLOR_BLACK__;
+						// 然后左旋两个节点的父节点，将变换后的右兄弟换上来，使得兄弟节点的红色子节点转移令node成为三节点或者四节点
+						if (rnode->parent->parent == nullptr)
+						{
+							this->root = rotateLeft(node->parent);
+						}
+						else if (rnode->parent == rnode->parent->parent->getChildNode(__CHILDE_NODE__::LEFT))
+						{
+							rnode->parent->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->rotateLeft(node->parent));
+						}
+						else if (rnode->parent == rnode->parent->parent->getChildNode(__CHILDE_NODE__::RIGHT))
+						{
+							rnode->parent->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->rotateLeft(node->parent));
+						}
+						// 改成root 跳出while
+						node = this->root;
 					}
 				}
 				// node是右孩子
