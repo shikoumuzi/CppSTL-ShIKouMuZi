@@ -253,7 +253,7 @@ namespace MUZI
 						predecessor_node->parent = nullptr;
 						// 赋值 是得后续可以被释放
 						node = predecessor_node;
-						// 调整
+						// 调整444
 						if (node->color == __MRBTREE_NODE_COLOR_BLACK__)
 						{
 							this->__fixAfterEarse__(replacement);
@@ -332,6 +332,7 @@ namespace MUZI
 		__MRBTreeNode__<T>* __fixAfterEarse__(__MRBTreeNode__<T>* node)
 		{
 			// 黑色,不能为root 因为需要parent
+			// 循环主要以兄弟节点无法借的情况，只能从删除节点开始，向上平衡整个红黑树
 			while (node != root && !__MRBTreeNode__<T>::isRed(node))
 			{
 				// node 是左孩子
@@ -353,11 +354,11 @@ namespace MUZI
 					}
 
 
-					// // 找兄弟要，兄弟为2节点
+					// // 找兄弟要，兄弟为2节点, 需要将兄弟节点退化为红色，同父节点一同成为3/4节点
 					if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::LEFT)) 
 						&& !__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::RIGHT)))
 					{
-
+						rnode->color = __MRBTREE_NODE_COLOR_RED__;
 					}
 					// 找兄弟要，兄弟为3/4节点
 					else
@@ -374,6 +375,7 @@ namespace MUZI
 						rnode->color = rnode->parent->color;
 						rnode->parent->color = __MRBTREE_NODE_COLOR_RED__;
 						rnode->getChildNode(__CHILDE_NODE__::RIGHT)->color = __MRBTREE_NODE_COLOR_BLACK__;
+
 						// 然后左旋两个节点的父节点，将变换后的右兄弟换上来，使得兄弟节点的红色子节点转移令node成为三节点或者四节点
 						if (rnode->parent->parent == nullptr)
 						{
@@ -387,6 +389,7 @@ namespace MUZI
 						{
 							rnode->parent->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->rotateLeft(node->parent));
 						}
+						node->color = __MRBTREE_NODE_COLOR_RED__;
 						// 改成root 跳出while
 						node = this->root;
 					}
