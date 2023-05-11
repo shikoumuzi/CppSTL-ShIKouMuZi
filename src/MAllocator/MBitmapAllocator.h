@@ -1,4 +1,9 @@
 #include"MAllocator.h"
+#ifndef __MUZI_MBITMAPALLOCATOR_H__
+#define __MUZI_MBITMAPALLOCATOR_H__
+
+
+
 namespace MUZI {
 	// 相比起普通POOL 这里采用数组代替链表的方式保管内存块
 		// 优点是可以随时将内存资源归还给操作系统、简单精简、有延缓归还能力
@@ -333,3 +338,4 @@ namespace MUZI {
 		}
 	};
 }
+#endif // !__MUZI_MBITMAPALLOCATOR_H__

@@ -79,13 +79,14 @@ namespace MUZI
 
 			this->node_size -= 1;
 		}
-		bool find(const T& ele)
+		const T* find(const T& ele)
 		{
 			if (root == nullptr)
 			{
 				return false;
 			}
-			return (this->__findNode__(ele) != nullptr);
+			__MRBTreeNode__<T>* result;
+			return ((result = this->__findNode__(ele)) != nullptr) ? &result->ele : ;
 		}
 		bool set(const T& ele, const T& o_ele)
 		{
@@ -358,7 +359,8 @@ namespace MUZI
 					if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::LEFT)) 
 						&& !__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::RIGHT)))
 					{
-						rnode->color = __MRBTREE_NODE_COLOR_RED__;
+						rnode->color = __MRBTREE_NODE_COLOR_RED__;// 全部损失，因为上面已经提前确定兄弟节点了
+						node = node->parent;
 					}
 					// 找兄弟要，兄弟为3/4节点
 					else
@@ -397,7 +399,62 @@ namespace MUZI
 				// node是右孩子
 				else
 				{
+					// 兄弟节点
+					__MRBTreeNode__<T>* lnode = node->parent->getChildNode(__CHILDE_NODE__::LEFT);
 
+					// 判断兄弟节点是否是真正的兄弟节点(不为黑色)（基于2-3-4树）
+					if (__MRBTreeNode__<T>::isRed(lnode))
+					{
+						// 如果不是需要左旋节点，使得位置在同一层
+						lnode->color = __MRBTREE_NODE_COLOR_BLACK__;
+						lnode->parent->color = __MRBTREE_NODE_COLOR_RED__;
+						// 左旋
+						node->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->rotateRight(node));
+						//重新回到右孩子
+						lnode = node->getChildNode(__CHILDE_NODE__::LEFT);
+					}
+
+
+					// // 找兄弟要，兄弟为2节点, 需要将兄弟节点退化为红色，同父节点一同成为3/4节点
+					if (!__MRBTreeNode__<T>::isRed(lnode->getChildNode(__CHILDE_NODE__::RIGHT))
+						&& !__MRBTreeNode__<T>::isRed(lnode->getChildNode(__CHILDE_NODE__::LEFT)))
+					{
+						lnode->color = __MRBTREE_NODE_COLOR_RED__;// 全部损失，因为上面已经提前确定兄弟节点了
+						node = node->parent;
+					}
+					// 找兄弟要，兄弟为3/4节点
+					else
+					{
+						//三节点的特殊处理
+						if (!__MRBTreeNode__<T>::isRed(lnode->getChildNode(__CHILDE_NODE__::LEFT)))
+						{
+							lnode->getChildNode(__CHILDE_NODE__::RIGHT)->color = __MRBTREE_NODE_COLOR_BLACK__;
+							lnode->color = __MRBTREE_NODE_COLOR_RED__;
+							// 先把三节点中较小值换上来
+							lnode->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->rotateLeft(lnode));
+							lnode = node->parent->getChildNode(__CHILDE_NODE__::LEFT);
+						}
+						lnode->color = lnode->parent->color;
+						lnode->parent->color = __MRBTREE_NODE_COLOR_RED__;
+						lnode->getChildNode(__CHILDE_NODE__::LEFT)->color = __MRBTREE_NODE_COLOR_BLACK__;
+
+						// 然后左旋两个节点的父节点，将变换后的右兄弟换上来，使得兄弟节点的红色子节点转移令node成为三节点或者四节点
+						if (lnode->parent->parent == nullptr)
+						{
+							this->root = rotateRight(node->parent);
+						}
+						else if (lnode->parent == lnode->parent->parent->getChildNode(__CHILDE_NODE__::RIGHT))
+						{
+							lnode->parent->parent->changeChildNode(__CHILDE_NODE__::RIGHT, this->rotateRight(node->parent));
+						}
+						else if (lnode->parent == lnode->parent->parent->getChildNode(__CHILDE_NODE__::LEFT))
+						{
+							lnode->parent->parent->changeChildNode(__CHILDE_NODE__::LEFT, this->rotateRight(node->parent));
+						}
+						node->color = __MRBTREE_NODE_COLOR_RED__;
+						// 改成root 跳出while
+						node = this->root;
+					}
 				}
 
 
