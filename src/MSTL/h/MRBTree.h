@@ -68,9 +68,15 @@ namespace MUZI
 			{
 				*this -= 1;
 			}
-			void operator==(iterator<T>& it)
+			std::strong_ordering operator<=>(const iterator<T>& that)
 			{
-
+				if (this->m_data->ele > that.m_data->ele) return std::strong_ordering::greater;
+				if (this->m_data->ele < that.m_data->ele) return std::strong_ordering::less;
+				return std::strong_ordering::equivalent;
+			}
+			bool operator==(iterator<T>& it)
+			{
+				return (*this <=> it) == 0;
 			}
 			const T operator* ()
 			{

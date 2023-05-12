@@ -12,20 +12,20 @@ namespace MUZI
 		std::totally_ordered<T>;
 	};
 
-	template<__MMap_Pair_First_Ele_Type__  T, typename K>
+	template<__MMap_Pair_First_Ele_Type__  K, typename V>
 	struct __MMapPair__
 	{
 	public:
-		T key;
-		K value;
+		K key;
+		V value;
 	public:
-		std::weak_ordering operator<=>(const __MMapPair__& that)
+		std::weak_ordering operator<=>(const __MMapPair__<K, V>& that)
 		{
 			if (this->key > that.key) return std::weak_ordering::greater;
 			if (this->key < that.key) return std::weak_ordering::less;
 			return std::weak_ordering::equivalent;
 		}
-		bool operator==(const __MMapPair__& that)
+		bool operator==(const __MMapPair__<K, V>& that)
 		{
 			return (*this <=> that) == 0;
 		}
