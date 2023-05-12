@@ -5,31 +5,30 @@
 #include<compare>
 namespace MUZI
 {
-	template<typename T>
+	template<typename T, typename U>
 	concept __MIterator_Type__ = requires(T x)
 	{
 		std::totally_ordered<T>;
-		x.operator++();  
-		x.operator--();
-		x.operator<=>();
-		x.operator==();
-		x.operator* ();
-		x.operator+=();
-		x.operator-=();
-		x.operator=();
-		x.data();
+		{x.operator++()} -> std::same_as<void>;
+		{x.operator--()} -> std::same_as<void>;
+		{x.operator==()} -> std::same_as<void>;
+		{x.operator* ()} -> std::same_as<void>;
+		{x.operator+=()} -> std::same_as<void>;
+		{x.operator-=()} -> std::same_as<void>;
+		{x.operator=()} -> std::same_as<void>;
+		{x.data()};
 	};
 
-	template<__MIterator_Type__ Iterator, typename T>
+	template<typename T, __MIterator_Type__<T> Iterator>
 	class MIterator
 	{
 	public:
 		MIterator() = delete;
-		MIterator(const MIterator<Iterator>& that)
+		MIterator(const MIterator<T, Iterator>& that)
 		{
 
 		}
-		MIterator(MIterator<Iterator>&& that)
+		MIterator(MIterator<T, Iterator>&& that)
 		{
 		}
 	public:
@@ -41,7 +40,7 @@ namespace MUZI
 		{
 			--this->iterator;
 		}
-		inline std::strong_ordering:: operator<=>(const MIterator& that)
+		inline std::strong_ordering operator<=>(const MIterator& that)
 		{
 			return this->iterator.operator<=>(that.iterator);
 		}

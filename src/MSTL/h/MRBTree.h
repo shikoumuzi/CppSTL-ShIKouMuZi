@@ -14,7 +14,7 @@ namespace MUZI
 			RIGHT = 0,
 			LEFT
 		};
-	private:// child node
+	public:// child node
 		template<__Tree_Node_Inline_Ele_Type__ T>
 		struct __MRBTreeNode__ : public __MTreeNode__<T, __MRBTreeNode__<T>, 2>
 		{
@@ -39,6 +39,59 @@ namespace MUZI
 			{
 				return this->color == __MRBTREE_NODE_COLOR_RED__;
 			}
+		};
+	public:
+		template<__Tree_Node_Inline_Ele_Type__ T>
+		class iterator
+		{
+		private:
+			friend class MRBTree<T>;
+			enum __ITERATOR_STAT__
+			{
+				ENABLE = 0,
+				DISABEL
+			};
+		public:
+			iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABEL) {}
+			iterator(const iterator<T>& it):m_data(it.m_data), status(it.status) {}
+			iterator(iterator<T>&& it):m_data(it.m_data), status(it.status)
+			{
+				it.data = nullptr;
+				it.status = __ITERATOR_STAT__::ENABLE;
+			}
+		public:
+			void operator++()
+			{
+				*this += 1;
+			}
+			void operator--()
+			{
+				*this -= 1;
+			}
+			void operator==(iterator<T>& it)
+			{
+
+			}
+			const T operator* ()
+			{
+				return this->m_data->ele;
+			}
+			void operator+=(size_t step)
+			{
+
+			}
+			void operator-=(size_t step) 
+			{
+				
+			}
+			inline void operator=(iterator<T>& it)
+			{
+				this->m_data = it.m_data;
+			}
+			inline const __MRBTreeNode__<T>* data() { return this->m_data; }
+		private:
+			__MRBTreeNode__<T>* m_data;
+			int status;
 		};
 
 	public:
@@ -545,14 +598,18 @@ namespace MUZI
 	private:
 		__MRBTreeNode__<T>* root;
 		uint64_t node_size;    
+		static iterator<T> final_it;
 	};
 	
+
 	// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
 	template<__Tree_Node_Inline_Ele_Type__ T>
-	static MTree<T, MRBTree<T>>* getMRBTree2MTree()
+	static MTree<T, MRBTree<T>>* MRBTree2MTree()
 	{
 		return new MTree< T, MRBTree<T>>;
 	}
+
+
 };
 
 #endif // !__MUZI_MRBTREE_H__

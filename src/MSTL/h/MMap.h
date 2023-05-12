@@ -36,6 +36,8 @@ namespace MUZI
 	template<typename T, typename K, typename V>
 	concept __MMAP_TYPE__ = requires(T x, K k, V v)
 	{
+		{T(std::move(x))} noexcept;
+
 		// ÉèÖÃmap
 		{x.set(k, v)} -> std::same_as<void>;
 		{x.get(k)};
@@ -44,11 +46,11 @@ namespace MUZI
 		{x.data()};
 
 		// ÉèÖÃk
-		{K()} -> std::same_as<V>;
+		{K()};
 		std::totally_ordered<K>;
 
 		//ÉèÖÃV
-		{V()} -> std::same_as<V>;
+		{V()};
 
 	};
 
@@ -56,6 +58,10 @@ namespace MUZI
 	template<typename K, typename V, __MMAP_TYPE__<K, V> Map>
 	class MMap
 	{
+	public:
+		MMap(){}
+		MMap(const MMap&) = delete;
+		MMap(MMap&& map) :map(std::move(map)) {}
 	private:
 		Map map;
 	};
