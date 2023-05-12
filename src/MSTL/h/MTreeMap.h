@@ -4,6 +4,7 @@
 #include"MRBTree.h"
 #include"MMap.h"
 #include<compare>
+#include<concepts>
 namespace MUZI
 {
 	template<typename K, typename V>
@@ -21,7 +22,7 @@ namespace MUZI
 			MMapPair() {}
 			MMapPair(K key) :key(key) {}
 			MMapPair(K key, V value) :key(key), value(value) {}
-			MMapPair(const MMapPair<K, V>& that) { memset(this, &that, sizeof(MMapPair<K, V>))}
+			MMapPair(const MMapPair<K, V>& that) { memcpy(this, &that, sizeof(MMapPair<K, V>)); }
 		public:
 			K key;
 			V value;

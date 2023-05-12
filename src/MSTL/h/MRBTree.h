@@ -86,7 +86,7 @@ namespace MUZI
 				return false;
 			}
 			__MRBTreeNode__<T>* result;
-			return ((result = this->__findNode__(ele)) != nullptr) ? &result->ele : ;
+			return ((result = this->__findNode__(ele)) != nullptr) ? &result->ele : nullptr;
 		}
 		bool set(const T& ele, const T& o_ele)
 		{
@@ -356,7 +356,7 @@ namespace MUZI
 
 
 					// // 找兄弟要，兄弟为2节点, 需要将兄弟节点退化为红色，同父节点一同成为3/4节点
-					if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::LEFT)) 
+					if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::LEFT))
 						&& !__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::RIGHT)))
 					{
 						rnode->color = __MRBTREE_NODE_COLOR_RED__;// 全部损失，因为上面已经提前确定兄弟节点了
@@ -456,9 +456,6 @@ namespace MUZI
 						node = this->root;
 					}
 				}
-
-
-
 			}
 			// 如果是红色的则直接染黑即可
 			node->color = __MRBTREE_NODE_COLOR_BLACK__;

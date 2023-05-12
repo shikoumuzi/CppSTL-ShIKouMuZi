@@ -44,16 +44,11 @@ namespace MUZI
 		{x.data()};
 
 		// 设置k
+		{K()} -> std::same_as<V>;
 		std::totally_ordered<K>;
 
 		//设置V
 		{V()} -> std::same_as<V>;
-
-		// 设置内部数据结构之节点数据类型
-		typename T::MMapPair;
-		{T::MMapPair::key} -> std::same_as<K>;
-		{T::MMapPair::value};
-
 
 	};
 
