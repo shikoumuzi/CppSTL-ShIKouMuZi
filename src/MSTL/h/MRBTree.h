@@ -49,20 +49,23 @@ namespace MUZI
 			enum __ITERATOR_STAT__
 			{
 				ENABLE = 0,
-				DISABLE
+				DISABLE,
+				END
 			};
 		public:
-			iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE) {}
-			iterator(__MRBTreeNode__<T>& node, int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), status(status) {}
-			iterator(const iterator<T>& it):m_data(it.m_data), status(it.status) {}
-			iterator(iterator<T>&& it):m_data(it.m_data), status(it.status)
+			iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE), parent(nullptr) {}
+			iterator(__MRBTreeNode__<T>& node, MRBTree<T>* parent,int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), status(status),parent(parent) {}
+			iterator(const iterator<T>& it):m_data(it.m_data), status(it.status), parent(it.parent) {}
+			iterator(iterator<T>&& it):m_data(it.m_data), status(it.status), parent(it.parent)
 			{
 				it.m_data = nullptr;
 				it.status = __ITERATOR_STAT__::ENABLE;
+				it.parent = nullptr;
 			}
 			~iterator()
 			{
 				this->m_data = nullptr;
+				this->parent = nullptr;
 			}
 		public:
 			void disable()
@@ -92,15 +95,28 @@ namespace MUZI
 				{
 					return std::strong_ordering::equivalent;;
 				}
+				if (that.status == __ITERATOR_STAT__::END)
+				{
+					if (this->status == __ITERATOR_STAT__::END)
+					{
+						return std::strong_ordering::equivalent;
+					}
+					else
+					{
+						return std::strong_ordering::less;
+					}
+				}
+				if (this->parent != that.parent) return std::strong_ordering::less;// 不是一个就永远小于
+				// 从设计上迭代器将从最小的节点开始，有序得返回下一个大小的内容，故直接按照elel元素进行排序
 				if (this->m_data->ele > that.m_data->ele) return std::strong_ordering::greater;
 				if (this->m_data->ele < that.m_data->ele) return std::strong_ordering::less;
 				return std::strong_ordering::equivalent;
 			}
 			bool operator==(iterator<T>& it)
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE)
+				if (this->status == __ITERATOR_STAT__::DISABLE || this->parent != it.parent)
 				{
-					return;
+					return false;
 				}
 				return (*this <=> it) == 0;
 			}
@@ -114,7 +130,7 @@ namespace MUZI
 			}
 			void operator+=(size_t step)
 			{//整个点从最小值往最大值走
-				if (this->status == __ITERATOR_STAT__::DISABLE)
+				if (this->status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
 				{
 					return;
 				}
@@ -139,11 +155,16 @@ namespace MUZI
 						}
 						this->m_data = this->m_data->parent;
 					}
+					if (m_data == nullptr)
+					{
+						this->status == __ITERATOR_STAT__::END;
+						break;
+					}
 				}
 			}
 			void operator-=(size_t step) 
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE)
+				if (this->status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
 				{
 					return;
 				}
@@ -168,6 +189,16 @@ namespace MUZI
 						}
 						this->m_data = this->m_data->parent;
 					}
+					if (this->m_data == nullptr)
+					{
+						__MRBTreeNode__<T>* tmp_data = this->parent->root;
+						while (tmp_data->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+						{
+							tmp_data = tmp_data->getChildNode(__CHILDE_NODE__::LEFT);
+						}
+						this->m_data = tmp_data;
+						break;
+					}
 				}
 			}
 			inline void operator=(iterator<T>& it)
@@ -186,6 +217,7 @@ namespace MUZI
 		private:
 			__MRBTreeNode__<T>* m_data;
 			int status;
+			MRBTree<T>* parent;
 		};
 	public:// 反向迭代器
 		template<__Tree_Node_Inline_Ele_Type__ T>
@@ -243,7 +275,11 @@ namespace MUZI
 			{
 				p = p->getChildNode(__CHILDE_NODE__::LEFT);
 			}
-
+			return iterator<T>(*p, this);
+		}
+		iterator<T> end()
+		{
+			return this->final_it;
 		}
 	public:
 		void insert(const T& ele)
@@ -741,7 +777,9 @@ namespace MUZI
 		uint64_t node_size;    
 		static iterator<T> final_it;
 	};
-	
+
+	template<__Tree_Node_Inline_Ele_Type__ T>
+	static MRBTree<T>::iterator<T> final_it = MRBTree<T>::iterator<T>::iterator(T(), nullptr, MRBTree<T>::iterator<T>::__ITERATOR_STAT__::END);
 
 	// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
 	template<__Tree_Node_Inline_Ele_Type__ T>
