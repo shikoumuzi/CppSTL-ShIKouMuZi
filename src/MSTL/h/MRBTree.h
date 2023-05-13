@@ -40,7 +40,7 @@ namespace MUZI
 				return this->color == __MRBTREE_NODE_COLOR_RED__;
 			}
 		};
-	public:
+	public:// 迭代器
 		template<__Tree_Node_Inline_Ele_Type__ T>
 		class iterator
 		{
@@ -49,56 +49,173 @@ namespace MUZI
 			enum __ITERATOR_STAT__
 			{
 				ENABLE = 0,
-				DISABEL
+				DISABLE
 			};
 		public:
-			iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABEL) {}
+			iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE) {}
+			iterator(__MRBTreeNode__<T>& node, int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), status(status) {}
 			iterator(const iterator<T>& it):m_data(it.m_data), status(it.status) {}
 			iterator(iterator<T>&& it):m_data(it.m_data), status(it.status)
 			{
-				it.data = nullptr;
+				it.m_data = nullptr;
 				it.status = __ITERATOR_STAT__::ENABLE;
+			}
+			~iterator()
+			{
+				this->m_data = nullptr;
+			}
+		public:
+			void disable()
+			{
+				this->status = __ITERATOR_STAT__::DISABLE;
 			}
 		public:
 			void operator++()
 			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return;
+				}
 				*this += 1;
 			}
 			void operator--()
 			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return;
+				}
 				*this -= 1;
 			}
 			std::strong_ordering operator<=>(const iterator<T>& that)
 			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return std::strong_ordering::equivalent;;
+				}
 				if (this->m_data->ele > that.m_data->ele) return std::strong_ordering::greater;
 				if (this->m_data->ele < that.m_data->ele) return std::strong_ordering::less;
 				return std::strong_ordering::equivalent;
 			}
 			bool operator==(iterator<T>& it)
 			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return;
+				}
 				return (*this <=> it) == 0;
 			}
 			const T operator* ()
 			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return T();
+				}
 				return this->m_data->ele;
 			}
 			void operator+=(size_t step)
-			{
-
+			{//整个点从最小值往最大值走
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return;
+				}
+				while (step--)
+				{
+					//如果有右节点，优先找第一个
+					if (this->m_data->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
+					{
+						this->m_data = this->m_data->getChildNode(__CHILDE_NODE__::RIGHT);
+					}
+					else if (this->m_data == this->m_data->parent->getChildNode(__CHILDE_NODE__::LEFT))
+					{
+						this->m_data = this->m_data->parent;
+					}
+					// 叶子节点，两个都为空
+					else if (this->m_data->getChildNode(__CHILDE_NODE__::LEFT) == nullptr)
+					{
+						//右叶子
+						while (this->m_data != this->m_data->parent->getChildNode(__CHILDE_NODE__::LEFT))
+						{
+							this->m_data = this->m_data->parent;
+						}
+						this->m_data = this->m_data->parent;
+					}
+				}
 			}
 			void operator-=(size_t step) 
 			{
-				
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return;
+				}
+				while (step--)
+				{
+					//如果有右节点，优先找第一个
+					if (this->m_data->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+					{
+						this->m_data = this->m_data->getChildNode(__CHILDE_NODE__::LEFT);
+					}
+					else if (this->m_data == this->m_data->parent->getChildNode(__CHILDE_NODE__::RIGHT))
+					{
+						this->m_data = this->m_data->parent;
+					}
+					// 叶子节点，两个都为空
+					else if (this->m_data->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr)
+					{
+						//左叶子
+						while (this->m_data != this->m_data->parent->getChildNode(__CHILDE_NODE__::RIGHT))
+						{
+							this->m_data = this->m_data->parent;
+						}
+						this->m_data = this->m_data->parent;
+					}
+				}
 			}
 			inline void operator=(iterator<T>& it)
 			{
 				this->m_data = it.m_data;
+				this->status = it.status;
 			}
-			inline const __MRBTreeNode__<T>* data() { return this->m_data; }
+			inline const __MRBTreeNode__<T>* data()
+			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return nullptr;
+				}
+				return this->m_data;
+			}
 		private:
 			__MRBTreeNode__<T>* m_data;
 			int status;
 		};
+	public:// 反向迭代器
+		template<__Tree_Node_Inline_Ele_Type__ T>
+		class reverse_iterator
+		{
+		private:
+			enum __ITERATOR_STAT__
+			{
+				ENABLE = 0,
+				DISABLE
+			};
+		public:
+			reverse_iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE){}
+			reverse_iterator(const reverse_iterator& rit) :m_data(rit.m_data), status(rit.status) {}
+			reverse_iterator(reverse_iterator&& rit) noexcept :m_data(rit.m_data), status(rit.status)
+			{
+				rit.m_data = nullptr;
+				rit.status = __ITERATOR_STAT__::DISABLE;
+			}
+			~reverse_iterator()
+			{
+				this->m_data = nullptr;
+				this->status = __ITERATOR_STAT__::DISABEL;
+			}
+
+		private:
+			__MRBTreeNode__<T>* m_data;
+			int status;
+		};
+
 
 	public:
 		MRBTree() :root(nullptr), node_size(0) {}
@@ -119,6 +236,16 @@ namespace MUZI
 			this->__delete__();
 		}
 	public:
+		iterator<T> begin()
+		{
+			__MRBTreeNode__<T>* p = this->root;
+			while (p->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+			{
+				p = p->getChildNode(__CHILDE_NODE__::LEFT);
+			}
+
+		}
+	public:
 		void insert(const T& ele)
 		{
 			if (root == nullptr)
@@ -128,6 +255,14 @@ namespace MUZI
 				this->root->parent = nullptr;
 			}
 			this->node_size += 1;
+		}
+		iterator<T> erase(iterator<T>& it)
+		{
+			iterator<T> it_tmp(it);
+			it_tmp += 1;
+			this->erase(it.m_data->ele);
+			it.disable();
+			return it_tmp;
 		}
 		void erase(const T& ele)
 		{
