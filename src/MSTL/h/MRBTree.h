@@ -55,6 +55,7 @@ namespace MUZI
 		public:
 			iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE), parent(nullptr) {}
 			iterator(__MRBTreeNode__<T>& node, MRBTree<T>* parent,int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), status(status),parent(parent) {}
+			iterator(__MRBTreeNode__<T>* node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(node), status(status), parent(parent) {}
 			iterator(const iterator<T>& it):m_data(it.m_data), status(it.status), parent(it.parent) {}
 			iterator(iterator<T>&& it):m_data(it.m_data), status(it.status), parent(it.parent)
 			{
@@ -107,7 +108,7 @@ namespace MUZI
 					}
 				}
 				if (this->parent != that.parent) return std::strong_ordering::less;// 不是一个就永远小于
-				// 从设计上迭代器将从最小的节点开始，有序得返回下一个大小的内容，故直接按照elel元素进行排序
+				// 从设计上迭代器将从最小的节点开始，有序得返回下一个大小的内容，故直接按照ele元素进行排序
 				if (this->m_data->ele > that.m_data->ele) return std::strong_ordering::greater;
 				if (this->m_data->ele < that.m_data->ele) return std::strong_ordering::less;
 				return std::strong_ordering::equivalent;
@@ -282,6 +283,15 @@ namespace MUZI
 			return this->final_it;
 		}
 	public:
+		iterator<T> insert(iterator<T>& it)
+		{
+			if (it.parent == this)
+			{
+				return it;
+			}
+			return iterator<T>(this->__insertNode__(it.m_data->ele), this, iterator<T>::__ITERATOR_STAT__::ENABLE);
+			
+		}
 		void insert(const T& ele)
 		{
 			if (root == nullptr)
@@ -289,6 +299,10 @@ namespace MUZI
 				this->root = this->__createNode__();
 				this->root->ele = ele;
 				this->root->parent = nullptr;
+			}
+			else
+			{
+				this->__insertNode__(ele);
 			}
 			this->node_size += 1;
 		}
