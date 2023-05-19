@@ -75,7 +75,9 @@ namespace MUZI
 		public:
 			void disable()
 			{
-				this->m_status = __ITERATOR_STAT__::DISABLE;
+				this->parent = nullptr;
+				this->status = __ITERATOR_STAT__::DISABLE;
+				this->m_data = T();
 			}
 			inline int status()
 			{
