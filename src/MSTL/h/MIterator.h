@@ -19,6 +19,13 @@ namespace MUZI
 		{x.data()};
 	};
 
+	enum __ITERATOR_STAT__
+	{
+		ENABLE = 0,
+		DISABLE,
+		END
+	};
+
 	template<typename T, __MIterator_Type__<T> Iterator>
 	class MIterator
 	{

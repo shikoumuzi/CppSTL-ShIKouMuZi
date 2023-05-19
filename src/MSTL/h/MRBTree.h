@@ -1,9 +1,11 @@
 #ifndef __MUZI_MRBTREE_H__
 #define __MUZI_MRBTREE_H__
 #include"MTree.h"
+#include"MIterator.h"
 #include<queue>
 namespace MUZI
 {
+
 	//RBTree
 	template<__Tree_Node_Inline_Ele_Type__ T>
 	class MRBTree
@@ -44,23 +46,25 @@ namespace MUZI
 		template<__Tree_Node_Inline_Ele_Type__ T>
 		class iterator
 		{
-		private:
-			friend class MRBTree<T>;
-			enum __ITERATOR_STAT__
-			{
-				ENABLE = 0,
-				DISABLE,
-				END
-			};
 		public:
-			iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE), parent(nullptr) {}
-			iterator(__MRBTreeNode__<T>& node, MRBTree<T>* parent,int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), status(status),parent(parent) {}
-			iterator(__MRBTreeNode__<T>* node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(node), status(status), parent(parent) {}
-			iterator(const iterator<T>& it):m_data(it.m_data), status(it.status), parent(it.parent) {}
-			iterator(iterator<T>&& it):m_data(it.m_data), status(it.status), parent(it.parent)
+			friend class MRBTree<T>;
+		public:
+			iterator():m_data(nullptr), m_status(__ITERATOR_STAT__::DISABLE), parent(nullptr) {}
+			iterator(__MRBTreeNode__<T>& node, MRBTree<T>* parent,int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), m_status(status),parent(parent) {}
+			iterator(__MRBTreeNode__<T>* node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(node), m_status(status), parent(parent) {}
+			iterator(T& ele, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE):parent(parent), m_status(status)
+			{
+				if ((this->m_data = parent->__findNode__(ele)) == nullptr)
+				{
+					this->m_status = __ITERATOR_STAT__::DISABLE;
+					this->parent = nullptr;
+				}
+			}
+			iterator(const iterator<T>& it): m_data(it.m_data), m_status(it.m_status), parent(it.parent){}
+			iterator(iterator<T>&& it):m_data(it.m_data), m_status(it.m_status), parent(it.parent)
 			{
 				it.m_data = nullptr;
-				it.status = __ITERATOR_STAT__::ENABLE;
+				it.m_status = __ITERATOR_STAT__::ENABLE;
 				it.parent = nullptr;
 			}
 			~iterator()
@@ -71,12 +75,16 @@ namespace MUZI
 		public:
 			void disable()
 			{
-				this->status = __ITERATOR_STAT__::DISABLE;
+				this->m_status = __ITERATOR_STAT__::DISABLE;
+			}
+			inline int status()
+			{
+				return this->m_status;
 			}
 		public:
 			void operator++()
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE)
+				if (this->m_status == __ITERATOR_STAT__::DISABLE)
 				{
 					return;
 				}
@@ -84,7 +92,7 @@ namespace MUZI
 			}
 			void operator--()
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE)
+				if (this->m_status == __ITERATOR_STAT__::DISABLE)
 				{
 					return;
 				}
@@ -92,13 +100,13 @@ namespace MUZI
 			}
 			std::strong_ordering operator<=>(const iterator<T>& that)
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE)
+				if (this->m_status == __ITERATOR_STAT__::DISABLE)
 				{
 					return std::strong_ordering::equivalent;;
 				}
-				if (that.status == __ITERATOR_STAT__::END)
+				if (that.m_status == __ITERATOR_STAT__::END)
 				{
-					if (this->status == __ITERATOR_STAT__::END)
+					if (this->m_status == __ITERATOR_STAT__::END)
 					{
 						return std::strong_ordering::equivalent;
 					}
@@ -115,7 +123,7 @@ namespace MUZI
 			}
 			bool operator==(iterator<T>& it)
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE || this->parent != it.parent)
+				if (this->m_status == __ITERATOR_STAT__::DISABLE || this->parent != it.parent)
 				{
 					return false;
 				}
@@ -123,7 +131,7 @@ namespace MUZI
 			}
 			const T operator* ()
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE)
+				if (this->m_status == __ITERATOR_STAT__::DISABLE)
 				{
 					return T();
 				}
@@ -131,7 +139,7 @@ namespace MUZI
 			}
 			void operator+=(size_t step)
 			{//整个点从最小值往最大值走
-				if (this->status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
+				if (this->m_status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
 				{
 					return;
 				}
@@ -162,14 +170,14 @@ namespace MUZI
 					}
 					if (m_data == nullptr)
 					{
-						this->status == __ITERATOR_STAT__::END;
+						this->m_status == __ITERATOR_STAT__::END;
 						break;
 					}
 				}
 			}
 			void operator-=(size_t step) 
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
+				if (this->m_status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
 				{
 					return;
 				}
@@ -206,15 +214,21 @@ namespace MUZI
 					}
 				}
 			}
-			inline void operator=(iterator<T>& it)
+			void operator=(const iterator<T>& it)
 			{
 				this->m_data = it.m_data;
-				this->status = it.status;
+				this->m_status = it.m_status;
+				this->parent = it.parent;
+			}
+			void operator=(iterator<T>&& it)
+			{
+				this->m_data = it.m_data;
+				this->m_status = it.m_status;
 				this->parent = it.parent;
 			}
 			inline const __MRBTreeNode__<T>* data()
 			{
-				if (this->status == __ITERATOR_STAT__::DISABLE)
+				if (this->m_status == __ITERATOR_STAT__::DISABLE)
 				{
 					return nullptr;
 				}
@@ -222,21 +236,15 @@ namespace MUZI
 			}
 		private:
 			__MRBTreeNode__<T>* m_data;
-			int status;
+			int m_status;
 			MRBTree<T>* parent;
 		};
 	public:// 反向迭代器
 		template<__Tree_Node_Inline_Ele_Type__ T>
 		class reverse_iterator
 		{
-		private:
+		public:
 			friend class MRBTree<T>;
-			enum __ITERATOR_STAT__
-			{
-				ENABLE = 0,
-				DISABLE,
-				END
-			};
 		public:
 			reverse_iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE), parent(nullptr){}
 			reverse_iterator(const reverse_iterator& rit) :m_data(rit.m_data), status(rit.status), parent(rit.parent) {}
@@ -257,7 +265,9 @@ namespace MUZI
 		public:
 			void disable() noexcept
 			{
+				this->parent = nullptr;
 				this->status = __ITERATOR_STAT__::DISABLE;
+				this->m_data = T();
 			}
 		public:
 			void operator++()
@@ -399,13 +409,19 @@ namespace MUZI
 					}
 				}
 			}
-			inline void operator=(reverse_iterator<T>& it)
+			void operator=(const reverse_iterator<T>& it)
 			{
 				this->m_data = it.m_data;
 				this->status = it.status;
 				this->parent = it.parent;
 			}
-			inline const __MRBTreeNode__<T>* data()
+			void operator=(reverse_iterator<T>&& it)
+			{
+				this->m_data = it.m_data;
+				this->status = it.status;
+				this->parent = it.parent;
+			}
+			const __MRBTreeNode__<T>* data() const
 			{
 				if (this->status == __ITERATOR_STAT__::DISABLE)
 				{
@@ -413,6 +429,7 @@ namespace MUZI
 				}
 				return this->m_data;
 			}
+
 		private:
 			__MRBTreeNode__<T>* m_data;
 			int status;
@@ -472,7 +489,7 @@ namespace MUZI
 			//{
 			//	return iterator<T>();
 			//}
-			return iterator<T>(this->__insertNode__(it.m_data->ele), this, iterator<T>::__ITERATOR_STAT__::ENABLE);
+			return iterator<T>(this->__insertNode__(it.m_data->ele), this, __ITERATOR_STAT__::ENABLE);
 			
 		}
 		void insert(const T& ele)
@@ -736,7 +753,10 @@ namespace MUZI
 			{
 				ret_ptr->setElement(ele);
 			}
-			
+			else
+			{
+				this->insert(ele);
+			}
 			return ret_ptr;
 		}
 		__MRBTreeNode__<T>* __fixAfterInsert__(__MRBTreeNode__<T>* node)
