@@ -6,6 +6,7 @@
 //#include"MRBTree.h"
 #include<iostream>
 #include<vector>
+#include"MFTP/MFTP.h"
 class a
 {
 

@@ -11,9 +11,41 @@ endif()
 
 project ("CppSTL-shikounuzi")
 
+# 添加头文件路径
 file(GLOB_RECURSE SRC_PATH src/*.h src/*.cpp)
 file(GLOB_RECURSE TEST_PATH test/*.h test/*.cpp)
 file(GLOB_RECURSE H_FILE_PATH src/*.h)
+
+# BOOST的设置
+# 设置不使用静态库
+set (Boost_USE_STATIC_LIBS OFF)
+
+# 设置使用多线程库
+set (Boost_USE_MULTITHREADED ON)
+
+# 设置不使用静态运行时库
+set (Boost_USE_STATIC_RUNTIME OFF)
+
+# 添加boost路径
+SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} F:/CodeLibrary/boost_1_79_0)
+SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} F:/CodeLibrary/boost_1_79_0/stage/lib)
+set(BOOST_ROOT F:/CodeLibrary/boost_1_79_0)# 设置自己的路径
+
+find_package(BOOST REQUIRED  COMPONENTS  system filesystem asio)
+
+if(Boost_FOUND)
+
+include_directories(${Boost_INCLUDE_DIRS}) 
+link_directories(${Boost_LIBRARY_DIRS})
+message(STATUS "Boost 库信息:")
+message(STATUS "Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
+message(STATUS "Boost_LIBRARY_DIRS=${Boost_LIBRARY_DIRS}")
+ 
+message(STATUS "Boost_FILESYSTEM_LIBRARIES=${Boost_FILESYSTEM_LIBRARY}")#为空
+message(STATUS "Boost_LIBRARIES=${BOOST_LIBRARIES}")#为空
+#target_link_libraries(testBoost Boost::filesystem)#有问题
+#target_link_libraries(testBoost PUBLIC ${BOOST_LIBRARIES} PUBLIC ${BOOST_LIBRARIES}
+endif()
 
 # 设置cpp标准
 set(CMAKE_CXX_STANDARD 20)
@@ -24,7 +56,7 @@ include_directories(src/MSTL/h)
 include_directories(src/MAllocator)
 include_directories(src/MTimer)
 include_directories(src/)
-message(STATUS " H_FILE_PATH IS ${H_FILE_PATH}")
+# message(STATUS " H_FILE_PATH IS ${H_FILE_PATH}")
 
 # 将源代码添加到此项目的可执行文件。
 add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" ${SRC_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp" "src/MSTL/h/MTreeMap.h" "src/MSTL/h/MHashMap.h" "src/MSTL/h/MList.h")
