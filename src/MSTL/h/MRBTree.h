@@ -141,8 +141,12 @@ namespace MUZI
 					if (this->m_data->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
 					{
 						this->m_data = this->m_data->getChildNode(__CHILDE_NODE__::RIGHT);
+						while (this->m_data->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+						{
+							this->m_data = this->m_data->getChildNode(__CHILDE_NODE__::LEFT);
+						}
 					}
-					else if (this->m_data == this->m_data->parent->getChildNode(__CHILDE_NODE__::LEFT))
+					else if (this->m_data->parent != nullptr && this->m_data == this->m_data->parent->getChildNode(__CHILDE_NODE__::LEFT))
 					{
 						this->m_data = this->m_data->parent;
 					}
@@ -206,6 +210,7 @@ namespace MUZI
 			{
 				this->m_data = it.m_data;
 				this->status = it.status;
+				this->parent = it.parent;
 			}
 			inline const __MRBTreeNode__<T>* data()
 			{
@@ -225,28 +230,193 @@ namespace MUZI
 		class reverse_iterator
 		{
 		private:
+			friend class MRBTree<T>;
 			enum __ITERATOR_STAT__
 			{
 				ENABLE = 0,
-				DISABLE
+				DISABLE,
+				END
 			};
 		public:
-			reverse_iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE){}
-			reverse_iterator(const reverse_iterator& rit) :m_data(rit.m_data), status(rit.status) {}
+			reverse_iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE), parent(nullptr){}
+			reverse_iterator(const reverse_iterator& rit) :m_data(rit.m_data), status(rit.status), parent(rit.parent) {}
+			reverse_iterator(__MRBTreeNode__<T>& node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), status(status), parent(parent) {}
+			reverse_iterator(__MRBTreeNode__<T>* node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(node), status(status), parent(parent) {}
 			reverse_iterator(reverse_iterator&& rit) noexcept :m_data(rit.m_data), status(rit.status)
 			{
 				rit.m_data = nullptr;
 				rit.status = __ITERATOR_STAT__::DISABLE;
+				rit.parent = nullptr;
 			}
 			~reverse_iterator()
 			{
 				this->m_data = nullptr;
 				this->status = __ITERATOR_STAT__::DISABEL;
+				this->parent = nullptr;
 			}
-
+		public:
+			void disable() noexcept
+			{
+				this->status = __ITERATOR_STAT__::DISABLE;
+			}
+		public:
+			void operator++()
+			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return;
+				}
+				*this += 1;
+			}
+			void operator--()
+			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return;
+				}
+				*this -= 1;
+			}
+			std::strong_ordering operator<=>(const iterator<T>& that)
+			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return std::strong_ordering::equivalent;;
+				}
+				if (that.status == __ITERATOR_STAT__::END)
+				{
+					if (this->status == __ITERATOR_STAT__::END)
+					{
+						return std::strong_ordering::equivalent;
+					}
+					else
+					{
+						return std::strong_ordering::less;
+					}
+				}
+				if (this->parent != that.parent) return std::strong_ordering::less;// 不是一个就永远小于
+				// 从设计上迭代器将从最小的节点开始，有序得返回下一个大小的内容，故直接按照ele元素进行排序
+				if (this->m_data->ele < that.m_data->ele) return std::strong_ordering::greater;
+				if (this->m_data->ele > that.m_data->ele) return std::strong_ordering::less;
+				return std::strong_ordering::equivalent;
+			}
+			bool operator!=(iterator<T>& it)
+			{
+				if (this->status == __ITERATOR_STAT__::DISABLE || this->parent != it.parent)
+				{
+					return true;
+				}
+				return (*this <=> it) != 0;
+			}
+			const T operator* ()
+			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return T();
+				}
+				return this->m_data->ele;
+			}
+			void operator+=(size_t step)
+			{//整个点从最小值往最大值走
+				if (this->status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
+				{
+					return;
+				}
+				while (step--)
+				{
+					if (this->status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
+					{
+						return;
+					}
+					while (step--)
+					{
+						//如果有右节点，优先找第一个
+						if (this->m_data->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+						{
+							this->m_data = this->m_data->getChildNode(__CHILDE_NODE__::LEFT);
+						}
+						else if (this->m_data == this->m_data->parent->getChildNode(__CHILDE_NODE__::RIGHT))
+						{
+							this->m_data = this->m_data->parent;
+						}
+						// 叶子节点，两个都为空
+						else if (this->m_data->getChildNode(__CHILDE_NODE__::RIGHT) == nullptr)
+						{
+							//左叶子
+							while (this->m_data != this->m_data->parent->getChildNode(__CHILDE_NODE__::RIGHT))
+							{
+								this->m_data = this->m_data->parent;
+							}
+							this->m_data = this->m_data->parent;
+						}
+						if (this->m_data == nullptr)
+						{
+							__MRBTreeNode__<T>* tmp_data = this->parent->root;
+							while (tmp_data->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+							{
+								tmp_data = tmp_data->getChildNode(__CHILDE_NODE__::LEFT);
+							}
+							this->m_data = tmp_data;
+							break;
+						}
+					}
+				}
+			}
+			void operator-=(size_t step)
+			{
+				if (this->status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
+				{
+					return;
+				}
+				while (step--)
+				{
+					//如果有右节点，优先找第一个
+					if (this->m_data->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
+					{
+						this->m_data = this->m_data->getChildNode(__CHILDE_NODE__::RIGHT);
+						while (this->m_data->getChildNode(__CHILDE_NODE__::LEFT) != nullptr)
+						{
+							this->m_data = this->m_data->getChildNode(__CHILDE_NODE__::LEFT);
+						}
+					}
+					else if (this->m_data->parent != nullptr && this->m_data == this->m_data->parent->getChildNode(__CHILDE_NODE__::LEFT))
+					{
+						this->m_data = this->m_data->parent;
+					}
+					// 叶子节点，两个都为空
+					else if (this->m_data->getChildNode(__CHILDE_NODE__::LEFT) == nullptr)
+					{
+						//右叶子
+						while (this->m_data != this->m_data->parent->getChildNode(__CHILDE_NODE__::LEFT))
+						{
+							this->m_data = this->m_data->parent;
+						}
+						this->m_data = this->m_data->parent;
+					}
+					if (m_data == nullptr)
+					{
+						this->status == __ITERATOR_STAT__::END;
+						break;
+					}
+				}
+			}
+			inline void operator=(reverse_iterator<T>& it)
+			{
+				this->m_data = it.m_data;
+				this->status = it.status;
+				this->parent = it.parent;
+			}
+			inline const __MRBTreeNode__<T>* data()
+			{
+				if (this->status == __ITERATOR_STAT__::DISABLE)
+				{
+					return nullptr;
+				}
+				return this->m_data;
+			}
 		private:
 			__MRBTreeNode__<T>* m_data;
 			int status;
+			MRBTree<T>* parent;
 		};
 
 
@@ -278,17 +448,30 @@ namespace MUZI
 			}
 			return iterator<T>(*p, this);
 		}
-		iterator<T> end()
+		const iterator<T> end() const 
 		{
 			return this->final_it;
+		}
+		reverse_iterator<T> rbegin()
+		{
+			__MRBTreeNode__<T>* p_ret = this->root;
+			while (p_ret->getChildNode(__CHILDE_NODE__::RIGHT) != nullptr)
+			{
+				p_ret = p_ret->getChildNode(__CHILDE_NODE__::RIGHT);
+			}
+			return reverse_iterator<T>(p_ret, this);
+		}
+		const reverse_iterator<T> rend() const
+		{
+			return this->final_rit;
 		}
 	public:
 		iterator<T> insert(iterator<T>& it)
 		{
-			if (it.parent == this)
-			{
-				return it;
-			}
+			//if (it.parent != this)
+			//{
+			//	return iterator<T>();
+			//}
 			return iterator<T>(this->__insertNode__(it.m_data->ele), this, iterator<T>::__ITERATOR_STAT__::ENABLE);
 			
 		}
@@ -309,6 +492,14 @@ namespace MUZI
 		iterator<T> erase(iterator<T>& it)
 		{
 			iterator<T> it_tmp(it);
+			it_tmp += 1;
+			this->erase(it.m_data->ele);
+			it.disable();
+			return it_tmp;
+		}
+		reverse_iterator<T> earse(reverse_iterator<T>& it)
+		{
+			reverse_iterator<T> it_tmp(it);
 			it_tmp += 1;
 			this->erase(it.m_data->ele);
 			it.disable();
@@ -340,10 +531,6 @@ namespace MUZI
 			}
 			return this->__setNode__(ele, o_ele) != nullptr;
 		}
-		//T get()
-		//{
-
-		//}
 		uint64_t size()
 		{
 			return this->node_size;
@@ -789,11 +976,15 @@ namespace MUZI
 	private:
 		__MRBTreeNode__<T>* root;
 		uint64_t node_size;    
-		static iterator<T> final_it;
+		const static iterator<T> final_it;
+		const static reverse_iterator<T> final_rit;
 	};
 
 	template<__Tree_Node_Inline_Ele_Type__ T>
-	static MRBTree<T>::iterator<T> final_it = MRBTree<T>::iterator<T>::iterator(T(), nullptr, MRBTree<T>::iterator<T>::__ITERATOR_STAT__::END);
+	const static MRBTree<T>::iterator<T> final_it = MRBTree<T>::iterator<T>::iterator(T(), nullptr, MRBTree<T>::iterator<T>::__ITERATOR_STAT__::END);
+
+	template<__Tree_Node_Inline_Ele_Type__ T>
+	const static MRBTree<T>::reverse_iterator<T> final_rit = MRBTree<T>::reverse_iterator<T>::reverse_iterator(T(), nullptr, MRBTree<T>::reverse_iterator<T>::__ITERATOR_STAT__::END);
 
 	// 未知bug 当该方法写进MRBTree时，或报错 未满足关联约束 的错误
 	template<__Tree_Node_Inline_Ele_Type__ T>
