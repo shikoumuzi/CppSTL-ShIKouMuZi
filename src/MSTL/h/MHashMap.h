@@ -12,7 +12,7 @@ namespace MUZI
 	public:
 		static V null;
 	public:
-		template<typename V, typename K = uint32_t>
+		template<typename V, typename K = uint64_t>
 			requires std::totally_ordered<K>
 		struct __MMapPair__
 		{
@@ -35,8 +35,6 @@ namespace MUZI
 			{
 				if (this->first_key > that.first_key) return std::weak_ordering::greater;
 				if (this->first_key < that.first_key) return std::weak_ordering::less;
-				if (this->second_key > this->second_key) return std::weak_ordering::greater;
-				if (this->second_key < this->second_key) return std::weak_ordering::less;
 				return std::strong_ordering::equivalent;
 			}
 			bool operator!=(const __MMapPair__<V ,K>& that)
@@ -59,6 +57,24 @@ namespace MUZI
 				this->node = that.node;
 			}
 		public:
+			__MMapPair__* match(K& second_key)
+			{
+				if (this->second_key == second_key)
+				{
+					return this;
+				}
+				__MMapPair__* ret_p = this->node;
+				while (ret_p != nullptr)
+				{
+					if (ret_p->second_key == second_key)
+					{
+						return ret_p;
+					}
+					ret_p = ret_p->node;
+				}
+				
+			}
+		public:
 			__MMapPair__<V, K>* next()
 			{
 				return this->node;
@@ -75,20 +91,24 @@ namespace MUZI
 			__MMapPair__<V, K>* node;
 		};
 	public:
-		using KEY = uint32_t;
+		using KEY = uint64_t;
 	public:
 		MHashMap()
 		{
 			this->tree = new MRBTree<__MMapPair__<V>>();
 		}
 		MHashMap(const MHashMap<K, V>& map) = delete;
-		MHashMap(MHashMap<K, V>&& map)
+		MHashMap(MHashMap<K, V>&& that)
 		{
-
+			this->tree = that.tree;
+			that.tree = nullptr; 
 		}
 		~MHashMap()
 		{
-			
+			if (this->tree == nullptr)
+			{
+				delete this->tree;
+			}
 		}
 	public:
 		// 设置map
@@ -100,37 +120,46 @@ namespace MUZI
 		}
 		const V& get(K& key)
 		{
-			__MMapPair__<V> tmp_pair(hashmap_1(key), hashmap_2(key));
+			KEY key1 = hashmap_1(key);
+			KEY key2 = hashmap_2(key);
+			__MMapPair__<V> tmp_pair(key1, key2);
 			__MMapPair__<V>* tmp_p_pair = nullptr;
 			if ((tmp_p_pair = this->tree->find(tmp_pair)) == nullptr)
 			{
 				return this->null;
 			}
-			return tmp_p_pair->value;
+			return tmp_p_pair->match(key2)->value;
 
 		}
 		const V get(K& key) const
 		{
-
+			KEY key1 = hashmap_1(key);
+			KEY key2 = hashmap_2(key);
+			__MMapPair__<V> tmp_pair(key1, key2);
+			__MMapPair__<V>* tmp_p_pair = nullptr;
+			if ((tmp_p_pair = this->tree->find(tmp_pair)) == nullptr)
+			{
+				return this->null;
+			}
+			return tmp_p_pair->match(key2)->value;
 		}
 		void insert(K& key, V& value)
 		{
-			
+			this->tree->insert(__MMapPair__<V>(hashmap_1(key), hashmap_2(key), value));
 		}
 		V& operator[](K& key)
 		{
 			V& tmp_v = this->null;
-
-			__MMapPair__<V> tmp_pair(hashmap_1(key), hashmap_2(key));
+			KEY key1 = hashmap_1(key), key2 = hashmap_2(key);
+			__MMapPair__<V> tmp_pair(key1, key2);
 			__MMapPair__<V>* tmp_p_pair = nullptr;
 			if ((tmp_p_pair = this->tree->find(tmp_pair)) != nullptr)
 			{
-				return tmp_p_pair->value;
+				return tmp_p_pair->match(key2)->value;
 			}
 			tmp_v = V();
 			this->insert(key, tmp_v);
 			return tmp_v;
-
 		}
 	private:
 		void __delete__()
@@ -141,20 +170,72 @@ namespace MUZI
 			}
 		}
 	private:
+		//MurmurHash
 		static KEY hashmap_1(K& key)
 		{
-			if (sizeof(K) > 8)
+			const uint64_t m = 0xc6a4a7935bd1e995;
+			const int r = 47;
+			unsigned int seed = 0x6589744551114;
+			int len = sizeof(K) / sizeof(char);
+
+			uint64_t h = seed ^ (len * m);
+
+			const uint64_t* data = (const uint64_t*)key;
+			const uint64_t* end = data + (len / 8);
+
+			while (data != end)
 			{
-				return 0;
+				uint64_t k = *data++;
+
+				k *= m;
+				k ^= k >> r;
+				k *= m;
+
+				h ^= k;
+				h *= m;
+			}
+
+			const unsigned char* data2 = (const unsigned char*)data;
+
+			switch (len & 7)
+			{
+			case 7: h ^= uint64_t(data2[6]) << 48;
+			case 6: h ^= uint64_t(data2[5]) << 40;
+			case 5: h ^= uint64_t(data2[4]) << 32;
+			case 4: h ^= uint64_t(data2[3]) << 24;
+			case 3: h ^= uint64_t(data2[2]) << 16;
+			case 2: h ^= uint64_t(data2[1]) << 8;
+			case 1: h ^= uint64_t(data2[0]);
+				h *= m;
+			};
+
+			h ^= h >> r;
+			h *= m;
+			h ^= h >> r;
+
+			return h;
+		}
+		//IDEA HASH
+		static KEY hashmap_2(K& key)
+		{
+			int result = 0;
+			int key_size = sizeof(K);
+			// 如果大于八个字节
+			if (key_size >= 2 * sizeof(int))
+			{
+				int multiple = key_size / sizeof(int);
+				for (int i = 0; i < multiple; ++i)
+				{
+					// 取每一位做运算
+					// 这里基于IDEA自动生成的HashCode编写
+					result = 31 * result + *(static_cast<int*>(&key) + i);
+				}
+				return result;
 			}
 			else
 			{
-				return 0;
+				return reinterpret_cast<int>(key);
 			}
-		}
-		static KEY hashmap_2(K& key)
-		{
-
 		}
 
 	private:

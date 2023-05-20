@@ -52,7 +52,10 @@ namespace MUZI
 		using __DATA_TYPE__ = MMapPair<K, V>;
 		using __TREE_TYPE__ = MRBTree<__DATA_TYPE__>;
 	public:
-		MTreeMap(){}
+		MTreeMap()
+		{
+			this->tree = new MRBTree<MMapPair<K, V>>();
+		}
 		MTreeMap(const MTreeMap& that) = delete;
 		MTreeMap(MTreeMap<K, V>&& that)
 		{
