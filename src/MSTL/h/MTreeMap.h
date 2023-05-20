@@ -38,9 +38,9 @@ namespace MUZI
 				if (this->key < that.key) return std::strong_ordering::less;
 				return std::strong_ordering::equivalent;
 			}
-			bool operator==(const MMapPair<K, V>& that)
+			bool operator!=(const MMapPair<K, V>& that)
 			{
-				return (*this <=> that) == 0;
+				return (*this <=> that) != 0;
 			}
 		};
 	private:

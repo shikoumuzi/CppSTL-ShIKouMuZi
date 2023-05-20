@@ -11,8 +11,7 @@ namespace MUZI {
 	template<typename T>
 	concept __muzi_alloctor_mod_bitmap_data_type__ = requires(T x)
 	{
-		std::unsigned_integral<T>;
-		sizeof(T) % 16 == 0;
+		sizeof(T) % 8 == 0;
 	};
 
 	template<__muzi_alloctor_mod_bitmap_data_type__ T = uint64_t>

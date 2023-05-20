@@ -10,30 +10,64 @@ namespace MUZI
 	class MHashMap
 	{
 	public:
-		template<typename V>
-		struct __MMap_List__
+		template<typename V, typename K = uint32_t>
+			requires std::totally_ordered<K>
+		struct __MMapPair__
 		{
 		private:
-			static MBitmapAllocator<struct __MMap_List__> alloc;
+			static MBitmapAllocator<struct __MMapPair__<V, K> > alloc;	
 		public:
-			__MMap_List__(V value)
+			__MMapPair__(K& first_key, K& second_key, V& value)
 			{
+				this->first_key = first_key;
+				this->second_key = second_key;
 				this->value = value;
 				this->next = nullptr;
 			}
-			__MMap_List__(const __MMap_List__<V>&) = delete;
-			__MMap_List__(__MMap_List__<V>&& list)
+			__MMapPair__(K&& first_key, K&& second_key, V& value)
+			{
+				this->first_key = first_key;
+				this->second_key = second_key;
+				this->value = value;
+				this->next = nullptr;
+			}
+			__MMapPair__(const __MMapPair__<V>&) = delete;
+			__MMapPair__(__MMapPair__<V>&& list)
 			{
 				this->value = value;
 				this->next = this->next;
 			}
 		public:
+			std::weak_ordering operator<=>(const __MMapPair__<V, K>& that)
+			{
+				if (this->first_key > that.first_key) return std::weak_ordering::greater;
+				if (this->first_key < that.first_key) return std::weak_ordering::less;
+				if (this->second_key > this->second_key) return std::weak_ordering::greater;
+				if (this->second_key < this->second_key) return std::weak_ordering::less;
+				return std::strong_ordering::equivalent;
+			}
+			bool operator!=(const __MMapPair__<V ,K>& that)
+			{
+				return (*this <=> that) != 0;
+			}
+		public:
+			__MMapPair__<V, K>* next()
+			{
+				return this->next;
+			}
+			__MMapPair__<V, K>* createNode(K& first_key, K& second_key, V& value)
+			{
+				this->next = this->alloc.allocate(1);
+				this->next = new(this->next) __MMapPair__<V, K>(first_key, second_key, value);
+			}
+		public:
+			K first_key;
+			K second_key;
 			V value;
-			__MMap_List__* next;
+			__MMapPair__<V, K>* next;
 		};
 	public:
 		using KEY = uint32_t;
-		using VALUE = struct __MMap_List__;
 	public:
 		MHashMap()
 		{
@@ -55,13 +89,13 @@ namespace MUZI
 		// ÉèÖÃmap
 		void set(K& key, V& value)
 		{
-			KEY k = this->hashmap_1(key);
-
-			this->m_map.set(k, value);
+			__MMapPair__<V> tmp_pair(hashmap_1(key), hashmap_2(key), value);
+			this->tree->set(tmp_pair, tmp_pair);
+			
 		}
 		const V& get(K& key)
 		{
-			return this->m_map.get()
+			
 		}
 		const V get(K& key) const
 		{
@@ -73,16 +107,16 @@ namespace MUZI
 		{
 		}
 	private:
-		uint32_t hashmap_1(K key)
+		static KEY hashmap_1(K& key)
 		{
 
 		}
-		uint32_t hashmap_2(K key)
+		static KEY hashmap_2(K& key)
 		{
 
 		}
 	private:
-		MTreeMap<KEY, VALUE> m_map;
+		MRBTree< __MMapPair__<V> > tree;
 	};
 }
 
