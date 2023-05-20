@@ -56,9 +56,16 @@ namespace MUZI
 		MTreeMap(const MTreeMap& that) = delete;
 		MTreeMap(MTreeMap<K, V>&& that)
 		{
-			this->tree = new MRBTree< MMapPair<K, V> >(std::move(*that.tree));
+			this->tree = that.tree;
+			that.tree = nullptr;
 		}
-
+		~MTreeMap()
+		{
+			if (this->tree != nullptr)
+			{
+				delete this->tree;
+			}
+		}
 	public:
 		template<typename K, typename V>
 			requires std::totally_ordered<K>
@@ -282,7 +289,7 @@ namespace MUZI
 		}
 		V& get(K& key)
 		{
-			const MMapPair<K, V>* result;
+			MMapPair<K, V>* result;
 			return ((result = this->tree->find(MMapPair<K, V>(key))) != nullptr) ? result->value : MMapPair<K, V>::null;
 		}
 		const V get(K& key) const
@@ -299,7 +306,8 @@ namespace MUZI
 			V tmp_v;
 			if ((tmp_v = this->get(key)) == MMapPair<K, V>::null)
 			{
-				this->insert(key, V());
+				tmp_v = V();
+				this->insert(key, tmp_v);
 			}
 			else
 			{

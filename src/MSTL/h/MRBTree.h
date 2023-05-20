@@ -533,7 +533,7 @@ namespace MUZI
 
 			this->node_size -= 1;
 		}
-		const T* find(const T& ele) const
+		T* find(const T& ele) const
 		{
 			if (root == nullptr)
 			{
@@ -554,7 +554,14 @@ namespace MUZI
 		{
 			return this->node_size;
 		}
-
+	public:
+		void operator=(MRBTree<T>&& that)
+		{
+			this->__delete__();
+			this->node_size = that.node_size;
+			this->root = that.root;
+			that.__delete__();
+		}
 	private:
 		__MRBTreeNode__<T>* __createNode__()
 		{
