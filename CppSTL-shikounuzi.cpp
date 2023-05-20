@@ -7,6 +7,7 @@
 #include<iostream>
 #include<vector>
 #include"MFTP/MFTP.h"
+#include"MHashMap.h"
 class a
 {
 
