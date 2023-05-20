@@ -5,7 +5,7 @@
 #include"MBitmapAllocator.h"
 namespace MUZI
 {
-	template<typename K, typename V>
+	template<__MMAP_KEY__ K, __MMAP_VALUE__ V>
 		requires std::totally_ordered<K>
 	class MHashMap
 	{
@@ -15,22 +15,11 @@ namespace MUZI
 		struct __MMapPair__
 		{
 		private:
-			static MBitmapAllocator<struct __MMapPair__<V, K> > alloc;	
+			static MBitmapAllocator<__MMapPair__<V, K> > alloc;	
 		public:
-			__MMapPair__(K& first_key, K& second_key, V& value)
-			{
-				this->first_key = first_key;
-				this->second_key = second_key;
-				this->value = value;
-				this->next = nullptr;
-			}
-			__MMapPair__(K&& first_key, K&& second_key, V& value)
-			{
-				this->first_key = first_key;
-				this->second_key = second_key;
-				this->value = value;
-				this->next = nullptr;
-			}
+			__MMapPair__(): next(nullptr){}
+			__MMapPair__(K& first_key, K& second_key, V& value) :first_key(first_key), second_key(second_key), value(value), next(nullptr){}
+			__MMapPair__(K&& first_key, K&& second_key, V& value) :first_key(first_key), second_key(second_key), value(value), next(nullptr) {}
 			__MMapPair__(const __MMapPair__<V>&) = delete;
 			__MMapPair__(__MMapPair__<V>&& list)
 			{
@@ -53,7 +42,7 @@ namespace MUZI
 		public:
 			__MMapPair__<V, K>* next()
 			{
-				return this->next;
+				return this->node;
 			}
 			__MMapPair__<V, K>* createNode(K& first_key, K& second_key, V& value)
 			{
@@ -64,7 +53,7 @@ namespace MUZI
 			K first_key;
 			K second_key;
 			V value;
-			__MMapPair__<V, K>* next;
+			__MMapPair__<V, K>* node;
 		};
 	public:
 		using KEY = uint32_t;
@@ -99,9 +88,11 @@ namespace MUZI
 		}
 		const V get(K& key) const
 		{
+
 		}
 		void inset(K& key, V& value)
 		{
+			
 		}
 		const V& operator[](K& key)
 		{
@@ -109,7 +100,14 @@ namespace MUZI
 	private:
 		static KEY hashmap_1(K& key)
 		{
-
+			if (sizeof(K) > 8)
+			{
+				return 0;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		static KEY hashmap_2(K& key)
 		{

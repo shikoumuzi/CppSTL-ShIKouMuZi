@@ -8,15 +8,14 @@
 #include<concepts>
 namespace MUZI
 {
-	template<typename K, typename V>
-		requires std::totally_ordered<K>
+	template<__MMAP_KEY__ K, __MMAP_VALUE__ V>
 	class MTreeMap 
 	{
 	public:
 		friend class iterator;
 		friend class reverse_iterator;
 	public:
-		template<typename K, typename V>
+		template<__MMAP_KEY__ K, __MMAP_VALUE__ V>
 			requires std::totally_ordered<K>
 		struct MMapPair
 		{
@@ -276,7 +275,7 @@ namespace MUZI
 			MMapPair<K, V> pair(key, value);
 			this->tree->set(pair, pair);
 		}
-		const V& get(K& key)
+		V& get(K& key)
 		{
 			const MMapPair<K, V>* result;
 			return ((result = this->tree->find(MMapPair<K, V>(key))) != nullptr) ? result->value : MMapPair<K, V>::null;
@@ -286,13 +285,21 @@ namespace MUZI
 			const MMapPair<K, V>* result;
 			return ((result = this->tree->find(MMapPair<K, V>(key))) != nullptr) ? result->value : MMapPair<K, V>::null;
 		}
-		void inset(K& key, V& value)
+		void insert(K& key, V& value)
 		{
 			this->tree->insert(std::forward<MMapPair<K, V>>(MMapPair(key, value)));
 		}
-		const V& operator[](K& key)
+		V& operator[](K& key)
 		{
-			return this->get(key);
+			V tmp_v;
+			if ((tmp_v = this->get(key)) == MMapPair<K, V>::null)
+			{
+				this->insert(key, V());
+			}
+			else
+			{
+				return tmp_v;
+			}
 		}
 		const MRBTree<MMapPair<K, V>>& data() const 
 		{

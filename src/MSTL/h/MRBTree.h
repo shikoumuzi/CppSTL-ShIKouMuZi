@@ -533,7 +533,7 @@ namespace MUZI
 
 			this->node_size -= 1;
 		}
-		const T* find(const T& ele)
+		const T* find(const T& ele) const
 		{
 			if (root == nullptr)
 			{

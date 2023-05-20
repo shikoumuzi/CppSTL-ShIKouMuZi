@@ -54,8 +54,21 @@ namespace MUZI
 
 	};
 
+	template<typename K>
+	concept __MMAP_KEY__ = requires(K k)
+	{
+		{K()};
+		std::totally_ordered<K>;
+	};
 
-	template<typename K, typename V, __MMAP_TYPE__<K, V> Map>
+	template<typename V>
+	concept __MMAP_VALUE__ = requires(V v)
+	{
+		{V()};
+	};
+
+
+	template<__MMAP_KEY__ K, __MMAP_VALUE__ V, __MMAP_TYPE__<K, V> Map>
 	class MMap
 	{
 	public:
