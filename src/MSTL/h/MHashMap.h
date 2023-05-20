@@ -10,6 +10,8 @@ namespace MUZI
 	class MHashMap
 	{
 	public:
+		static V null;
+	public:
 		template<typename V, typename K = uint32_t>
 			requires std::totally_ordered<K>
 		struct __MMapPair__
@@ -18,6 +20,8 @@ namespace MUZI
 			static MBitmapAllocator<__MMapPair__<V, K> > alloc;	
 		public:
 			__MMapPair__(): next(nullptr){}
+			__MMapPair__(K& first_key, K& second_key): first_key(first_key), second_key(second_key), value(V()), next(nullptr) {}
+			__MMapPair__(K&& first_key, K&& second_key): first_key(first_key), second_key(second_key), value(V()), next(nullptr) {}
 			__MMapPair__(K& first_key, K& second_key, V& value) :first_key(first_key), second_key(second_key), value(value), next(nullptr){}
 			__MMapPair__(K&& first_key, K&& second_key, V& value) :first_key(first_key), second_key(second_key), value(value), next(nullptr) {}
 			__MMapPair__(const __MMapPair__<V>&) = delete;
@@ -75,42 +79,66 @@ namespace MUZI
 	public:
 		MHashMap()
 		{
-
+			this->tree = new MRBTree<__MMapPair__<V>>();
 		}
-		MHashMap(const MHashMap<K, V>& map)
-		{
-
-		}
+		MHashMap(const MHashMap<K, V>& map) = delete;
 		MHashMap(MHashMap<K, V>&& map)
 		{
 
 		}
 		~MHashMap()
 		{
-
+			
 		}
 	public:
 		// …Ë÷√map
 		void set(K& key, V& value)
 		{
 			__MMapPair__<V> tmp_pair(hashmap_1(key), hashmap_2(key), value);
-			this->tree.set(tmp_pair, tmp_pair);
+			this->tree->set(tmp_pair, tmp_pair);
 			
 		}
 		const V& get(K& key)
 		{
-			
+			__MMapPair__<V> tmp_pair(hashmap_1(key), hashmap_2(key));
+			__MMapPair__<V>* tmp_p_pair = nullptr;
+			if ((tmp_p_pair = this->tree->find(tmp_pair)) == nullptr)
+			{
+				return this->null;
+			}
+			return tmp_p_pair->value;
+
 		}
 		const V get(K& key) const
 		{
 
 		}
-		void inset(K& key, V& value)
+		void insert(K& key, V& value)
 		{
 			
 		}
-		const V& operator[](K& key)
+		V& operator[](K& key)
 		{
+			V& tmp_v = this->null;
+
+			__MMapPair__<V> tmp_pair(hashmap_1(key), hashmap_2(key));
+			__MMapPair__<V>* tmp_p_pair = nullptr;
+			if ((tmp_p_pair = this->tree->find(tmp_pair)) != nullptr)
+			{
+				return tmp_p_pair->value;
+			}
+			tmp_v = V();
+			this->insert(key, tmp_v);
+			return tmp_v;
+
+		}
+	private:
+		void __delete__()
+		{
+			if (this->tree != nullptr)
+			{
+				delete this->tree;
+			}
 		}
 	private:
 		static KEY hashmap_1(K& key)
@@ -128,8 +156,9 @@ namespace MUZI
 		{
 
 		}
+
 	private:
-		MRBTree< __MMapPair__<V> > tree;
+		MRBTree< __MMapPair__<V> >* tree;
 	};
 }
 

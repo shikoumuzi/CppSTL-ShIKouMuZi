@@ -52,6 +52,7 @@ namespace MUZI
 		//…Ë÷√V
 		{V()};
 
+
 	};
 
 	template<typename K>
@@ -62,9 +63,10 @@ namespace MUZI
 	};
 
 	template<typename V>
-	concept __MMAP_VALUE__ = requires(V v)
+	concept __MMAP_VALUE__ = requires(V v1, V v2)
 	{
 		{V()};
+		{v1 = v2};
 	};
 
 
