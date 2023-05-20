@@ -8,13 +8,13 @@ namespace MUZI {
 	// 相比起普通POOL 这里采用数组代替链表的方式保管内存块
 		// 优点是可以随时将内存资源归还给操作系统、简单精简、有延缓归还能力
 		// 
-	template<typename T>
-	concept __muzi_alloctor_mod_bitmap_data_type__ = requires(T x)
-	{
-		sizeof(T) % 1 == 0;
-	};
+	//template<typename T>
+	//concept __muzi_alloctor_mod_bitmap_data_type__ = requires(T x)
+	//{
+	//	sizeof(T) <= sizeof(uint64_t) * 2;
+	//};
 
-	template<__muzi_alloctor_mod_bitmap_data_type__ T = uint64_t>
+	template<typename T = uint64_t>
 	class MBitmapAllocator :public MAllocator
 	{
 	public:

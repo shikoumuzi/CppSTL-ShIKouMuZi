@@ -39,6 +39,21 @@ namespace MUZI
 			{
 				return (*this <=> that) != 0;
 			}
+			void operator=(const __MMapPair__<V, K>& that)
+			{
+				this->first_key = that.first_key;
+				this->second_key = that.second_key;
+				this->value = that.value;
+				__MMapPair__<V, K>* tmp_node = this->node;
+				__MMapPair__<V, K>* lase_tmp_node = this->node;
+				while (tmp_node != nullptr)
+				{
+					lase_tmp_node = tmp_node;
+					this->alloc.deallocate(lase_tmp_node);
+					tmp_node = tmp_node->node;
+				}
+				this->node = that.node;
+			}
 		public:
 			__MMapPair__<V, K>* next()
 			{
@@ -79,7 +94,7 @@ namespace MUZI
 		void set(K& key, V& value)
 		{
 			__MMapPair__<V> tmp_pair(hashmap_1(key), hashmap_2(key), value);
-			this->tree->set(tmp_pair, tmp_pair);
+			this->tree.set(tmp_pair, tmp_pair);
 			
 		}
 		const V& get(K& key)

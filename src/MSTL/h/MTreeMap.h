@@ -41,6 +41,11 @@ namespace MUZI
 			{
 				return (*this <=> that) != 0;
 			}
+			void operator=(const MMapPair<K, V>& that)
+			{
+				this->key = that.key;
+				this->value = that.value;
+			}
 		};
 	private:
 		friend class iterator;
