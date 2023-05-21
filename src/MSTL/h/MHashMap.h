@@ -79,7 +79,12 @@ namespace MUZI
 			{
 				return this->node;
 			}
-			__MMapPair__<V, K>* createNode(K& first_key, K& second_key, V& value)
+			__MMapPair__<V, K>* insert(__MMapPair__<V, K>& pair)
+			{
+				this->next = this->alloc.allocate(1);
+				this->next = new(this->next) __MMapPair__<V, K>(pair.first_key, pair.second_key, pair.value);
+			}
+			__MMapPair__<V, K>* insert(K& first_key, K& second_key, V& value)
 			{
 				this->next = this->alloc.allocate(1);
 				this->next = new(this->next) __MMapPair__<V, K>(first_key, second_key, value);
@@ -145,7 +150,16 @@ namespace MUZI
 		}
 		void insert(K& key, V& value)
 		{
-			this->tree->insert(__MMapPair__<V>(hashmap_1(key), hashmap_2(key), value));
+			__MMapPair__<V> tmp_pair(hashmap_1(key), hashmap_2(key), value);
+			__MMapPair__<V>* tmp_p_pair = nullptr;
+			if ((tmp_p_pair = this->tree->find(tmp_pair)) != nullptr)
+			{
+				tmp_p_pair->insert(tmp_pair);
+			}
+			else
+			{
+				this->tree->insert(tmp_pair);
+			}
 		}
 		V& operator[](K& key)
 		{
@@ -176,7 +190,7 @@ namespace MUZI
 			const uint64_t m = 0xc6a4a7935bd1e995;
 			const int r = 47;
 			unsigned int seed = 0x6589744551114;
-			int len = sizeof(K) / sizeof(char);
+			int len = sizeof(K);
 
 			uint64_t h = seed ^ (len * m);
 
