@@ -1,0 +1,9 @@
+#ifndef  __MUZI_MERROR_H__
+#define  __MUZI_MERROR_H__
+
+enum MERROR
+{
+	COMPLETE = 0,// 完成并且无错
+};
+#endif // ! __MUZI_MERROR_H__
+
