@@ -41,9 +41,8 @@ namespace MUZI {
 			static class MPoolAllocator __MUZI_MPOOLALLOCATOR__;
 			return dynamic_cast<MAllocator*>(&__MUZI_MPOOLALLOCATOR__);
 		}
-	private:
-		MPoolAllocator();
 	public:
+		MPoolAllocator();
 		~MPoolAllocator();
 	public://数据模型
 		union MAllocatorRep

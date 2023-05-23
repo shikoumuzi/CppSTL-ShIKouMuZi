@@ -11,11 +11,16 @@
 class MFTP
 {
 public:
-	enum ROLE
+	enum ROLE_ID
 	{
 		UNKOWN = 0,
 		CLIENT,
 		SERVER
+	};
+	enum ROLE_MODE
+	{
+		One2Mulit = 0,
+		One2One,
 	};
 private:
 	enum ProtoType
@@ -28,7 +33,7 @@ private:
 	enum ProtoID
 	{
 		MFTP_BASE_MESSAGE = -1,
-		IDENTIFICATION,
+		MFTP_IDENTIFICATION,
 	};
 	using ROLE = size_t;
 	union Proto
@@ -49,7 +54,7 @@ private:
 			unsigned int server_port;
 			time_t time;
 		};
-		struct Data
+		struct Data 
 		{
 			struct BaseMessage base_message;
 			char data[0];
@@ -63,11 +68,11 @@ public:
 	// 默认构造函数，会先用组播方式寻找对方并连接
 	MFTP() 
 		:identification({ Proto::BaseMessage(ProtoID::MFTP_BASE_MESSAGE, sizeof(Proto::Identification), ProtoType::IDENTIFICATION, 0), 0, 0, 0, 0, 0 }),
-		role(ROLE::UNKOWN){}
+		role(ROLE_ID::UNKOWN){}
 	// 知道对方地址
 	MFTP(ROLE role , uint16_t client_ip4_addr, unsigned int client_port, uint16_t server_ip4_addr, unsigned int server_port)
 		:identification({ Proto::BaseMessage(ProtoID::MFTP_BASE_MESSAGE, sizeof(Proto::Identification), ProtoType::IDENTIFICATION, 0), 
-			client_ip4_addr, client_port, server_ip4_addr, server_port, 0 }){}
+			client_ip4_addr, server_ip4_addr, client_port, server_port, 0 }){}
 public:
 	int searchEachOther()
 	{

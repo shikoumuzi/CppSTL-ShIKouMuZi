@@ -9,6 +9,7 @@
 #include"MFTP/MFTP.h"
 #include"MHashMap.h"
 #include"MFTP/MFTP.h"
+#include"MDeque.h"
 class a
 {
 

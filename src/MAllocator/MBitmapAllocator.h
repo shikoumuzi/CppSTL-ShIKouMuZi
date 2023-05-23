@@ -18,14 +18,16 @@ namespace MUZI {
 	class MBitmapAllocator :public MAllocator
 	{
 	public:
+		template<typename T>
 		static MAllocator* getMAllocator(void* p = nullptr)
 		{
-			return dynamic_cast<MAllocator*>(new MBitmapAllocator());
+			return dynamic_cast<MAllocator*>(new MBitmapAllocator<T>());
 		}
-	private:
+	
+
+	public:
 		MBitmapAllocator()
 		{}
-	public:
 		~MBitmapAllocator()
 		{}
 	private:

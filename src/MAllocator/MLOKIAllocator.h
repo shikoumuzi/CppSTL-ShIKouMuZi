@@ -10,9 +10,8 @@ namespace MUZI {
 		{
 			return dynamic_cast<MAllocator*>(new MLOKIAllocator);
 		}
-	private:
-		MLOKIAllocator();
 	public:
+		MLOKIAllocator();
 		~MLOKIAllocator();
 	public:
 		class MFixedAllocator
