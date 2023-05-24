@@ -4,6 +4,8 @@
 enum MERROR
 {
 	COMPLETE = 0,// 完成并且无错
+	NOOBJECT,
+	UNUSEFUL
 };
 #endif // ! __MUZI_MERROR_H__
 

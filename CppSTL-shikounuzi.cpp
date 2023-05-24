@@ -10,6 +10,7 @@
 #include"MHashMap.h"
 #include"MFTP/MFTP.h"
 #include"MDeque.h"
+#include"MFileSystem/MFileDataBase.h"
 class a
 {
 

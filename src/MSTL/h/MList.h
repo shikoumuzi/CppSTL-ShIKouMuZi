@@ -18,7 +18,12 @@ namespace MUZI
 		MList():alloc(new MBitmapAllocator<T>()), root(nullptr){}
 		MList(const MList<T>& that)
 		{
-			
+			this->__delete__();
+			struct __MList_Node__<T>* tmp_p1 = that.root;
+			while (tmp_p1 != nullptr)
+			{
+				
+			}
 		}
 		~MList()
 		{
