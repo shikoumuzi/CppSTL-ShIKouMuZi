@@ -79,7 +79,7 @@ include_directories(src/)
 # message(STATUS " H_FILE_PATH IS ${H_FILE_PATH}")
 
 # 将源代码添加到此项目的可执行文件。
-add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" ${SRC_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp" "src/MSTL/h/MTreeMap.h" "src/MSTL/h/MHashMap.h" "src/MSTL/h/MList.h" "src/MBase/MError.h" "src/MSTL/h/MStack.h" "src/MSTL/h/MDeque.h" "src/MFTP/MFTP.cpp" "src/MFTP/MFTPProto.h" "src/MFileSystem/MFileDataBase.h" "src/MFileSystem/MFileDataBase.cpp" "src/MFileSystem/MFileInput.h" "src/MFileSystem/MFileOutput.cpp" "src/MFileSystem/MFileOutput.h" "src/MFileSystem/MFileInput.cpp" "src/MFileSystem/MFile.cpp" "src/MFileSystem/MPath.h" "src/MFileSystem/MPath.cpp")
+add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" ${SRC_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp" "src/MSTL/h/MTreeMap.h" "src/MSTL/h/MHashMap.h" "src/MSTL/h/MList.h" "src/MBase/MError.h" "src/MSTL/h/MStack.h" "src/MSTL/h/MDeque.h" "src/MFTP/MFTP.cpp" "src/MFTP/MFTPProto.h" "src/MFileSystem/MFileDataBase.h" "src/MFileSystem/MFileDataBase.cpp" "src/MFileSystem/MFileInput.h" "src/MFileSystem/MFileOutput.cpp" "src/MFileSystem/MFileOutput.h" "src/MFileSystem/MFileInput.cpp" "src/MFileSystem/MFile.cpp"   "src/MFileSystem/FileIOQueue.h")
 
 include_directories(${H_FILE_PATH})
 # 将测试添加到此项目的可执行文件。

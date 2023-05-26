@@ -2,6 +2,7 @@
 #define __MUZI__MFILEDATABASE_H__
 #include<boost/filesystem.hpp>
 #include<boost/filesystem/fstream.hpp>
+#include<boost/system/error_code.hpp>
 #include<string.h>
 #include"MBase/MError.h"
 namespace MUZI
@@ -13,6 +14,10 @@ namespace MUZI
 		using String = std::string;
 		using Fstream = boost::filesystem::fstream;
 		using Path = boost::filesystem::path;
+		using GetFileStaus = boost::filesystem::file_status(*)(Path const &);
+		using BError = boost::system::error_code;
+		static GetFileStaus getFileStatus;
+
 	private:
 		struct __MFileDataBase_Data__;
 	public:
