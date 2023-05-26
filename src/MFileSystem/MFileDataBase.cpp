@@ -10,9 +10,12 @@ namespace MUZI
 	
 	};
 
-	MFileDataBase::MFileDataBase()
+	MFileDataBase::MFileDataBase():m_data(new struct __MFileDataBase_Data__)
 	{
-
+		if (!boost::filesystem::exists(Path("./sqlite")))
+		{
+			
+		}
 	}
 	MFileDataBase::MFileDataBase(MFileDataBase&& that)noexcept
 	{
@@ -41,7 +44,7 @@ namespace MUZI
 	// create file database base on the binding message
 	int MFileDataBase::constructDataBase(const char* sqlite_path)
 	{
-
+		
 	}
 	int MFileDataBase::constructDataBase(const String& sqlite_path){}
 
