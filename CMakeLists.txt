@@ -9,10 +9,12 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project (CppSTL-shikounuzi)
+project ("CppSTL-shikounuzi")
 
+
+# 路径变量设置
 set(BOOST_CODE_LIBRARY_PATH F:/CodeLibrary/boost_1_79_0)
-set(SQLITE_CODE_LIBRARY_PATH D:/sqlite)
+set(SQLITE3_CODE_LIBRARY_PATH D:/sqlite)
 
 
 # 添加头文件路径
@@ -31,8 +33,8 @@ set (Boost_USE_MULTITHREADED ON)
 set (Boost_USE_STATIC_RUNTIME OFF)
 
 # 添加boost路径
-SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${BOOST_CODE_LIBRARY_PATH})
-SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${BOOST_CODE_LIBRARY_PATH}/stage/lib)
+set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${BOOST_CODE_LIBRARY_PATH})
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${BOOST_CODE_LIBRARY_PATH}/stage/lib)
 set(BOOST_ROOT ${BOOST_CODE_LIBRARY_PATH})# 设置自己的路径
 
 find_package(BOOST REQUIRED  COMPONENTS  system filesystem asio)
@@ -51,23 +53,18 @@ if(Boost_FOUND)
 endif()
 
 # sqlte配置
-set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE_CODE_LIBRARY_PATH}/sqlite-amalgamation-3410200)
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE_CODE_LIBRARY_PATH})
-set(SQLITE_ROOT ${SQLITE_CODE_LIBRARY_PATH})
+set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-amalgamation-3410200)
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH})
+set(SQLITE3_ROOT ${SQLITE3_CODE_LIBRARY_PATH})
 
 # 连接sqlite
-find_package(sqlite3 REQUIRED)
-if(Sqlite3_FOUND)
-	include_directories(${Boost_INCLUDE_DIRS}) 
-	link_directories(${Boost_LIBRARY_DIRS})
-	message(STATUS "sqlite3 库信息:")
-	message(STATUS "sqlite3_INCLUDE_DIRS=${SQLITE_INCLUDE_DIRS}")
-	message(STATUS "sqlite3_LIBRARY_DIRS=${SQLITE_LIBRARY_DIRS}")
- 
-	message(STATUS "sqlite3_FILESYSTEM_LIBRARIES=${SQLITE_FILESYSTEM_LIBRARY}")#为空
-	message(STATUS "sqlite3_LIBRARIES=${SQLITE_LIBRARIES}")#为空
-	#target_link_libraries(testBoost Boost::filesystem)#有问题
-	#target_link_libraries(testBoost PUBLIC ${BOOST_LIBRARIES} PUBLIC ${BOOST_LIBRARIES}
+find_package(SQLite3 REQUIRED)
+
+if(SQLite3_FOUND)
+	include_directories(${SQLite3_INCLUDE_DIRS})
+	message(STATUS "Sqlite3 库信息:")
+	message(STATUS "Sqlite3_INCLUDE_DIRS=${SQLite3_INCLUDE_DIRS}")
+	message(STATUS "Sqlite3_LIBRARY_DIRS=${SQLite3_LIBRARIES}")
 endif()
 
 # 设置cpp标准
@@ -82,7 +79,7 @@ include_directories(src/)
 # message(STATUS " H_FILE_PATH IS ${H_FILE_PATH}")
 
 # 将源代码添加到此项目的可执行文件。
-add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" ${SRC_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp" "src/MSTL/h/MTreeMap.h" "src/MSTL/h/MHashMap.h" "src/MSTL/h/MList.h" "src/MBase/MError.h" "src/MSTL/h/MStack.h" "src/MSTL/h/MDeque.h" "src/MFTP/MFTP.cpp" "src/MFTP/MFTPProto.h" "src/MFileSystem/MFileDataBase.h" "src/MFileSystem/MFileDataBase.cpp")
+add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" ${SRC_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp" "src/MSTL/h/MTreeMap.h" "src/MSTL/h/MHashMap.h" "src/MSTL/h/MList.h" "src/MBase/MError.h" "src/MSTL/h/MStack.h" "src/MSTL/h/MDeque.h" "src/MFTP/MFTP.cpp" "src/MFTP/MFTPProto.h" "src/MFileSystem/MFileDataBase.h" "src/MFileSystem/MFileDataBase.cpp" "src/MFileSystem/MFileInput.h" "src/MFileSystem/MFileOutput.cpp")
 
 include_directories(${H_FILE_PATH})
 # 将测试添加到此项目的可执行文件。

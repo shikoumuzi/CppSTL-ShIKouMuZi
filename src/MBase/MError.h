@@ -4,6 +4,10 @@
 enum MERROR
 {
 	COMPLETE = 0,// 完成并且无错
+
+	NOADIR,
+	NOAFILE,
+
 	NOOBJECT,
 	UNUSEFUL
 };
