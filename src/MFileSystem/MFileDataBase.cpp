@@ -8,18 +8,21 @@ namespace MUZI
 	struct MFileDataBase::__MFileDataBase_Data__
 	{
 		const char* root;
+		const char* sqlite_dir;
 		sqlite3* sq3;
 	};
 
 	MFileDataBase::GetFileStaus MFileDataBase::getFileStatus = boost::filesystem::status;
 
-	MFileDataBase::MFileDataBase() :m_data(new struct __MFileDataBase_Data__({nullptr, nullptr}))
+	MFileDataBase::MFileDataBase(const char* sqlite_dir_path) :m_data(new struct __MFileDataBase_Data__({nullptr, nullptr}))
 	{
-		if (!boost::filesystem::exists(Path(".\\sqlite")))
+		Path path(sqlite_dir_path);
+		if (!boost::filesystem::exists(path))
 		{
-			boost::filesystem::create_directory(Path(".\\sqlite"));
+			boost::filesystem::create_directory(path);
 		}
 	}
+	MFileDataBase::MFileDataBase(const String& sqlite_dir_path): MFileDataBase(sqlite_dir_path.c_str()) {}
 	MFileDataBase::MFileDataBase(MFileDataBase&& that)noexcept : m_data(that.m_data)
 	{
 		that.m_data = nullptr;
@@ -28,6 +31,7 @@ namespace MUZI
 	{
 		if (this->m_data->sq3 != nullptr)
 		{
+	
 			sqlite3_close(this->m_data->sq3);
 		}
 	}
@@ -56,8 +60,30 @@ namespace MUZI
 	// create file database base on the binding message
 	int MFileDataBase::constructDataBase(const char* sqlite_path) 
 	{
-		sqlite3_open(sqlite_path, &this->m_data->sq3);
-		boost::filesystem::recursive_directory_iterator(Path(sqlite_path));
+	
+		if (sqlite3_open(sqlite_path, &this->m_data->sq3) )
+		{
+			return MERROR::SQLITEOPENERR;
+		}
+
+		String sql_str("");
+
+		if (sqlite3_exec(this->m_data->sq3,
+			sql_str.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
+		{
+			return MERROR::SQLITECREATEERR;
+		}
+
+		boost::filesystem::recursive_directory_iterator end;
+		// skip permisson denied
+		boost::filesystem::recursive_directory_iterator dir_it(Path(sqlite_path), 
+			boost::filesystem::directory_options::skip_permission_denied);
+		
+		while (dir_it != end)
+		{
+
+		}
+		
 	}
 	int MFileDataBase::constructDataBase(const String& sqlite_path)
 	{

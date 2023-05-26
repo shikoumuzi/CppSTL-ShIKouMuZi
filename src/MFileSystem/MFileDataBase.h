@@ -21,7 +21,8 @@ namespace MUZI
 	private:
 		struct __MFileDataBase_Data__;
 	public:
-		MFileDataBase();
+		MFileDataBase(const char* sqlite_dir_path = ".\\sqlite");
+		MFileDataBase(const String& sqlite_dir_path);
 		MFileDataBase(const MFileDataBase&) = delete;
 		MFileDataBase(MFileDataBase&&)noexcept;
 		~MFileDataBase();
