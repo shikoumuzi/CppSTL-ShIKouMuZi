@@ -7,6 +7,12 @@
 #include"MBase/MError.h"
 #include"MFileOutput.h"
 #include<MPoolAllocator.h>
+#include<boost/asio/thread_pool.hpp>
+#include<thread>
+#include<mutex>
+#include<atomic>
+#include<condition_variable>
+#define __MUZI_MFILEDATABASE_SQL_PAGE_TABLE_SIZE__ 256
 namespace MUZI
 {
 
@@ -20,7 +26,9 @@ namespace MUZI
 		using GetFileStaus = boost::filesystem::file_status(*)(Path const &);
 		using BError = boost::system::error_code;
 		static GetFileStaus getFileStatus;
-	
+		using Thread = std::thread;
+		using Mutex = std::mutex;
+		using Condition = std::condition_variable;
 	private:
 		struct __MFileDataBase_Data__;
 	public:

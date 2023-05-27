@@ -7,9 +7,17 @@ namespace MUZI
 
 	struct MFileDataBase::__MFileDataBase_Data__
 	{
-		const char* root;
-		const char* sqlite_dir;
+		char* root;
+		char* sqlite_dir;
 		sqlite3* sq3;
+		struct Sql_Thread
+		{
+			Thread* sql_exec_th;
+			Mutex* sql_exec_lock;
+			Condition* sql_exec_cond;
+			bool THREAD_WORK;
+		}sql_thread;
+
 	};
 	
 	struct __MFileDataBase_Sql_Table__
@@ -20,8 +28,16 @@ namespace MUZI
 
 	struct __MFileDataBase_Sql_Page__
 	{
-		char* filename;
-		char* filepath;
+		int pageid;
+		int table_szie;
+		struct __MFileDataBase_Sql_Table__ tables[__MUZI_MFILEDATABASE_SQL_PAGE_TABLE_SIZE__];
+	};
+
+
+	struct __MFileDataBase_Sql_Task__
+	{
+		int type;
+		void* data;
 	};
 
 	int MFileDataBase::sql_callback(void* para, int columenCount, char** columnValue, char** columnName)
@@ -31,7 +47,7 @@ namespace MUZI
 
 	MFileDataBase::GetFileStaus MFileDataBase::getFileStatus = boost::filesystem::status;
 
-	MFileDataBase::MFileDataBase(const char* sqlite_dir_path) :m_data(new struct __MFileDataBase_Data__({nullptr, nullptr}))
+	MFileDataBase::MFileDataBase(const char* sqlite_dir_path) :m_data(new struct __MFileDataBase_Data__({nullptr, nullptr, nullptr, nullptr}))
 	{
 		Path path(sqlite_dir_path);
 		if (!boost::filesystem::exists(path))
@@ -48,8 +64,25 @@ namespace MUZI
 	{
 		if (this->m_data->sq3 != nullptr)
 		{
-	
 			sqlite3_close(this->m_data->sq3);
+		}
+		if (this->m_data->root != nullptr)
+		{
+			this->alloc.deallocate(this->m_data->root, strlen(this->m_data->root) + 1);
+		}
+		if (this->m_data->sql_thread.sql_exec_th != nullptr)
+		{
+			this->m_data->sql_thread.THREAD_WORK = false;
+			delete this->m_data->sql_thread.sql_exec_th;
+		}
+		if (this->m_data->sql_thread.sql_exec_lock != nullptr)
+		{
+
+		}
+		if (this->m_data->sql_thread.sql_exec_cond != nullptr)
+		{
+			this->m_data->sql_thread.sql_exec_cond->notify_all();
+			delete this->m_data->sql_thread.sql_exec_cond;
 		}
 	}
 
@@ -62,9 +95,11 @@ namespace MUZI
 		{
 			return MERROR::DIRNOEXITS;
 		}
-		if (boost::filesystem::is_directory(root, ec))
+		if (boost::filesystem::is_directory(root_path, ec))
 		{
-			this->m_data->root = root;
+			size_t path_name_len = strlen(root) + 1;
+			this->m_data->root = static_cast<char*>(this->alloc.allocate(path_name_len));
+			memcpy(static_cast<void*>(this->m_data->root), root, path_name_len);
 			return 0;
 		}
 		return MERROR::NOADIR;
@@ -83,20 +118,26 @@ namespace MUZI
 		{
 			return MERROR::SQLITEOPENERR;
 		}
-		if (sqlite3_exec(this->m_data->sq3, "", nullptr, nullptr, (char**) & err_msg))
+		if (sqlite3_exec(this->m_data->sq3, sql_buff, this->sql_callback, nullptr, (char**) & err_msg))
 		{
 
 		}
 
 
 		String sql_str("");
-		
+		__MFileDataBase_Sql_Page__ table({0, 0});
+		__MFileDataBase_Sql_Task__ task({ __SqlType__::SQL_INSERT, &table });
 
 		if (sqlite3_exec(this->m_data->sq3,
-			sql_buff, this->sql_callback, static_cast<void*>(), nullptr) != SQLITE_OK)
+			sql_buff, this->sql_callback, static_cast<void*>(&task), nullptr) != SQLITE_OK)
 		{
 			return MERROR::SQLITECREATEERR;
 		}
+		this->m_data->sql_thread.sql_exec_lock = new Mutex();
+		this->m_data->sql_thread.sql_exec_th = new Thread(
+			[this] {
+				
+			});
 
 		boost::filesystem::recursive_directory_iterator end;
 		// skip permisson denied
