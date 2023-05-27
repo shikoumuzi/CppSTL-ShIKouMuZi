@@ -2,15 +2,32 @@
 #include<cstring>
 #include<sqlite3.h>
 
-
 namespace MUZI
 {
+
 	struct MFileDataBase::__MFileDataBase_Data__
 	{
 		const char* root;
 		const char* sqlite_dir;
 		sqlite3* sq3;
 	};
+	
+	struct __MFileDataBase_Sql_Table__
+	{
+		char* filename;
+		char* filepath;
+	};
+
+	struct __MFileDataBase_Sql_Page__
+	{
+		char* filename;
+		char* filepath;
+	};
+
+	int MFileDataBase::sql_callback(void* para, int columenCount, char** columnValue, char** columnName)
+	{
+
+	}
 
 	MFileDataBase::GetFileStaus MFileDataBase::getFileStatus = boost::filesystem::status;
 
@@ -60,16 +77,23 @@ namespace MUZI
 	// create file database base on the binding message
 	int MFileDataBase::constructDataBase(const char* sqlite_path) 
 	{
-	
+		char err_msg[256] = { '\0' };
+		char sql_buff[256] = { '\0' };
 		if (sqlite3_open(sqlite_path, &this->m_data->sq3) )
 		{
 			return MERROR::SQLITEOPENERR;
 		}
+		if (sqlite3_exec(this->m_data->sq3, "", nullptr, nullptr, (char**) & err_msg))
+		{
+
+		}
+
 
 		String sql_str("");
+		
 
 		if (sqlite3_exec(this->m_data->sq3,
-			sql_str.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
+			sql_buff, this->sql_callback, static_cast<void*>(), nullptr) != SQLITE_OK)
 		{
 			return MERROR::SQLITECREATEERR;
 		}
@@ -81,7 +105,7 @@ namespace MUZI
 		
 		while (dir_it != end)
 		{
-
+			
 		}
 		
 	}
@@ -91,10 +115,10 @@ namespace MUZI
 	}
 
 	// get file from base message
-	MFileDataBase::Fstream& MFileDataBase::readFile(const char* file_name){}
-	MFileDataBase::Fstream& MFileDataBase::readFile(const String& file_name){}
-	MFileDataBase::Fstream& MFileDataBase::readFileWithoutFormat(const char* file_name){}
-	MFileDataBase::Fstream& MFileDataBase::readFileWithoutFormat(const String& file_name){}
+	MFileDataBase::FRstream& MFileDataBase::readFile(const char* file_name){}
+	MFileDataBase::FRstream& MFileDataBase::readFile(const String& file_name){}
+	MFileDataBase::FRstream& MFileDataBase::readFileWithoutFormat(const char* file_name){}
+	MFileDataBase::FRstream& MFileDataBase::readFileWithoutFormat(const String& file_name){}
 
 	// write file
 	int MFileDataBase::writeFile(const char* file_name, const char* format, Fstream& fstream){}

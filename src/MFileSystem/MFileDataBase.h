@@ -5,6 +5,8 @@
 #include<boost/system/error_code.hpp>
 #include<string.h>
 #include"MBase/MError.h"
+#include"MFileOutput.h"
+#include<MPoolAllocator.h>
 namespace MUZI
 {
 
@@ -13,11 +15,12 @@ namespace MUZI
 	public:
 		using String = std::string;
 		using Fstream = boost::filesystem::fstream;
+		using FRstream = MFileOutput;
 		using Path = boost::filesystem::path;
 		using GetFileStaus = boost::filesystem::file_status(*)(Path const &);
 		using BError = boost::system::error_code;
 		static GetFileStaus getFileStatus;
-
+	
 	private:
 		struct __MFileDataBase_Data__;
 	public:
@@ -32,14 +35,14 @@ namespace MUZI
 		int bind(const String& root);
 		
 		// create file database base on the binding message
-		int constructDataBase(const char* sqlite_path);
+		int constructDataBase(const char* sqlite_path = ".\\sqlite\\sqlite.sqlite");
 		int constructDataBase(const String& sqlite_path);
 
 		// get file from base message
-		Fstream& readFile(const char* file_name);
-		Fstream& readFile(const String& file_name);
-		Fstream& readFileWithoutFormat(const char* file_name);
-		Fstream& readFileWithoutFormat(const String& file_name);
+		FRstream& readFile(const char* file_name);
+		FRstream& readFile(const String& file_name);
+		FRstream& readFileWithoutFormat(const char* file_name);
+		FRstream& readFileWithoutFormat(const String& file_name);
 	
 		// write file
 		int writeFile(const char* file_name, const char* format, Fstream& fstream);
@@ -62,7 +65,19 @@ namespace MUZI
 		int earseDir(const String& dir);
 		
 	private:
-		
+		enum __SqlType__
+		{
+			SQL_CREATE = 1,
+			SQL_DELETE,
+			SQL_INSERT,
+			SQL_FIND
+		};
+		static int sql_callback(void* para, int columenCount, char** columnValue, char** columnName);
+		int createSql(size_t type);
+		int deleteSql(char* data);
+
+	private:
+		MPoolAllocator alloc;
 		struct __MFileDataBase_Data__* m_data;
 	};
 };
