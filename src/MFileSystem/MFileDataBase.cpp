@@ -42,14 +42,41 @@ namespace MUZI
 
 	int MFileDataBase::sql_callback(void* para, int columenCount, char** columnValue, char** columnName)
 	{
-
+		struct __MFileDataBase_Sql_Task__* data = static_cast<struct __MFileDataBase_Sql_Task__*>(para);
+		switch (data->type)
+		{
+		case __SqlType__::SQL_CREATE:
+		{
+			break;
+		}
+		case __SqlType__::SQL_DELETE:
+		{
+			break;
+		}
+		case __SqlType__::SQL_FIND:
+		{
+			break;
+		}
+		case __SqlType__::SQL_INSERT:
+		{
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 	MFileDataBase::GetFileStaus MFileDataBase::getFileStatus = boost::filesystem::status;
 
 	MFileDataBase::MFileDataBase(const char* sqlite_dir_path) :m_data(new struct __MFileDataBase_Data__({nullptr, nullptr, nullptr, nullptr}))
 	{
+		// 获取应用程序所在路径
+		Path initial_path = boost::filesystem::initial_path<boost::filesystem::path>();
+		boost::filesystem::current_path(initial_path);// 设置工作路径为当前应用程序所在目录
+		
 		Path path(sqlite_dir_path);
+		// canonical 可以去除相对路径中的.. 以防止非法攻击
+		path = boost::filesystem::canonical(initial_path / path);
 		if (!boost::filesystem::exists(path))
 		{
 			boost::filesystem::create_directory(path);
@@ -62,27 +89,38 @@ namespace MUZI
 	}
 	MFileDataBase::~MFileDataBase()
 	{
-		if (this->m_data->sq3 != nullptr)
-		{
-			sqlite3_close(this->m_data->sq3);
-		}
-		if (this->m_data->root != nullptr)
-		{
-			this->alloc.deallocate(this->m_data->root, strlen(this->m_data->root) + 1);
-		}
-		if (this->m_data->sql_thread.sql_exec_th != nullptr)
-		{
-			this->m_data->sql_thread.THREAD_WORK = false;
-			delete this->m_data->sql_thread.sql_exec_th;
-		}
-		if (this->m_data->sql_thread.sql_exec_lock != nullptr)
-		{
+		this->__delete__();
+		
+	}
 
-		}
-		if (this->m_data->sql_thread.sql_exec_cond != nullptr)
+	void MFileDataBase::__delete__()
+	{
+		if (this->m_data != nullptr)
 		{
-			this->m_data->sql_thread.sql_exec_cond->notify_all();
-			delete this->m_data->sql_thread.sql_exec_cond;
+			if (this->m_data->sq3 != nullptr)
+			{
+				sqlite3_close(this->m_data->sq3);
+			}
+			if (this->m_data->root != nullptr)
+			{
+				this->alloc.deallocate(this->m_data->root, strlen(this->m_data->root) + 1);
+			}
+			if (this->m_data->sql_thread.sql_exec_th != nullptr)
+			{
+				this->m_data->sql_thread.THREAD_WORK = false;
+				delete this->m_data->sql_thread.sql_exec_th;
+			}
+			if (this->m_data->sql_thread.sql_exec_cond != nullptr)
+			{
+				this->m_data->sql_thread.sql_exec_cond->notify_all();
+				delete this->m_data->sql_thread.sql_exec_cond;
+			}
+			if (this->m_data->sql_thread.sql_exec_lock != nullptr)
+			{
+				this->m_data->sql_thread.sql_exec_lock->unlock();
+				delete this->m_data->sql_thread.sql_exec_lock;
+			}
+			delete this->m_data;
 		}
 	}
 
@@ -118,7 +156,8 @@ namespace MUZI
 		{
 			return MERROR::SQLITEOPENERR;
 		}
-		if (sqlite3_exec(this->m_data->sq3, sql_buff, this->sql_callback, nullptr, (char**) & err_msg))
+		__MFileDataBase_Sql_Task__ task({ __SqlType__::SQL_CREATE, nullptr});
+		if (sqlite3_exec(this->m_data->sq3, sql_buff, this->sql_callback, static_cast<void*>(&task), (char**)&err_msg))
 		{
 
 		}
@@ -126,17 +165,23 @@ namespace MUZI
 
 		String sql_str("");
 		__MFileDataBase_Sql_Page__ table({0, 0});
-		__MFileDataBase_Sql_Task__ task({ __SqlType__::SQL_INSERT, &table });
+		task = { __SqlType__::SQL_INSERT, &table };
 
 		if (sqlite3_exec(this->m_data->sq3,
 			sql_buff, this->sql_callback, static_cast<void*>(&task), nullptr) != SQLITE_OK)
 		{
 			return MERROR::SQLITECREATEERR;
 		}
+		struct __MFileDataBase_Data__* m_data = this->m_data;
 		this->m_data->sql_thread.sql_exec_lock = new Mutex();
 		this->m_data->sql_thread.sql_exec_th = new Thread(
-			[this] {
-				
+			[this, m_data] {
+				while(m_data->sql_thread.THREAD_WORK)
+				{
+
+				}
+
+
 			});
 
 		boost::filesystem::recursive_directory_iterator end;
@@ -180,4 +225,6 @@ namespace MUZI
 	// earse dir
 	int MFileDataBase::earseDir(const char* dir){}
 	int MFileDataBase::earseDir(const String& dir){}
+
+
 }

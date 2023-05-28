@@ -32,7 +32,7 @@ namespace MUZI
 	private:
 		struct __MFileDataBase_Data__;
 	public:
-		MFileDataBase(const char* sqlite_dir_path = ".\\sqlite");
+		MFileDataBase(const char* sqlite_dir_path = "./sqlite");
 		MFileDataBase(const String& sqlite_dir_path);
 		MFileDataBase(const MFileDataBase&) = delete;
 		MFileDataBase(MFileDataBase&&)noexcept;
@@ -43,8 +43,8 @@ namespace MUZI
 		int bind(const String& root);
 		
 		// create file database base on the binding message
-		int constructDataBase(const char* sqlite_path = ".\\sqlite\\sqlite.sqlite");
-		int constructDataBase(const String& sqlite_path);
+		int constructDataBase(const char* sqlite_name = "./sqlite/sqlite.sqlite");
+		int constructDataBase(const String& sqlite_name);
 
 		// get file from base message
 		FRstream& readFile(const char* file_name);
@@ -85,6 +85,9 @@ namespace MUZI
 		int deleteSql(char* data);
 
 	private:
+		void __delete__();
+	private:
+
 		MPoolAllocator alloc;
 		struct __MFileDataBase_Data__* m_data;
 	};
