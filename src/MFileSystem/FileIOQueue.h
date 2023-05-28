@@ -1,4 +1,5 @@
 #ifndef __MUZI_FILEIOQUEUE_H__
+#define __MUZI_FILEIOQUEUE_H__
 #include"../MBase/MObjectBase.h"
 #include<atomic>
 #include<stdio.h>
@@ -7,6 +8,7 @@
 #include"MFileOutput.h"
 namespace MUZI
 {
+	// 一个队列绑定一个文件
 	class FileIOQueue
 	{
 	public:
@@ -20,7 +22,8 @@ namespace MUZI
 
 	public:
 		std::atomic<int> read_index;
-		std::atomic<int> write_index;
+		std::atomic<int> write_start_index;
+		std::atomic<int> write_end_index;
 	};
 }
 

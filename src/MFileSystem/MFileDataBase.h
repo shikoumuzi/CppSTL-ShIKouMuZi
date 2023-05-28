@@ -75,10 +75,10 @@ namespace MUZI
 	private:
 		enum __SqlType__
 		{
-			SQL_CREATE = 1,
+			SQL_CREATE = 0,
 			SQL_DELETE,
 			SQL_INSERT,
-			SQL_FIND
+			SQL_SELECT
 		};
 		static int sql_callback(void* para, int columenCount, char** columnValue, char** columnName);
 		int createSql(size_t type);

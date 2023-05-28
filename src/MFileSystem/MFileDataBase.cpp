@@ -9,6 +9,7 @@ namespace MUZI
 	{
 		char* root;
 		char* sqlite_dir;
+		char* sqlite_table;
 		sqlite3* sq3;
 		struct Sql_Thread
 		{
@@ -37,33 +38,50 @@ namespace MUZI
 	struct __MFileDataBase_Sql_Task__
 	{
 		int type;
+		int offset;
 		void* data;
 	};
+
+	struct __MFileDataBase_Sql_Callback__
+	{
+	public:
+		static int SQL_CREATE(__MFileDataBase_Sql_Task__* para, char** columnValue)
+		{
+
+		}
+		static int SQL_DELETE(__MFileDataBase_Sql_Task__* para, char** columnValue)
+		{
+
+		}
+		// SELECT 对于结构体内容的内存分配不做查看，只管写入， 并且通过table_size确定当前条数，pageid确定page数组位置
+		static int SQL_SELECT(__MFileDataBase_Sql_Task__* para, char** columnValue)
+		{
+			struct __MFileDataBase_Sql_Page__* page
+				= static_cast<struct __MFileDataBase_Sql_Page__*>(
+					static_cast<struct __MFileDataBase_Sql_Page__**>(para->data)[para->offset]);
+			page->tables[page->table_szie++] = { columnValue[1], columnValue[2]};
+		}
+		static int SQL_INSERT(__MFileDataBase_Sql_Task__* para, char** columnValue)
+		{
+
+		}
+	public:
+		static int(*sql_callback[4])(__MFileDataBase_Sql_Task__* para, char** columnValue);
+		using Sql_Callback = int(*[4])(__MFileDataBase_Sql_Task__* para, char** columnValue);
+	};
+	
+	__MFileDataBase_Sql_Callback__::Sql_Callback __MFileDataBase_Sql_Callback__::sql_callback
+		= { __MFileDataBase_Sql_Callback__::SQL_CREATE, 
+			__MFileDataBase_Sql_Callback__::SQL_DELETE,
+			__MFileDataBase_Sql_Callback__::SQL_INSERT,
+			__MFileDataBase_Sql_Callback__::SQL_SELECT,};
+	
 
 	int MFileDataBase::sql_callback(void* para, int columenCount, char** columnValue, char** columnName)
 	{
 		struct __MFileDataBase_Sql_Task__* data = static_cast<struct __MFileDataBase_Sql_Task__*>(para);
-		switch (data->type)
-		{
-		case __SqlType__::SQL_CREATE:
-		{
-			break;
-		}
-		case __SqlType__::SQL_DELETE:
-		{
-			break;
-		}
-		case __SqlType__::SQL_FIND:
-		{
-			break;
-		}
-		case __SqlType__::SQL_INSERT:
-		{
-			break;
-		}
-		default:
-			break;
-		}
+
+		return __MFileDataBase_Sql_Callback__::sql_callback[data->type](data, columnValue);
 	}
 
 	MFileDataBase::GetFileStaus MFileDataBase::getFileStatus = boost::filesystem::status;
@@ -151,27 +169,28 @@ namespace MUZI
 	int MFileDataBase::constructDataBase(const char* sqlite_path) 
 	{
 		char err_msg[256] = { '\0' };
-		char sql_buff[256] = { '\0' };
+		char sql_buff[256] = { "File_Sql_\0"};
 		if (sqlite3_open(sqlite_path, &this->m_data->sq3) )
 		{
 			return MERROR::SQLITEOPENERR;
 		}
-		__MFileDataBase_Sql_Task__ task({ __SqlType__::SQL_CREATE, nullptr});
-		if (sqlite3_exec(this->m_data->sq3, sql_buff, this->sql_callback, static_cast<void*>(&task), (char**)&err_msg))
+
+		strcpy(sql_buff, strcat(sql_buff, Path(this->m_data->root).filename().string().c_str()));
+		__MFileDataBase_Sql_Task__ task({ __SqlType__::SQL_CREATE, 0, nullptr});
+		if (sqlite3_exec(this->m_data->sq3, sql_buff, this->sql_callback, static_cast<void*>(&task), (char**)&err_msg) != SQLITE_OK)
 		{
 
 		}
 
-
-		String sql_str("");
 		__MFileDataBase_Sql_Page__ table({0, 0});
-		task = { __SqlType__::SQL_INSERT, &table };
+		task = { __SqlType__::SQL_INSERT, 0, &table };
 
 		if (sqlite3_exec(this->m_data->sq3,
 			sql_buff, this->sql_callback, static_cast<void*>(&task), nullptr) != SQLITE_OK)
 		{
 			return MERROR::SQLITECREATEERR;
 		}
+
 		struct __MFileDataBase_Data__* m_data = this->m_data;
 		this->m_data->sql_thread.sql_exec_lock = new Mutex();
 		this->m_data->sql_thread.sql_exec_th = new Thread(
