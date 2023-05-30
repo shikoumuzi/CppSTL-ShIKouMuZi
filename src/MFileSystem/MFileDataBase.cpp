@@ -1,7 +1,7 @@
 #include"MFileDataBase.h"
 #include<cstring>
 #include<sqlite3.h>
-
+#include <boost/algorithm/string.hpp>
 namespace MUZI
 {
 
@@ -9,7 +9,7 @@ namespace MUZI
 	{
 		char* root;
 		sqlite3* sq3;
-		char* sql_select;
+		sqlite3_stmt* sql_select;
 	};
 	
 	struct __MFileDataBase_Sql_Table__
@@ -116,6 +116,11 @@ namespace MUZI
 				delete this->m_data->root;
 				this->m_data->root = nullptr;
 			}
+			if (this->m_data->sql_select != nullptr)
+			{
+				sqlite3_finalize(this->m_data->sql_select);
+				this->m_data->sql_select = nullptr;
+			}
 			delete this->m_data;
 			this->m_data = nullptr;
 		}
@@ -148,7 +153,7 @@ namespace MUZI
 	int MFileDataBase::constructDataBase() 
 	{
 		int err_msg = 0;
-		char tablename[20] = { "FILE_MSG"};
+		char tablename[20] = { __MUZI_MFILEDATABASE_SQL_TABLE_NAME__ };
 		const char* sqlite_path = "";
 
 		Path table_path(this->m_data->root);
@@ -199,7 +204,7 @@ namespace MUZI
 				// -1表示其自动计算长度
 				// stem表示去除扩展名后的内容
 				sqlite3_bind_text(p_stmt, nCol++, dir_it->path().stem().string().c_str(), -1, SQLITE_TRANSIENT);
-				sqlite3_bind_text(p_stmt, nCol++, dir_it->path().string().c_str(), -1, SQLITE_TRANSIENT);
+				sqlite3_bind_text(p_stmt, nCol, dir_it->path().string().c_str(), -1, SQLITE_TRANSIENT);
 				// 执行语句
 				sqlite3_step(p_stmt);
 				sqlite3_reset(p_stmt);
@@ -215,6 +220,16 @@ namespace MUZI
 			fprintf(stderr, "sqlite3_open is error, errcode is %d", err_msg);
 			return MERROR::SQLITE_OPEN_ERR;
 		}
+
+		// 编译查询语句
+		std::vector<std::string> v{ "SELECT * FROM ", static_cast<const char*>(__MUZI_MFILEDATABASE_SQL_TABLE_NAME__ ) , " WHERE filename=?" };
+		std::string sql_select = boost::algorithm::join(v, "");
+		if ((err_msg = sqlite3_prepare_v2(this->m_data->sq3, sql_select.c_str(), sql_select.size() + 1, &this->m_data->sql_select, nullptr)) != SQLITE_OK)
+		{
+			fprintf(stderr, "sqlite3_open is error, errcode is %d", err_msg);
+			return MERROR::SQLITE_PREPARE_ERR;
+		}
+		
 	}
 
 	// get file from base message

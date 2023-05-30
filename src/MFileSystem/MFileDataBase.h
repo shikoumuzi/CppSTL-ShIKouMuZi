@@ -15,6 +15,7 @@
 #include"MBitmapAllocator.h"
 #define __MUZI_MFILEDATABASE_SQL_PAGE_TABLE_SIZE__ 256
 #define __MUZI_MFILEDATABASE_SQL_BUF_SIZE__ 256
+#define __MUZI_MFILEDATABASE_SQL_TABLE_NAME__ "FILE_MSG"
 namespace MUZI
 {
 
@@ -90,8 +91,6 @@ namespace MUZI
 		void __delete__();
 		
 	private:
-
-		MPoolAllocator alloc;
 		struct __MFileDataBase_Data__* m_data;
 	};
 };
