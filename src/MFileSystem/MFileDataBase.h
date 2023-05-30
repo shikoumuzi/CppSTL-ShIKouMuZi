@@ -31,6 +31,7 @@ namespace MUZI
 		using Thread = std::thread;
 		using Mutex = std::unique_lock<std::mutex>;
 		using Condition = std::condition_variable;
+		
 	private:
 		struct __MFileDataBase_Data__;
 	public:
@@ -45,8 +46,7 @@ namespace MUZI
 		int bind(const String& root);
 		
 		// create file database base on the binding message
-		int constructDataBase(const char* sqlite_name = "./sqlite/sqlite.sqlite");
-		int constructDataBase(const String& sqlite_name);
+		int constructDataBase();
 
 		// get file from base message
 		FRstream& readFile(const char* file_name);
@@ -88,6 +88,7 @@ namespace MUZI
 
 	private:
 		void __delete__();
+		
 	private:
 
 		MPoolAllocator alloc;

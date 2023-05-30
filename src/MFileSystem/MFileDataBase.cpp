@@ -8,18 +8,8 @@ namespace MUZI
 	struct MFileDataBase::__MFileDataBase_Data__
 	{
 		char* root;
-		char* sqlite_dir;
-		char* sqlite_table;
 		sqlite3* sq3;
-		struct Sql_Thread
-		{
-			Thread* sql_exec_th;
-			Mutex* sql_exec_lock;
-			Condition* sql_exec_cond;
-			bool THREAD_WORK;
-			
-		}sql_thread;
-
+		char* sql_select;
 	};
 	
 	struct __MFileDataBase_Sql_Table__
@@ -87,7 +77,7 @@ namespace MUZI
 
 	MFileDataBase::GetFileStaus MFileDataBase::getFileStatus = boost::filesystem::status;
 
-	MFileDataBase::MFileDataBase(const char* sqlite_dir_path) :m_data(new struct __MFileDataBase_Data__({nullptr, nullptr, nullptr, nullptr}))
+	MFileDataBase::MFileDataBase(const char* sqlite_dir_path) :m_data(new struct __MFileDataBase_Data__({nullptr, nullptr, nullptr}))
 	{
 		// 获取应用程序所在路径
 		Path initial_path = boost::filesystem::initial_path<boost::filesystem::path>();
@@ -118,28 +108,16 @@ namespace MUZI
 		{
 			if (this->m_data->sq3 != nullptr)
 			{
-				sqlite3_close(this->m_data->sq3);
+				sqlite3_close_v2(this->m_data->sq3);
+				this->m_data->sq3 = nullptr;
 			}
 			if (this->m_data->root != nullptr)
 			{
-				this->alloc.deallocate(this->m_data->root, strlen(this->m_data->root) + 1);
-			}
-			if (this->m_data->sql_thread.sql_exec_th != nullptr)
-			{
-				this->m_data->sql_thread.THREAD_WORK = false;
-				delete this->m_data->sql_thread.sql_exec_th;
-			}
-			if (this->m_data->sql_thread.sql_exec_cond != nullptr)
-			{
-				this->m_data->sql_thread.sql_exec_cond->notify_all();
-				delete this->m_data->sql_thread.sql_exec_cond;
-			}
-			if (this->m_data->sql_thread.sql_exec_lock != nullptr)
-			{
-				this->m_data->sql_thread.sql_exec_lock->unlock();
-				delete this->m_data->sql_thread.sql_exec_lock;
+				delete this->m_data->root;
+				this->m_data->root = nullptr;
 			}
 			delete this->m_data;
+			this->m_data = nullptr;
 		}
 	}
 
@@ -155,7 +133,7 @@ namespace MUZI
 		if (boost::filesystem::is_directory(root_path, ec))
 		{
 			size_t path_name_len = strlen(root) + 1;
-			this->m_data->root = static_cast<char*>(this->alloc.allocate(path_name_len));
+			this->m_data->root = new char[path_name_len];
 			memcpy(static_cast<void*>(this->m_data->root), root, path_name_len);
 			return 0;
 		}
@@ -167,23 +145,28 @@ namespace MUZI
 	}
 
 	// create file database base on the binding message
-	int MFileDataBase::constructDataBase(const char* sqlite_path) 
+	int MFileDataBase::constructDataBase() 
 	{
 		int err_msg = 0;
-		char tablename[__MUZI_MFILEDATABASE_SQL_BUF_SIZE__] = { "File_Sql_\0" };
+		char tablename[20] = { "FILE_MSG"};
+		const char* sqlite_path = "";
 
+		Path table_path(this->m_data->root);
+		table_path /= strcat(tablename, ".db");
+		
 		// 打开sqlite3
-		if ((err_msg = sqlite3_open(sqlite_path, &this->m_data->sq3)) != SQLITE_OK )
+		if ((err_msg = sqlite3_open_v2(table_path.string().c_str(), &this->m_data->sq3, SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_SHAREDCACHE, nullptr)) != SQLITE_OK
+			&& !sqlite3_db_readonly(this->m_data->sq3, strcat(tablename, ".db")))
 		{
-			fprintf(stderr, "sqlite3_open is error, errcode is %d", err_msg);
+			fprintf(stderr, "sqlite3_open_v2 is error, errmsg is %s", sqlite3_errmsg(this->m_data->sq3));
 			return MERROR::SQLITE_OPEN_ERR;
 		}
 
 		// 创建表单
-		strcpy(tablename, strcat(tablename, Path(this->m_data->root).filename().string().c_str()));
 		__MFileDataBase_Sql_Task__ task({ __SqlType__::SQL_CREATE, 0, nullptr});
-		if (err_msg =(sqlite3_exec(this->m_data->sq3, tablename, this->sql_callback, static_cast<void*>(&task), nullptr)) != SQLITE_OK)
+		if (err_msg =(sqlite3_exec(this->m_data->sq3, "", this->sql_callback, static_cast<void*>(&task), nullptr)) != SQLITE_OK)
 		{
+			fprintf(stderr, "sqlite3_exec is error, errmsg is %s", sqlite3_errmsg(this->m_data->sq3));
 			return MERROR::SQLITE_CREATETABLE_ERR;
 		}
 
@@ -201,7 +184,8 @@ namespace MUZI
 		const char* sql = "INSERT INTO FILE_MSG(filename, filepath) VALUES(?,?);";
 		if (err_msg = sqlite3_prepare_v2(this->m_data->sq3, sql, strlen(sql), &p_stmt, nullptr) != SQLITE_OK)
 		{
-			
+			fprintf(stderr, "sqlite3_prepare_v2 is error, errmsg is %s", sqlite3_errmsg(this->m_data->sq3));
+			return MERROR::SQLITE_PREPARE_ERR;
 		}
 		
 		// 遍历文件目录的同时插入表单 
@@ -213,6 +197,7 @@ namespace MUZI
 			{
 				// SQLITE_TRANSIENT 表示sqlite会内部复制一份字符串并在适当的时候释放
 				// -1表示其自动计算长度
+				// stem表示去除扩展名后的内容
 				sqlite3_bind_text(p_stmt, nCol++, dir_it->path().stem().string().c_str(), -1, SQLITE_TRANSIENT);
 				sqlite3_bind_text(p_stmt, nCol++, dir_it->path().string().c_str(), -1, SQLITE_TRANSIENT);
 				// 执行语句
@@ -223,33 +208,13 @@ namespace MUZI
 		// 删除“插入stmt”
 		sqlite3_finalize(p_stmt);
 
-		// 开设查询线程
-		struct __MFileDataBase_Data__* m_data = this->m_data;
-		this->m_data->sql_thread.sql_exec_lock = new Mutex();
-		this->m_data->sql_thread.sql_exec_cond = new Condition();
-		this->m_data->sql_thread.sql_exec_th = new Thread(
-			[this, m_data] {
-				const char* sql = "SELECT * FROM FILE_MSG WHERE filename=?";
-				int err_msg = 0;
-				sqlite3_stmt* p_stmt = nullptr;
-				if (err_msg = sqlite3_prepare_v2(this->m_data->sq3, sql, strlen(sql), &p_stmt, nullptr) != SQLITE_OK)
-				{
-					m_data->sql_thread.THREAD_WORK = false;
-				}
-				m_data->sql_thread.sql_exec_lock->lock();
-				while(m_data->sql_thread.THREAD_WORK)
-				{
-					m_data->sql_thread.sql_exec_cond->wait(*m_data->sql_thread.sql_exec_lock);
-
-				}
-				sqlite3_finalize(p_stmt);
-			});
-
-		
-	}
-	int MFileDataBase::constructDataBase(const String& sqlite_path)
-	{
-		this->constructDataBase(sqlite_path.c_str());
+		// 更换数据库打开模式为只读模式
+		sqlite3_close(this->m_data->sq3);
+		if ((err_msg = sqlite3_open_v2(sqlite_path, &this->m_data->sq3, SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_READONLY | SQLITE_OPEN_SHAREDCACHE, nullptr)) != SQLITE_OK)
+		{
+			fprintf(stderr, "sqlite3_open is error, errcode is %d", err_msg);
+			return MERROR::SQLITE_OPEN_ERR;
+		}
 	}
 
 	// get file from base message
