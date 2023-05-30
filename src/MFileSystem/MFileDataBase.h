@@ -12,7 +12,9 @@
 #include<mutex>
 #include<atomic>
 #include<condition_variable>
+#include"MBitmapAllocator.h"
 #define __MUZI_MFILEDATABASE_SQL_PAGE_TABLE_SIZE__ 256
+#define __MUZI_MFILEDATABASE_SQL_BUF_SIZE__ 256
 namespace MUZI
 {
 
@@ -27,7 +29,7 @@ namespace MUZI
 		using BError = boost::system::error_code;
 		static GetFileStaus getFileStatus;
 		using Thread = std::thread;
-		using Mutex = std::mutex;
+		using Mutex = std::unique_lock<std::mutex>;
 		using Condition = std::condition_variable;
 	private:
 		struct __MFileDataBase_Data__;

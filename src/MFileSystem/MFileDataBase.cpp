@@ -17,6 +17,7 @@ namespace MUZI
 			Mutex* sql_exec_lock;
 			Condition* sql_exec_cond;
 			bool THREAD_WORK;
+			
 		}sql_thread;
 
 	};
@@ -47,7 +48,7 @@ namespace MUZI
 	public:
 		static int SQL_CREATE(__MFileDataBase_Sql_Task__* para, char** columnValue)
 		{
-
+			
 		}
 		static int SQL_DELETE(__MFileDataBase_Sql_Task__* para, char** columnValue)
 		{
@@ -168,50 +169,82 @@ namespace MUZI
 	// create file database base on the binding message
 	int MFileDataBase::constructDataBase(const char* sqlite_path) 
 	{
-		char err_msg[256] = { '\0' };
-		char sql_buff[256] = { "File_Sql_\0"};
-		if (sqlite3_open(sqlite_path, &this->m_data->sq3) )
+		int err_msg = 0;
+		char tablename[__MUZI_MFILEDATABASE_SQL_BUF_SIZE__] = { "File_Sql_\0" };
+
+		// 打开sqlite3
+		if ((err_msg = sqlite3_open(sqlite_path, &this->m_data->sq3)) != SQLITE_OK )
 		{
-			return MERROR::SQLITEOPENERR;
+			fprintf(stderr, "sqlite3_open is error, errcode is %d", err_msg);
+			return MERROR::SQLITE_OPEN_ERR;
 		}
 
-		strcpy(sql_buff, strcat(sql_buff, Path(this->m_data->root).filename().string().c_str()));
+		// 创建表单
+		strcpy(tablename, strcat(tablename, Path(this->m_data->root).filename().string().c_str()));
 		__MFileDataBase_Sql_Task__ task({ __SqlType__::SQL_CREATE, 0, nullptr});
-		if (sqlite3_exec(this->m_data->sq3, sql_buff, this->sql_callback, static_cast<void*>(&task), (char**)&err_msg) != SQLITE_OK)
+		if (err_msg =(sqlite3_exec(this->m_data->sq3, tablename, this->sql_callback, static_cast<void*>(&task), nullptr)) != SQLITE_OK)
 		{
-
+			return MERROR::SQLITE_CREATETABLE_ERR;
 		}
 
+		
 		__MFileDataBase_Sql_Page__ table({0, 0});
 		task = { __SqlType__::SQL_INSERT, 0, &table };
 
-		if (sqlite3_exec(this->m_data->sq3,
-			sql_buff, this->sql_callback, static_cast<void*>(&task), nullptr) != SQLITE_OK)
-		{
-			return MERROR::SQLITECREATEERR;
-		}
-
-		struct __MFileDataBase_Data__* m_data = this->m_data;
-		this->m_data->sql_thread.sql_exec_lock = new Mutex();
-		this->m_data->sql_thread.sql_exec_th = new Thread(
-			[this, m_data] {
-				while(m_data->sql_thread.THREAD_WORK)
-				{
-
-				}
-
-
-			});
-
 		boost::filesystem::recursive_directory_iterator end;
 		// skip permisson denied
-		boost::filesystem::recursive_directory_iterator dir_it(Path(sqlite_path), 
+		boost::filesystem::recursive_directory_iterator dir_it(Path(sqlite_path),
 			boost::filesystem::directory_options::skip_permission_denied);
-		
-		while (dir_it != end)
+
+		// 构建sql语句预编译
+		sqlite3_stmt* p_stmt = nullptr;
+		const char* sql = "INSERT INTO FILE_MSG(filename, filepath) VALUES(?,?);";
+		if (err_msg = sqlite3_prepare_v2(this->m_data->sq3, sql, strlen(sql), &p_stmt, nullptr) != SQLITE_OK)
 		{
 			
 		}
+		
+		// 遍历文件目录的同时插入表单 
+		int nCol = 1;
+		while (dir_it != end)
+		{
+			nCol = 1;
+			if (boost::filesystem::is_regular_file(dir_it->path()))
+			{
+				// SQLITE_TRANSIENT 表示sqlite会内部复制一份字符串并在适当的时候释放
+				// -1表示其自动计算长度
+				sqlite3_bind_text(p_stmt, nCol++, dir_it->path().stem().string().c_str(), -1, SQLITE_TRANSIENT);
+				sqlite3_bind_text(p_stmt, nCol++, dir_it->path().string().c_str(), -1, SQLITE_TRANSIENT);
+				// 执行语句
+				sqlite3_step(p_stmt);
+				sqlite3_reset(p_stmt);
+			}
+		}
+		// 删除“插入stmt”
+		sqlite3_finalize(p_stmt);
+
+		// 开设查询线程
+		struct __MFileDataBase_Data__* m_data = this->m_data;
+		this->m_data->sql_thread.sql_exec_lock = new Mutex();
+		this->m_data->sql_thread.sql_exec_cond = new Condition();
+		this->m_data->sql_thread.sql_exec_th = new Thread(
+			[this, m_data] {
+				const char* sql = "SELECT * FROM FILE_MSG WHERE filename=?";
+				int err_msg = 0;
+				sqlite3_stmt* p_stmt = nullptr;
+				if (err_msg = sqlite3_prepare_v2(this->m_data->sq3, sql, strlen(sql), &p_stmt, nullptr) != SQLITE_OK)
+				{
+					m_data->sql_thread.THREAD_WORK = false;
+				}
+				m_data->sql_thread.sql_exec_lock->lock();
+				while(m_data->sql_thread.THREAD_WORK)
+				{
+					m_data->sql_thread.sql_exec_cond->wait(*m_data->sql_thread.sql_exec_lock);
+
+				}
+				sqlite3_finalize(p_stmt);
+			});
+
 		
 	}
 	int MFileDataBase::constructDataBase(const String& sqlite_path)
