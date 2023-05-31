@@ -38,10 +38,11 @@ namespace MUZI
 	public:
 		static int SQL_CREATE(__MFileDataBase_Sql_Task__* para, char** columnValue)
 		{
-			
+			return 0;
 		}
 		static int SQL_DELETE(__MFileDataBase_Sql_Task__* para, char** columnValue)
 		{
+			return 0;
 
 		}
 		// SELECT 对于结构体内容的内存分配不做查看，只管写入， 并且通过table_size确定当前条数，pageid确定page数组位置
@@ -51,9 +52,12 @@ namespace MUZI
 				= static_cast<struct __MFileDataBase_Sql_Page__*>(
 					static_cast<struct __MFileDataBase_Sql_Page__**>(para->data)[para->offset]);
 			page->tables[page->table_szie++] = { columnValue[1], columnValue[2]};
+			return 0;
+
 		}
 		static int SQL_INSERT(__MFileDataBase_Sql_Task__* para, char** columnValue)
 		{
+			return 0;
 
 		}
 	public:
@@ -233,30 +237,78 @@ namespace MUZI
 	}
 
 	// get file from base message
-	MFileDataBase::FRstream& MFileDataBase::readFile(const char* file_name){}
-	MFileDataBase::FRstream& MFileDataBase::readFile(const String& file_name){}
-	MFileDataBase::FRstream& MFileDataBase::readFileWithoutFormat(const char* file_name){}
-	MFileDataBase::FRstream& MFileDataBase::readFileWithoutFormat(const String& file_name){}
+	MFileDataBase::FRstream& MFileDataBase::readFile(const char* file_name)
+	{
+		static FRstream fstream;
+		return fstream;
+	}
+	MFileDataBase::FRstream& MFileDataBase::readFile(const String& file_name)
+	{
+		static FRstream fstream;
+		return fstream;
+	}
+	MFileDataBase::FRstream& MFileDataBase::readFileWithoutFormat(const char* file_name)
+	{
+		static FRstream fstream;
+		return fstream;
+	}
+	MFileDataBase::FRstream& MFileDataBase::readFileWithoutFormat(const String& file_name)
+	{
+		static FRstream fstream;
+		return fstream;
+	}
 
 	// write file
-	int MFileDataBase::writeFile(const char* file_name, const char* format, Fstream& fstream){}
-	int MFileDataBase::writeFile(const String& file_name, const String& format, Fstream& fstream){}
+	int MFileDataBase::writeFile(const char* file_name, const char* format, Fstream& fstream)
+	{
+		return 0;
+	}
+	int MFileDataBase::writeFile(const String& file_name, const String& format, Fstream& fstream)
+	{
+		return 0;
+	}
 
 	// earse dir
-	int MFileDataBase::earseFile(const char* dir){}
-	int MFileDataBase::earseFile(const String& dir){}
+	int MFileDataBase::earseFile(const char* dir)
+	{
+		return 0;
+	}
+	int MFileDataBase::earseFile(const String& dir)
+	{
+		return 0;
+	}
 
 	// get Dir like a file from base message
-	MFileDataBase::Fstream& MFileDataBase::readDir(const char* dir_name){}
-	MFileDataBase::Fstream& MFileDataBase::readDir(const String& dir_name){}
+	MFileDataBase::Fstream& MFileDataBase::readDir(const char* dir_name)
+	{
+		static Fstream fstream;
+		return fstream;
+	}
+	MFileDataBase::Fstream& MFileDataBase::readDir(const String& dir_name)
+	{
+		static Fstream fstream;
+		return fstream;
+	}
 
 	// write Dir like a file from base message
-	int MFileDataBase::writeDir(const char* dir_name, const char* format, int file_count, int file_size){}
-	int MFileDataBase::writeDir(const String& dir_name, const String& format, Fstream& fstream){}
+	int MFileDataBase::writeDir(const char* dir_name, const char* format, int file_count, int file_size)
+	{
+		return 0;
+	}
+	int MFileDataBase::writeDir(const String& dir_name, const String& format, Fstream& fstream)
+	{
+		return 0;
+	}
 
 	// earse dir
-	int MFileDataBase::earseDir(const char* dir){}
-	int MFileDataBase::earseDir(const String& dir){}
+	int MFileDataBase::earseDir(const char* dir)
+	{
+		return 0;
+	}
+	int MFileDataBase::earseDir(const String& dir)
+	{
+		return 0;
+	}
 
 
 }
