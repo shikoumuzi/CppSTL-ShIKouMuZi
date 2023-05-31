@@ -95,6 +95,7 @@ add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" 
 # ————————————————————
 # link_directories一定要放在add_executable前面，target_link_libraries一定要放在add_executable后面
 if(SQLite3_FOUND)
+# cmake变量名是区分大小写的
 	target_link_libraries(CppSTL-shikounuzi PUBLIC ${SQLite3_LIBRARIES}) # Link with sqlite3 library
 endif()
 
