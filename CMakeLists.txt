@@ -64,7 +64,7 @@ endif()
 
 # sqlte配置
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-amalgamation-3410200)
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH})
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200)
 set(SQLITE3_ROOT ${SQLITE3_CODE_LIBRARY_PATH})
 
 # 连接sqlite
@@ -72,7 +72,7 @@ find_package(SQLite3 REQUIRED)
 
 if(SQLite3_FOUND)
 	include_directories(${SQLite3_INCLUDE_DIRS}) # Assume sqlite header is in /usr/include
-	link_directories(${SQLite3_LIBRARIES}/sqlite3.*) # Assume sqlite library is in /usr/lib
+	link_directories(${SQLite3_LIBRARIES}) # Assume sqlite library is in /usr/lib
 	message(STATUS "Sqlite3 库信息:")
 	message(STATUS "Sqlite3_INCLUDE_DIRS=${SQLite3_INCLUDE_DIRS}")
 	message(STATUS "Sqlite3_LIBRARY_DIRS=${SQLite3_LIBRARIES}")
@@ -95,7 +95,7 @@ add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" 
 # ————————————————————
 # link_directories一定要放在add_executable前面，target_link_libraries一定要放在add_executable后面
 if(SQLite3_FOUND)
-	target_link_libraries(CppSTL-shikounuzi PUBLIC ${SQLITE3_LIBRARIES}) # Link with sqlite3 library
+	target_link_libraries(CppSTL-shikounuzi PUBLIC ${SQLite3_LIBRARIES}) # Link with sqlite3 library
 endif()
 
 if(Boost_FOUND)

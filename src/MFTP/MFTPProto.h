@@ -1,5 +1,7 @@
 #ifndef __MUZI_MFTPPROTO_H__
 #define __MUZI_MFTPPROTO_H__
+#include<stdint.h>
+#include<time.h>
 namespace MUZI
 {
 	struct BaseMessage
