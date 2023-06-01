@@ -1,7 +1,7 @@
 #ifndef __MUZI_MSQLITE_H__
 #define __MUZI_MSQLITE_H__
 #include<sqlite3.h>
-
+#include<string>
 #define __MUZI_MSQLITE_SQL_CODE_SIZE__ 1024
 #define __MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__ 8
 namespace MUZI
@@ -9,6 +9,8 @@ namespace MUZI
 	// 该类只能绑定一个db数据库
 	class MSQLite
 	{
+	public:
+		using String = std::u8string;
 	public:
 		enum SQLType
 		{
@@ -41,7 +43,7 @@ namespace MUZI
 	public:
 		sql_id_t registerSQL(const char* sql, int type);
 		sql_type_t getSQLType(sql_id_t sql_id);
-		int driverSQL(sql_id_t sql_id, void* data, size_t data_size, ...);
+		int driverSQL(sql_id_t sql_id, ...);
 	public:
 		inline bool isSELECTT(sql_type_t);
 		inline bool isCREATE(sql_type_t);
