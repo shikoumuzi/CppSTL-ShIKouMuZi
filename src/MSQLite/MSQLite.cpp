@@ -6,6 +6,7 @@
 #include"../MBase/MError.h"
 #include<stdint.h>
 #include<codecvt>
+#include<stdarg.h>
 namespace MUZI
 {
 	struct MSQLite::__SQL_MESSAGE__
@@ -22,15 +23,6 @@ namespace MUZI
 		struct MSQLite::__SQL_MESSAGE__* sqls;
 		sqlite3* sq3;
 
-	};
-	enum MSQLite::__SQLAttributeType__
-	{
-		INT = 1,
-		DOUBLE = 2,
-		INT64 = 4,
-		_NULL = 8,
-		TEXT = 16,
-		TEXT16 = 32
 	};
 
 	MSQLite::MSQLite():m_data(new struct MSQLite::__MSQLite_Data__)
@@ -77,7 +69,7 @@ namespace MUZI
 
 	int MSQLite::setMode()
 	{
-
+		return 0;
 	}
 
 	int MSQLite::createDB(const char* database_name)
@@ -137,12 +129,14 @@ namespace MUZI
 		int attribute_type = 0;
 
 		va_list args; // 定义一个va_list类型的变量
-		va_start(args, sql->attribute_num);
+		va_start(args, sql_id);// va_start需要是最后一个有名参数
 		
 		switch (sql->sql_type)
 		{
 		case SQL_SELECT:
 		{
+
+
 			for (int i = 0; i < sql->attribute_num; ++i)
 			{
 				switch (sql->attribute_type[i])
@@ -150,7 +144,7 @@ namespace MUZI
 				case __SQLAttributeType__::INT:
 				{
 					int* arg = va_arg(args, int*);
-					sqlite3_bind_int(sql->pstmt, i, *arg);
+					sqlite3_bind_int(sql->pstmt, i + 1, *arg);
 					if (arg == nullptr)
 					{
 						goto __SQL_SELECT_ARG_IS_NULL__;
@@ -208,9 +202,56 @@ namespace MUZI
 					return MERROR::ARG_IS_UNEXPECTED;
 					break;
 				}
-				sqlite3_step(sql->pstmt);
-				sqlite3_reset(sql->pstmt);
+
 			}
+			int rc = 0;
+
+			while ((rc = sqlite3_step(sql->pstmt)) == SQLITE_ROW) {
+				for (int i = 0; i < sql->attribute_num; ++i)
+				{
+					switch (sql->attribute_type[i])
+					{
+					case __SQLAttributeType__::INT:
+					{
+
+						break;
+					}
+					case __SQLAttributeType__::INT64:
+					{
+
+						break;
+					}
+					case __SQLAttributeType__::TEXT:
+					{
+
+						break;
+					}
+					case __SQLAttributeType__::TEXT16:
+					{
+
+						break;
+					}
+					case __SQLAttributeType__::DOUBLE:
+					{
+
+						break;
+					}
+					case __SQLAttributeType__::_NULL:
+					{
+					__SQL_SELECT_RESULT_ARG_IS_NULL__:
+						
+						break;
+					}
+					default:
+						va_end(args);
+						return MERROR::ARG_IS_UNEXPECTED;
+						break;
+					}
+
+				}
+			}
+
+
 			break;
 		}
 		case SQL_DELETE:
@@ -221,8 +262,8 @@ namespace MUZI
 				{
 				case __SQLAttributeType__::INT:
 				{
-					int* arg = va_arg(args, int*);
-					sqlite3_bind_int(sql->pstmt, i, *arg);
+					int32_t* arg = va_arg(args, int32_t*);
+					sqlite3_bind_int(sql->pstmt, i + 1, *arg);
 					if (arg == nullptr)
 					{
 						goto __SQL_DELETE_ARG_IS_NULL__;
@@ -280,9 +321,10 @@ namespace MUZI
 					return MERROR::ARG_IS_UNEXPECTED;
 					break;
 				}
-				sqlite3_step(sql->pstmt);
-				sqlite3_reset(sql->pstmt);
+
 			}
+			sqlite3_step(sql->pstmt);
+			sqlite3_reset(sql->pstmt);
 			break;
 		}
 		case SQL_INSERT:
@@ -352,9 +394,10 @@ namespace MUZI
 					return MERROR::ARG_IS_UNEXPECTED;
 					break;
 				}
-				sqlite3_step(sql->pstmt);
-				sqlite3_reset(sql->pstmt);
+
 			}
+			sqlite3_step(sql->pstmt);
+			sqlite3_reset(sql->pstmt);
 			break;
 		}
 		default:
@@ -363,6 +406,7 @@ namespace MUZI
 			break;
 		}
 		va_end(args);
+
 		return 0;
 	}
 

@@ -11,7 +11,7 @@
 #include"MFTP/MFTP.h"
 #include"MDeque.h"
 #include"MFileSystem/MFileDataBase.h"
-
+#include"MSQLite/MSQLiite.h"
 class a
 {
 

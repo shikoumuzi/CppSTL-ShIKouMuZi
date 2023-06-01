@@ -1,6 +1,6 @@
 #ifndef  __MUZI_MERROR_H__
 #define  __MUZI_MERROR_H__
-
+#include<string>
 enum MERROR
 {
 	// 完成并且无错
@@ -20,11 +20,12 @@ enum MERROR
 	SQL_NO_FOUND,
 	SQL_ID_ERR,
 
-	//可变参函数类型错误
+	//输入参数错误
 	ARG_IS_UNEXPECTED,
 
 	NOOBJECT,
 	UNUSEFUL
 };
+
 #endif // ! __MUZI_MERROR_H__
 
