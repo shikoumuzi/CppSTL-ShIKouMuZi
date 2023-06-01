@@ -22,7 +22,7 @@ namespace MUZI
 			int64_t getINT64();
 			double getDOUBLE();
 			char* getTEXT();
-			char getTEXT16();
+			char* getTEXT16();
 		public:
 			char* bin_data_stream;
 			char* bin_data_stream_index;

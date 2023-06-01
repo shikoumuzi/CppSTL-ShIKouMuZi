@@ -25,6 +25,55 @@ namespace MUZI
 
 	};
 
+	// MSelectResult
+	MSQLite::MSelectResult::MSelectResult(char* stream, size_t size)
+	{
+		this->bin_data_stream = new char[size];
+		this->size = size;
+		this->bin_data_stream_index = this->bin_data_stream;
+	}
+
+	MSQLite::MSelectResult::~MSelectResult()
+	{
+		delete this->bin_data_stream;
+		this->bin_data_stream = nullptr;
+		this->bin_data_stream_index = nullptr;
+	}
+	int32_t MSQLite::MSelectResult::getINT()
+	{
+		int32_t ret = *reinterpret_cast<int32_t*>(this->bin_data_stream_index);
+		this->bin_data_stream_index += sizeof(int32_t);
+		return ret;
+	}
+	int64_t MSQLite::MSelectResult::getINT64()
+	{
+		int64_t ret = *reinterpret_cast<int64_t*>(this->bin_data_stream_index);
+		this->bin_data_stream_index += sizeof(int64_t);
+		return ret;
+	}
+	double MUZI::MSQLite::MSelectResult::getDOUBLE()
+	{
+		double ret = *reinterpret_cast<double*>(this->bin_data_stream_index);
+		this->bin_data_stream_index += sizeof(double);
+		return 0.0;
+	}
+
+	char* MUZI::MSQLite::MSelectResult::getTEXT()
+	{
+		int size = strlen(this->bin_data_stream_index);
+		this->bin_data_stream_index += size;
+		return nullptr;
+	}
+
+	char* MUZI::MSQLite::MSelectResult::getTEXT16()
+	{
+		int size = strlen(this->bin_data_stream_index);
+		this->bin_data_stream_index += size;
+		return 0;
+	}
+
+
+	// MSQLite
 	MSQLite::MSQLite():m_data(new struct MSQLite::__MSQLite_Data__)
 	{
 		boost::filesystem::current_path(boost::filesystem::initial_path<boost::filesystem::path>());
@@ -213,7 +262,7 @@ namespace MUZI
 					{
 					case __SQLAttributeType__::INT:
 					{
-
+						MSelectResult* data;
 						break;
 					}
 					case __SQLAttributeType__::INT64:
