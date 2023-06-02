@@ -23,6 +23,9 @@ enum MERROR
 	//输入参数错误
 	ARG_IS_UNEXPECTED,
 
+	// 数据超出范围
+	OUT_OF_RANGE,
+
 	NOOBJECT,
 	UNUSEFUL
 };

@@ -30,46 +30,72 @@ namespace MUZI
 	{
 		this->bin_data_stream = new char[size];
 		this->size = size;
-		this->bin_data_stream_index = this->bin_data_stream;
+		this->index = 0;
 	}
 
 	MSQLite::MSelectResult::~MSelectResult()
 	{
 		delete this->bin_data_stream;
 		this->bin_data_stream = nullptr;
-		this->bin_data_stream_index = nullptr;
+		this->index = 0;
 	}
-	int32_t MSQLite::MSelectResult::getINT()
+	int32_t MSQLite::MSelectResult::getINT(int& err)
 	{
-		int32_t ret = *reinterpret_cast<int32_t*>(this->bin_data_stream_index);
-		this->bin_data_stream_index += sizeof(int32_t);
+		int32_t ret = *reinterpret_cast<int32_t*>(&this->bin_data_stream[index]);
+		if (this->__checkOutOfRange__(reinterpret_cast<char*>(&ret)))
+		{
+			err = MERROR::OUT_OF_RANGE;
+			return int32_t();
+		}
+
+		this->index += sizeof(int32_t);
 		return ret;
 	}
-	int64_t MSQLite::MSelectResult::getINT64()
+	int64_t MSQLite::MSelectResult::getINT64(int& err)
 	{
-		int64_t ret = *reinterpret_cast<int64_t*>(this->bin_data_stream_index);
-		this->bin_data_stream_index += sizeof(int64_t);
+		int64_t ret = *reinterpret_cast<int64_t*>(&this->bin_data_stream[index]);
+		if (this->__checkOutOfRange__(reinterpret_cast<char*>(&ret)))
+		{
+			err = MERROR::OUT_OF_RANGE;
+			return int64_t();
+		}
+		this->index += sizeof(int64_t);
 		return ret;
 	}
-	double MUZI::MSQLite::MSelectResult::getDOUBLE()
+	double MUZI::MSQLite::MSelectResult::getDOUBLE(int& err)
 	{
-		double ret = *reinterpret_cast<double*>(this->bin_data_stream_index);
-		this->bin_data_stream_index += sizeof(double);
+		double ret = *reinterpret_cast<double*>(&this->bin_data_stream[index]);
+		if (this->__checkOutOfRange__(reinterpret_cast<char*>(&ret)))
+		{
+			err = MERROR::OUT_OF_RANGE;
+			return double();
+		}
+		this->index += sizeof(double);
 		return 0.0;
 	}
 
-	char* MUZI::MSQLite::MSelectResult::getTEXT()
+	char* MUZI::MSQLite::MSelectResult::getTEXT(int& err)
 	{
-		int size = strlen(this->bin_data_stream_index);
-		this->bin_data_stream_index += size;
+		int size = strlen(&this->bin_data_stream[index]);
+		this->index += size;
 		return nullptr;
 	}
 
-	char* MUZI::MSQLite::MSelectResult::getTEXT16()
+	char* MUZI::MSQLite::MSelectResult::getTEXT16(int& err)
 	{
-		int size = strlen(this->bin_data_stream_index);
-		this->bin_data_stream_index += size;
+		int size = strlen(&this->bin_data_stream[index]);
+		this->index += size;
 		return 0;
+	}
+
+	int MSQLite::MSelectResult::__EndOfDistance__(char* now)
+	{
+		return (now - this->bin_data_stream - this->index);
+	}
+
+	bool MSQLite::MSelectResult::__checkOutOfRange__(char* now)
+	{
+		return this->__EndOfDistance__(now) >= 0;
 	}
 
 

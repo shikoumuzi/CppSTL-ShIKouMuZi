@@ -18,14 +18,17 @@ namespace MUZI
 			MSelectResult(MSelectResult&&) = delete;
 			~MSelectResult();
 		public:
-			int32_t getINT();
-			int64_t getINT64();
-			double getDOUBLE();
-			char* getTEXT();
-			char* getTEXT16();
+			int32_t getINT(int& err);
+			int64_t getINT64(int& err);
+			double getDOUBLE(int& err);
+			char* getTEXT(int& err);
+			char* getTEXT16(int& err);
+		private:
+			inline int __EndOfDistance__(char* now);
+			inline bool __checkOutOfRange__(char* now);
 		public:
 			char* bin_data_stream;
-			char* bin_data_stream_index;
+			size_t index;
 			size_t size;
 		};
 
