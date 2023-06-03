@@ -22,9 +22,14 @@ enum MERROR
 
 	//输入参数错误
 	ARG_IS_UNEXPECTED,
+	ARG_IS_NULL,
 
 	// 数据超出范围
 	OUT_OF_RANGE,
+	OUT_OF_BUFF,
+
+	// 类型错误
+	TYPE_ERR,
 
 	NOOBJECT,
 	UNUSEFUL

@@ -9,14 +9,22 @@
 #include<stdarg.h>
 namespace MUZI
 {
+	struct MSQLite::__SQL_TABLE__
+	{
+		size_t attributes_num;// 属性个数
+		unsigned char attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 变量类型数组
+		unsigned char attribute_size[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 变量大小数组, 如果是字符串则是最大字符串char长度
+
+	};
 	struct MSQLite::__SQL_MESSAGE__
 	{
 	public:
-		MSQLite::sql_id_t sql_id;
-		MSQLite::sql_type_t sql_type;
-		sqlite3_stmt* pstmt;
-		size_t attribute_num;
-		unsigned char attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];
+		MSQLite::sql_id_t sql_id;// id
+		MSQLite::sql_type_t sql_type;// 类型
+		sqlite3_stmt* pstmt;// 预编译语句
+		size_t args_num;// 表示语句中？的个数
+		unsigned char attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 变量类型数组
+		__SQL_TABLE__* table;
 	};
 	struct MSQLite::__MSQLite_Data__
 	{
@@ -26,77 +34,142 @@ namespace MUZI
 	};
 
 	// MSelectResult
-	MSQLite::MSelectResult::MSelectResult(char* stream, size_t size)
+	MSQLite::MSelectResult::MSelectResult(char* stream, int* index_list, size_t attribute_num, size_t size)
 	{
-		this->bin_data_stream = new char[size];
+		this->bin_data_stream = stream;
+		this->index_list = index_list;
+		this->attribute_num = attribute_num;
 		this->size = size;
-		this->index = 0;
+	}
+
+	MSQLite::MSelectResult::MSelectResult()
+	{
+	}
+
+	MSQLite::MSelectResult::MSelectResult(const MSelectResult&)
+	{
 	}
 
 	MSQLite::MSelectResult::~MSelectResult()
 	{
-		delete this->bin_data_stream;
-		this->bin_data_stream = nullptr;
-		this->index = 0;
-	}
-	int32_t MSQLite::MSelectResult::getINT(int& err)
-	{
-		int32_t ret = *reinterpret_cast<int32_t*>(&this->bin_data_stream[index]);
-		if (this->__checkOutOfRange__(reinterpret_cast<char*>(&ret)))
+		if (this->bin_data_stream != nullptr)
 		{
-			err = MERROR::OUT_OF_RANGE;
+			delete this->bin_data_stream;
+			this->bin_data_stream = nullptr;
+		}
+		if (this->index_list != nullptr)
+		{
+			delete this->index_list;
+			this->index_list = nullptr;
+		}
+	}
+
+	int32_t MSQLite::MSelectResult::getINT(DataStream data, int& err)
+	{
+		if (data == nullptr)
+		{
+			return MERROR::ARG_IS_NULL;
+		}
+		char* p_data = static_cast<char*>(data);
+		// 采用在每个数据的头部增加int检测位，来自诉数据大小
+		if (*(int*)p_data != sizeof(int32_t))
+		{
+			err = MERROR::TYPE_ERR;
 			return int32_t();
 		}
-
-		this->index += sizeof(int32_t);
-		return ret;
+		p_data += sizeof(int);
+		return *reinterpret_cast<int32_t*>(p_data);
 	}
-	int64_t MSQLite::MSelectResult::getINT64(int& err)
+
+	int64_t MSQLite::MSelectResult::getINT64(DataStream data, int& err)
 	{
-		int64_t ret = *reinterpret_cast<int64_t*>(&this->bin_data_stream[index]);
-		if (this->__checkOutOfRange__(reinterpret_cast<char*>(&ret)))
+		if (data == nullptr)
 		{
-			err = MERROR::OUT_OF_RANGE;
+			return MERROR::ARG_IS_NULL;
+		}
+		char* p_data = static_cast<char*>(data);
+		if (*(int*)p_data != sizeof(int64_t))
+		{
+			err = MERROR::TYPE_ERR;
 			return int64_t();
 		}
-		this->index += sizeof(int64_t);
-		return ret;
+		p_data += sizeof(int);
+
+		return *reinterpret_cast<int64_t*>(p_data);
+
 	}
-	double MUZI::MSQLite::MSelectResult::getDOUBLE(int& err)
+
+	double MSQLite::MSelectResult::getDOUBLE(DataStream data, int& err)
 	{
-		double ret = *reinterpret_cast<double*>(&this->bin_data_stream[index]);
-		if (this->__checkOutOfRange__(reinterpret_cast<char*>(&ret)))
+		if (data == nullptr)
 		{
-			err = MERROR::OUT_OF_RANGE;
+			return MERROR::ARG_IS_NULL;
+		}
+		char* p_data = static_cast<char*>(data);
+		if (*(int*)p_data != sizeof(double))
+		{
+			err = MERROR::TYPE_ERR;
 			return double();
 		}
-		this->index += sizeof(double);
-		return 0.0;
+		p_data += sizeof(int);
+
+		return *reinterpret_cast<double*>(p_data);
 	}
 
-	char* MUZI::MSQLite::MSelectResult::getTEXT(int& err)
+	int MSQLite::MSelectResult::getTEXT(DataStream data, char* ret_buff, int& err)
 	{
-		int size = strlen(&this->bin_data_stream[index]);
-		this->index += size;
-		return nullptr;
-	}
-
-	char* MUZI::MSQLite::MSelectResult::getTEXT16(int& err)
-	{
-		int size = strlen(&this->bin_data_stream[index]);
-		this->index += size;
+		if (data == nullptr || ret_buff == nullptr)
+		{
+			return MERROR::ARG_IS_NULL;
+		}
+		char* p_data = static_cast<char*>(data);
+		int size = *(int*)p_data;
+		p_data += sizeof(int);
+		if (memcpy_s(ret_buff, size, p_data, size) != 0)
+		{
+			return MERROR::OUT_OF_BUFF;
+		}
 		return 0;
 	}
 
-	int MSQLite::MSelectResult::__EndOfDistance__(char* now)
+	int MSQLite::MSelectResult::getTEXT16(DataStream data, char* ret_buff, int& err)
 	{
-		return (now - this->bin_data_stream - this->index);
+		if (data == nullptr || ret_buff == nullptr)
+		{
+			return MERROR::ARG_IS_UNEXPECTED;
+		}
+		char* p_data = static_cast<char*>(data);
+		int size = *(int*)p_data;
+		p_data += sizeof(int);
+		if (memcpy_s(ret_buff, size, p_data, size) != 0)
+		{
+			return MERROR::OUT_OF_BUFF;
+		}
+		return 0;
 	}
 
-	bool MSQLite::MSelectResult::__checkOutOfRange__(char* now)
+	void* MSQLite::MSelectResult::getEleByColnum(int index, size_t& attribute_size, int& err)
 	{
-		return this->__EndOfDistance__(now) >= 0;
+		if (index > this->attribute_num)
+		{
+			err = MERROR::OUT_OF_RANGE;
+			return nullptr;
+		}
+		return &this->bin_data_stream[this->index_list[index]];
 	}
+
+	void MSQLite::MSelectResult::setDataStream(char* data_stream, size_t size)
+	{
+		this->bin_data_stream = data_stream;
+		this->size = size;
+	}
+
+	void MSQLite::MSelectResult::setIndexList(int* index_list, size_t attributeNum)
+	{
+		this->index_list = index_list;
+		this->attribute_num = attributeNum;
+	}
+
 
 
 	// MSQLite
@@ -210,9 +283,10 @@ namespace MUZI
 		{
 		case SQL_SELECT:
 		{
+			MSelectResult** ret_data = va_arg(args, MSelectResult**);
 
-
-			for (int i = 0; i < sql->attribute_num; ++i)
+			// 填充预编译语句
+			for (int i = 0; i < sql->args_num; ++i)
 			{
 				switch (sql->attribute_type[i])
 				{
@@ -281,24 +355,50 @@ namespace MUZI
 			}
 			int rc = 0;
 
+			size_t data_stream_size = 0;
+			// 获取表单类型大小，以设置数据流大小
+			for (int i = 0; i < sql->table->attributes_num; ++i)
+			{
+				data_stream_size += sql->table->attribute_size[i];
+			}
+
+			char* data_stream = new char[data_stream_size + sql->table->attributes_num * sizeof(int)];
+			char* p_data_stream_index = data_stream;
+			int* index_list = new int[sql->table->attributes_num];
+			int attribute_index = 0;
+			int loop_index = 0;
+			int sqlite_colnum = 0;
+
+			// 向数据流填充数据
 			while ((rc = sqlite3_step(sql->pstmt)) == SQLITE_ROW) {
-				for (int i = 0; i < sql->attribute_num; ++i)
+				for (int i = 0; i < sql->table->attributes_num; ++i)
 				{
-					switch (sql->attribute_type[i])
+					switch (sql->table->attribute_type[i])
 					{
 					case __SQLAttributeType__::INT:
 					{
-						MSelectResult* data;
+						*(int*)(p_data_stream_index) = sizeof(int32_t);
+						p_data_stream_index += sizeof(int);
+						*(int*)(p_data_stream_index) = sqlite3_column_int(sql->pstmt, sqlite_colnum++);
+						p_data_stream_index += sizeof(int32_t);
 						break;
 					}
 					case __SQLAttributeType__::INT64:
 					{
+						*(int*)(p_data_stream_index) = sizeof(int64_t);
+						p_data_stream_index += sizeof(int);
+						*(int*)(p_data_stream_index) = sqlite3_column_int64(sql->pstmt, sqlite_colnum++);
+						p_data_stream_index += sizeof(int64_t);
 
 						break;
 					}
 					case __SQLAttributeType__::TEXT:
 					{
-
+						const unsigned char* tmp_text = sqlite3_column_text(sql->pstmt, sqlite_colnum);
+						int tmp_text_len = sqlite3_column_bytes(sql->pstmt, sqlite_colnum++);
+						*(int*)(p_data_stream_index) = tmp_text_len + 1; // \0终止符也要添加进去
+						p_data_stream_index += sizeof(int);
+						memcpy(p_data_stream_index, tmp_text, tmp_text_len);
 						break;
 					}
 					case __SQLAttributeType__::TEXT16:
@@ -324,6 +424,7 @@ namespace MUZI
 					}
 
 				}
+				sqlite3_reset(sql->pstmt);
 			}
 
 
@@ -331,7 +432,7 @@ namespace MUZI
 		}
 		case SQL_DELETE:
 		{
-			for (int i = 0; i < sql->attribute_num; ++i)
+			for (int i = 0; i < sql->args_num; ++i)
 			{
 				switch (sql->attribute_type[i])
 				{
@@ -404,7 +505,7 @@ namespace MUZI
 		}
 		case SQL_INSERT:
 		{
-			for (int i = 0; i < sql->attribute_num; ++i)
+			for (int i = 0; i < sql->args_num; ++i)
 			{
 				switch (sql->attribute_type[i])
 				{

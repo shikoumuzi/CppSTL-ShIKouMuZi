@@ -13,23 +13,35 @@ namespace MUZI
 	public:
 		class MSelectResult
 		{
-			MSelectResult(char*, size_t size);
-			MSelectResult(const MSelectResult&) = delete;
+		public:
+			using DataStream = void*;
+		private:
+			MSelectResult(char*, int* , size_t, size_t size);
+		public:
+			MSelectResult();
+			MSelectResult(const MSelectResult&);
 			MSelectResult(MSelectResult&&) = delete;
+		public:
 			~MSelectResult();
 		public:
-			int32_t getINT(int& err);
-			int64_t getINT64(int& err);
-			double getDOUBLE(int& err);
-			char* getTEXT(int& err);
-			char* getTEXT16(int& err);
+			int32_t getINT(DataStream data, int& err);
+			int64_t getINT64(DataStream data, int& err);
+			double getDOUBLE(DataStream data, int& err);
+			int getTEXT(DataStream data, char* ret_buff, int& err);
+			int getTEXT16(DataStream data, char* ret_buff, int& err);
+			
+			/// @brief this function should input an index to get an void* data from data stream
+			/// @param index should start at 1
+			/// @return an void* pointer which is point to data address
+			DataStream getEleByColnum(int index, size_t& data_size, int& err);
 		private:
-			inline int __EndOfDistance__(char* now);
-			inline bool __checkOutOfRange__(char* now);
+			void setDataStream(char* data_stream, size_t size);
+			void setIndexList(int* index_list, size_t attributeNum);
 		public:
 			char* bin_data_stream;
-			size_t index;
+			int* index_list;
 			size_t size;
+			size_t attribute_num;
 		};
 
 	public:
@@ -55,6 +67,7 @@ namespace MUZI
 			TEXT16 = 32
 		};
 	private:
+		struct __SQL_TABLE__;
 		struct __SQL_MESSAGE__;
 		struct __MSQLite_Data__;
 	public:
@@ -65,6 +78,7 @@ namespace MUZI
 	public:
 		int setMode();
 	public:
+
 		int createDB(const char* database_name);
 		int createTable(const char* sql);
 	public:
@@ -72,23 +86,35 @@ namespace MUZI
 	public:
 		int driverSQL(const char* sql);
 	public:
+		
 		sql_id_t registerSQL(const char* sql, int type);
-
+		
+		
 		sql_type_t getSQLType(sql_id_t sql_id);
-
+		/// @brief this function will driver the sql code by sql_id from registerSQL()
+		/// @param sql_id 
+		/// @param  to insert or select value
+		/// @return  if mode is SELECT, you should set a callback function witch is get a row data from DataBase in the first arg after arg: sql_id, and then you should set your attribute by pointer 
+		/// if mode is DELETE/INSERT you should set your attribute by pointer after arg: sql_id
 		int driverSQL(sql_id_t sql_id, ...);
-		/*
-		* if mode is SELECT, you should set a callback function witch is get a row data from DataBase in the first arg after arg: sql_id, and then you should set your attribute by pointer 
-		* if mode is DELETE/INSERT you should set your attribute by pointer after arg: sql_id
-		*/
+
 	public:
+		/// @brief this function to get a sql type(SELECT)
+		/// @param should get by getSQLType
+		/// @return if is SELECT will return true, other will return false
 		inline bool isSELECTT(sql_type_t);
 		inline bool isCREATE(sql_type_t);
 		inline bool isDELETE(sql_type_t);
 		inline bool isINSERT(sql_type_t);
+
 		inline bool isErrorType(sql_type_t);
 	private:
+
 		size_t __analizeSQL__(); 
+		/// @brief 
+		/// @param sql_id 
+		/// @param err_no 
+		/// @return 
 		struct __SQL_MESSAGE__* __checkSQLID__(sql_id_t sql_id, int& err_no);
 
 	private:
