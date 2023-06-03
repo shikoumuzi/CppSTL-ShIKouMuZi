@@ -8,6 +8,8 @@
 #include<codecvt>
 #include<stdarg.h>
 #include<vector>
+
+
 namespace MUZI
 {
 	struct MSQLite::__SQL_TABLE__
@@ -24,8 +26,9 @@ namespace MUZI
 		MSQLite::sql_type_t sql_type;// 类型
 		sqlite3_stmt* pstmt;// 预编译语句
 		size_t args_num;// 表示语句中？的个数
-		unsigned char attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 变量类型数组, 仅支持int64 utf8 double等
-		__SQL_TABLE__* table;
+		unsigned char input_attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 输入变量类型数组, 仅支持int64 utf8 double等
+		size_t ret_num;// 语句返回结果内容
+		unsigned char output_attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 输出变量类型数组
 	};
 	struct MSQLite::__MSQLite_Data__
 	{
@@ -333,7 +336,7 @@ namespace MUZI
 			// 填充预编译语句
 			for (int i = 0; i < sql->args_num; ++i)
 			{
-				switch (sql->attribute_type[i])
+				switch (sql->input_attribute_type[i])
 				{
 				case __SQLAttributeType__::INT64:
 				{
@@ -382,18 +385,33 @@ namespace MUZI
 
 			size_t data_stream_size = 0;
 			// 获取表单类型大小，以设置数据流大小
-			for (int i = 0; i < sql->table->attributes_num; ++i)
+			for (int i = 0; i < sql->ret_num; ++i)
 			{
-				data_stream_size += sql->table->attribute_size[i];
+				switch (sql->output_attribute_type[i])
+				{
+				case __SQLAttributeType__::INT64:
+				{
+					data_stream_size += sizeof(int64_t);
+					break;
+				}
+				case __SQLAttributeType__::TEXT:
+				{
+					data_stream_size += __MUZI_MSQLITE_MAX_TEXT_BYTES_SIZE__;
+					break;
+				}
+				case __SQLAttributeType__::DOUBLE:
+				{
+					data_stream_size += sizeof(double);
+					break;
+				}
+				}
 			}
 
-			data_stream_size = data_stream_size + sql->table->attributes_num * sizeof(int);
+			data_stream_size = data_stream_size + sql->ret_num * sizeof(int);
 			char* data_stream = nullptr;
 			char* p_data_stream_index = nullptr;
 			int* index_list = nullptr;
-			int index_list_size = 0;
-			int attribute_index = 0;
-			int loop_index = 0;
+			int index_list_size = sql->ret_num;
 			int sqlite_colnum = 0;
 
 			// 向数据流填充数据
@@ -401,9 +419,9 @@ namespace MUZI
 			while ((rc = sqlite3_step(sql->pstmt)) == SQLITE_ROW) {
 				data_stream = new char[data_stream_size];
 				p_data_stream_index = data_stream;
-				int* index_list = new int[index_list_size];
+				index_list = new int[index_list_size];
 
-				for (int i = 0; i < sql->table->attributes_num; ++i)
+				for (int i = 0; i < sql->ret_num; ++i)
 				{
 					switch (sqlite3_column_type(sql->pstmt, sqlite_colnum))
 					{
@@ -411,17 +429,24 @@ namespace MUZI
 					{
 						*(int*)(p_data_stream_index) = sizeof(int32_t);
 						p_data_stream_index += sizeof(int);
+
+						index_list[sqlite_colnum] = (p_data_stream_index - data_stream) / sizeof(char);
+
 						*(int*)(p_data_stream_index) = sqlite3_column_int(sql->pstmt, sqlite_colnum++);
 						p_data_stream_index += sizeof(int32_t);
 						break;
 					}
 					case SQLITE_TEXT:
 					{
-						const unsigned char* tmp_text = sqlite3_column_text(sql->pstmt, sqlite_colnum);
+						const unsigned char* tmp_text = sqlite3_column_text(sql->pstmt, sqlite_colnum++);
 						int tmp_text_len = sqlite3_column_bytes(sql->pstmt, sqlite_colnum++);
 						*(int*)(p_data_stream_index) = tmp_text_len + 2; // \0终止符也要添加进去
 						p_data_stream_index += sizeof(int);
+
+						index_list[sqlite_colnum] = (p_data_stream_index - data_stream) / sizeof(char);
+
 						memcpy(p_data_stream_index, tmp_text, tmp_text_len);
+
 						p_data_stream_index += tmp_text_len;
 						*p_data_stream_index++ = '\0';// utf-8 由两个\0结尾
 						*p_data_stream_index++ = '\0';
@@ -431,6 +456,9 @@ namespace MUZI
 					{
 						*(int*)(p_data_stream_index) = sizeof(double);
 						p_data_stream_index += sizeof(int);
+
+						index_list[sqlite_colnum] = (p_data_stream_index - data_stream) / sizeof(char);
+
 						*(int*)(p_data_stream_index) = sqlite3_column_int64(sql->pstmt, sqlite_colnum++);
 						p_data_stream_index += sizeof(double);
 						break;
@@ -439,6 +467,7 @@ namespace MUZI
 					{
 						*(int*)(p_data_stream_index) = -1;
 						p_data_stream_index += sizeof(int);
+						index_list[sqlite_colnum] = (p_data_stream_index - data_stream) / sizeof(char);
 						break;
 					}
 					default:
@@ -448,7 +477,6 @@ namespace MUZI
 					}
 
 				}
-				++loop_index;
 				ret_datas->emplace(ret_datas->end(), MSelectResult(p_data_stream_index, index_list, data_stream_size, index_list_size));
 				if (ret_datas->size() >= ret_data_reserve_szie)
 				{
@@ -466,7 +494,7 @@ namespace MUZI
 		{
 			for (int i = 0; i < sql->args_num; ++i)
 			{
-				switch (sql->attribute_type[i])
+				switch (sql->input_attribute_type[i])
 				{
 				case __SQLAttributeType__::INT64:
 				{
@@ -511,7 +539,9 @@ namespace MUZI
 				}
 
 			}
-			sqlite3_step(sql->pstmt);
+			// 执行全部内容直到执行完全为止
+			while (sqlite3_step(sql->pstmt) == SQLITE_ROW);
+
 			sqlite3_reset(sql->pstmt);
 			break;
 		}
@@ -519,7 +549,7 @@ namespace MUZI
 		{
 			for (int i = 0; i < sql->args_num; ++i)
 			{
-				switch (sql->attribute_type[i])
+				switch (sql->input_attribute_type[i])
 				{
 				case __SQLAttributeType__::INT64:
 				{
