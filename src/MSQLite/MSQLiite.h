@@ -15,12 +15,12 @@ namespace MUZI
 		{
 		public:
 			using DataStream = void*;
-		private:
-			MSelectResult(char*, int* , size_t, size_t size);
 		public:
 			MSelectResult();
-			MSelectResult(const MSelectResult&);
-			MSelectResult(MSelectResult&&) = delete;
+			MSelectResult(char*, int*, size_t, size_t size);
+			MSelectResult(MSelectResult&);
+			MSelectResult(const MSelectResult&) = delete;
+			MSelectResult(MSelectResult&&);
 		public:
 			~MSelectResult();
 		public:
@@ -42,6 +42,7 @@ namespace MUZI
 			int* index_list;
 			size_t size;
 			size_t attribute_num;
+			int* objectnum;
 		};
 
 	public:
@@ -59,12 +60,10 @@ namespace MUZI
 		};
 		enum __SQLAttributeType__
 		{
-			INT = 1,
 			DOUBLE = 2,
 			INT64 = 4,
 			_NULL = 8,
 			TEXT = 16,
-			TEXT16 = 32
 		};
 	private:
 		struct __SQL_TABLE__;
@@ -97,6 +96,9 @@ namespace MUZI
 		/// @return  if mode is SELECT, you should set a callback function witch is get a row data from DataBase in the first arg after arg: sql_id, and then you should set your attribute by pointer 
 		/// if mode is DELETE/INSERT you should set your attribute by pointer after arg: sql_id
 		int driverSQL(sql_id_t sql_id, ...);
+
+	public:
+		void MSelectResultFinalize(MSQLite::MSelectResult**);
 
 	public:
 		/// @brief this function to get a sql type(SELECT)

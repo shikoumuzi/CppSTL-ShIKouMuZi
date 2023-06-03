@@ -7,6 +7,7 @@
 #include<stdint.h>
 #include<codecvt>
 #include<stdarg.h>
+#include<vector>
 namespace MUZI
 {
 	struct MSQLite::__SQL_TABLE__
@@ -35,32 +36,60 @@ namespace MUZI
 
 	// MSelectResult
 	MSQLite::MSelectResult::MSelectResult(char* stream, int* index_list, size_t attribute_num, size_t size)
-	{
-		this->bin_data_stream = stream;
-		this->index_list = index_list;
-		this->attribute_num = attribute_num;
-		this->size = size;
-	}
+		:bin_data_stream(stream), 
+		index_list(index_list), 
+		attribute_num(attribute_num), 
+		size (size), 
+		objectnum(new int(1))
+	{}
 
 	MSQLite::MSelectResult::MSelectResult()
+		:bin_data_stream(nullptr),
+		index_list(nullptr),
+		attribute_num(0),
+		size(0),
+		objectnum(nullptr)
+	{}
+
+	MSQLite::MSelectResult::MSelectResult(MSelectResult& that)
+		:bin_data_stream(that.bin_data_stream),
+		index_list(that.index_list),
+		attribute_num(that.attribute_num),
+		size(that.size),
+		objectnum(that.objectnum)
 	{
+		*that.objectnum += 1;
 	}
 
-	MSQLite::MSelectResult::MSelectResult(const MSelectResult&)
+	MSQLite::MSelectResult::MSelectResult(MSelectResult&& that)
+		:bin_data_stream(that.bin_data_stream),
+		index_list(that.index_list),
+		attribute_num(that.attribute_num),
+		size(that.size),
+		objectnum(that.objectnum)
 	{
+		that.bin_data_stream = nullptr;
+		that.index_list = nullptr;
+		that.attribute_num = 0;
+		that.size = 0;
+		that.objectnum = nullptr;
 	}
 
 	MSQLite::MSelectResult::~MSelectResult()
 	{
-		if (this->bin_data_stream != nullptr)
+		if (--*this->objectnum == 0)
 		{
-			delete this->bin_data_stream;
-			this->bin_data_stream = nullptr;
-		}
-		if (this->index_list != nullptr)
-		{
-			delete this->index_list;
-			this->index_list = nullptr;
+			if (this->bin_data_stream != nullptr)
+			{
+				delete this->bin_data_stream;
+				this->bin_data_stream = nullptr;
+			}
+			if (this->index_list != nullptr)
+			{
+				delete this->index_list;
+				this->index_list = nullptr;
+			}
+			delete this->objectnum;
 		}
 	}
 
@@ -160,14 +189,28 @@ namespace MUZI
 
 	void MSQLite::MSelectResult::setDataStream(char* data_stream, size_t size)
 	{
-		this->bin_data_stream = data_stream;
-		this->size = size;
+		if (this->objectnum == nullptr)
+		{
+			this->objectnum = new int(1);
+		}
+		if (this->bin_data_stream == nullptr)
+		{
+			this->bin_data_stream = data_stream;
+			this->size = size;
+		}
 	}
 
 	void MSQLite::MSelectResult::setIndexList(int* index_list, size_t attributeNum)
 	{
-		this->index_list = index_list;
-		this->attribute_num = attributeNum;
+		if (this->objectnum == nullptr)
+		{
+			this->objectnum = new int(1);
+		}
+		if (this->index_list != nullptr)
+		{
+			this->index_list = index_list;
+			this->attribute_num = attributeNum;
+		}
 	}
 
 
@@ -278,13 +321,15 @@ namespace MUZI
 
 		va_list args; // 定义一个va_list类型的变量
 		va_start(args, sql_id);// va_start需要是最后一个有名参数
-		
+
+
 		switch (sql->sql_type)
 		{
 		case SQL_SELECT:
 		{
-			MSelectResult** ret_data = va_arg(args, MSelectResult**);
-
+			int ret_data_reserve_szie = 100;
+			std::vector<MSQLite::MSelectResult>* ret_datas = va_arg(args, std::vector<MSQLite::MSelectResult>*);
+			ret_datas->reserve(ret_data_reserve_szie);
 			// 填充预编译语句
 			for (int i = 0; i < sql->args_num; ++i)
 			{
@@ -342,15 +387,22 @@ namespace MUZI
 				data_stream_size += sql->table->attribute_size[i];
 			}
 
-			char* data_stream = new char[data_stream_size + sql->table->attributes_num * sizeof(int)];
-			char* p_data_stream_index = data_stream;
-			int* index_list = new int[sql->table->attributes_num];
+			data_stream_size = data_stream_size + sql->table->attributes_num * sizeof(int);
+			char* data_stream = nullptr;
+			char* p_data_stream_index = nullptr;
+			int* index_list = nullptr;
+			int index_list_size = 0;
 			int attribute_index = 0;
 			int loop_index = 0;
 			int sqlite_colnum = 0;
 
 			// 向数据流填充数据
+			// 该判断语句代表由匹配的行
 			while ((rc = sqlite3_step(sql->pstmt)) == SQLITE_ROW) {
+				data_stream = new char[data_stream_size];
+				p_data_stream_index = data_stream;
+				int* index_list = new int[index_list_size];
+
 				for (int i = 0; i < sql->table->attributes_num; ++i)
 				{
 					switch (sqlite3_column_type(sql->pstmt, sqlite_colnum))
@@ -385,7 +437,8 @@ namespace MUZI
 					}
 					case SQLITE_NULL:
 					{
-						
+						*(int*)(p_data_stream_index) = -1;
+						p_data_stream_index += sizeof(int);
 						break;
 					}
 					default:
@@ -394,6 +447,13 @@ namespace MUZI
 						break;
 					}
 
+				}
+				++loop_index;
+				ret_datas->emplace(ret_datas->end(), MSelectResult(p_data_stream_index, index_list, data_stream_size, index_list_size));
+				if (ret_datas->size() >= ret_data_reserve_szie)
+				{
+					ret_data_reserve_szie *= 2;
+					ret_datas->reserve(ret_data_reserve_szie);
 				}
 				sqlite3_reset(sql->pstmt);
 				sqlite_colnum = 0;
@@ -538,6 +598,12 @@ namespace MUZI
 		}
 		return sql;
 	}
+
+	void MSQLite::MSelectResultFinalize(MSQLite::MSelectResult**)
+	{
+
+	}
+
 	bool MSQLite::isSELECTT(sql_type_t sql_type)
 	{
 		return sql_type == SQLType::SQL_SELECT;
