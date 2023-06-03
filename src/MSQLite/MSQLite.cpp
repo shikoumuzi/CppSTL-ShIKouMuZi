@@ -23,7 +23,7 @@ namespace MUZI
 		MSQLite::sql_type_t sql_type;// 类型
 		sqlite3_stmt* pstmt;// 预编译语句
 		size_t args_num;// 表示语句中？的个数
-		unsigned char attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 变量类型数组
+		unsigned char attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 变量类型数组, 仅支持int64 utf8 double等
 		__SQL_TABLE__* table;
 	};
 	struct MSQLite::__MSQLite_Data__
@@ -290,16 +290,6 @@ namespace MUZI
 			{
 				switch (sql->attribute_type[i])
 				{
-				case __SQLAttributeType__::INT:
-				{
-					int* arg = va_arg(args, int*);
-					sqlite3_bind_int(sql->pstmt, i + 1, *arg);
-					if (arg == nullptr)
-					{
-						goto __SQL_SELECT_ARG_IS_NULL__;
-					}
-					break;
-				}
 				case __SQLAttributeType__::INT64:
 				{
 					int64_t* arg = va_arg(args, int64_t*);
@@ -311,16 +301,6 @@ namespace MUZI
 					break;
 				}
 				case __SQLAttributeType__::TEXT:
-				{
-					const char* arg = va_arg(args, const char*);
-					sqlite3_bind_text(sql->pstmt, i + 1, arg, -1, SQLITE_STATIC);
-					if (arg == nullptr)
-					{
-						goto __SQL_SELECT_ARG_IS_NULL__;
-					}
-					break;
-				}
-				case __SQLAttributeType__::TEXT16:
 				{
 					const char* arg = va_arg(args, const char*);
 					sqlite3_bind_text(sql->pstmt, i + 1, arg, -1, SQLITE_STATIC);
@@ -373,9 +353,9 @@ namespace MUZI
 			while ((rc = sqlite3_step(sql->pstmt)) == SQLITE_ROW) {
 				for (int i = 0; i < sql->table->attributes_num; ++i)
 				{
-					switch (sql->table->attribute_type[i])
+					switch (sqlite3_column_type(sql->pstmt, sqlite_colnum))
 					{
-					case __SQLAttributeType__::INT:
+					case SQLITE_INTEGER:
 					{
 						*(int*)(p_data_stream_index) = sizeof(int32_t);
 						p_data_stream_index += sizeof(int);
@@ -383,37 +363,28 @@ namespace MUZI
 						p_data_stream_index += sizeof(int32_t);
 						break;
 					}
-					case __SQLAttributeType__::INT64:
-					{
-						*(int*)(p_data_stream_index) = sizeof(int64_t);
-						p_data_stream_index += sizeof(int);
-						*(int*)(p_data_stream_index) = sqlite3_column_int64(sql->pstmt, sqlite_colnum++);
-						p_data_stream_index += sizeof(int64_t);
-
-						break;
-					}
-					case __SQLAttributeType__::TEXT:
+					case SQLITE_TEXT:
 					{
 						const unsigned char* tmp_text = sqlite3_column_text(sql->pstmt, sqlite_colnum);
 						int tmp_text_len = sqlite3_column_bytes(sql->pstmt, sqlite_colnum++);
-						*(int*)(p_data_stream_index) = tmp_text_len + 1; // \0终止符也要添加进去
+						*(int*)(p_data_stream_index) = tmp_text_len + 2; // \0终止符也要添加进去
 						p_data_stream_index += sizeof(int);
 						memcpy(p_data_stream_index, tmp_text, tmp_text_len);
+						p_data_stream_index += tmp_text_len;
+						*p_data_stream_index++ = '\0';// utf-8 由两个\0结尾
+						*p_data_stream_index++ = '\0';
 						break;
 					}
-					case __SQLAttributeType__::TEXT16:
+					case SQLITE_FLOAT:
 					{
-
+						*(int*)(p_data_stream_index) = sizeof(double);
+						p_data_stream_index += sizeof(int);
+						*(int*)(p_data_stream_index) = sqlite3_column_int64(sql->pstmt, sqlite_colnum++);
+						p_data_stream_index += sizeof(double);
 						break;
 					}
-					case __SQLAttributeType__::DOUBLE:
+					case SQLITE_NULL:
 					{
-
-						break;
-					}
-					case __SQLAttributeType__::_NULL:
-					{
-					__SQL_SELECT_RESULT_ARG_IS_NULL__:
 						
 						break;
 					}
@@ -425,6 +396,7 @@ namespace MUZI
 
 				}
 				sqlite3_reset(sql->pstmt);
+				sqlite_colnum = 0;
 			}
 
 
@@ -436,16 +408,6 @@ namespace MUZI
 			{
 				switch (sql->attribute_type[i])
 				{
-				case __SQLAttributeType__::INT:
-				{
-					int32_t* arg = va_arg(args, int32_t*);
-					sqlite3_bind_int(sql->pstmt, i + 1, *arg);
-					if (arg == nullptr)
-					{
-						goto __SQL_DELETE_ARG_IS_NULL__;
-					}
-					break;
-				}
 				case __SQLAttributeType__::INT64:
 				{
 					int64_t* arg = va_arg(args, int64_t*);
@@ -457,16 +419,6 @@ namespace MUZI
 					break;
 				}
 				case __SQLAttributeType__::TEXT:
-				{
-					const char* arg = va_arg(args, const char*);
-					sqlite3_bind_text(sql->pstmt, i + 1, arg, -1, SQLITE_STATIC);
-					if (arg == nullptr)
-					{
-						goto __SQL_DELETE_ARG_IS_NULL__;
-					}
-					break;
-				}
-				case __SQLAttributeType__::TEXT16:
 				{
 					const char* arg = va_arg(args, const char*);
 					sqlite3_bind_text(sql->pstmt, i + 1, arg, -1, SQLITE_STATIC);
@@ -509,16 +461,6 @@ namespace MUZI
 			{
 				switch (sql->attribute_type[i])
 				{
-				case __SQLAttributeType__::INT:
-				{
-					int* arg = va_arg(args, int*);
-					sqlite3_bind_int(sql->pstmt, i, *arg);
-					if (arg == nullptr)
-					{
-						goto __SQL_INSERT_ARG_IS_NULL__;
-					}
-					break;
-				}
 				case __SQLAttributeType__::INT64:
 				{
 					int64_t* arg = va_arg(args, int64_t*);
@@ -530,16 +472,6 @@ namespace MUZI
 					break;
 				}
 				case __SQLAttributeType__::TEXT:
-				{
-					const char* arg = va_arg(args, const char*);
-					sqlite3_bind_text(sql->pstmt, i + 1, arg, -1, SQLITE_STATIC);
-					if (arg == nullptr)
-					{
-						goto __SQL_INSERT_ARG_IS_NULL__;
-					}
-					break;
-				}
-				case __SQLAttributeType__::TEXT16:
 				{
 					const char* arg = va_arg(args, const char*);
 					sqlite3_bind_text(sql->pstmt, i + 1, arg, -1, SQLITE_STATIC);
