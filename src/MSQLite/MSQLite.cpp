@@ -180,7 +180,7 @@ namespace MUZI
 		return 0;
 	}
 
-	void* MSQLite::MSelectResult::getEleByColnum(int index, size_t& attribute_size, int& err)
+	MSQLite::MSelectResult::DataStream MSQLite::MSelectResult::getEleByColnum(int index, size_t& attribute_size, int& err)
 	{
 		if (index > this->attribute_num)
 		{
@@ -251,7 +251,7 @@ namespace MUZI
 				delete this->m_data->sqls;
 				this->m_data->sqls = nullptr;
 			}
-			if (this->m_data->sq3)
+			if (this->m_data->sq3 != nullptr)
 			{
 				sqlite3_close_v2(this->m_data->sq3);
 				this->m_data->sq3 = nullptr;
@@ -287,9 +287,13 @@ namespace MUZI
 		return 0;
 	}
 
-	int MSQLite::driverSQL(const char* sql)
+	int MSQLite::driverSQL(const char* sql, int(*callback)(void*, int, char**, char**), void* flag)
 	{
+		int err_no = 0;
+		if ((err_no = sqlite3_exec(this->m_data->sq3, sql, callback, flag, nullptr)) != SQLITE_OK)
+		{
 
+		}
 
 		return 0;
 	}
@@ -638,6 +642,7 @@ namespace MUZI
 	{
 		return sql_type == SQLType::SQL_SELECT;
 	}
+
 	bool MSQLite::isCREATE(sql_type_t sql_type)
 	{
 		return sql_type == SQLType::SQL_CREATE;

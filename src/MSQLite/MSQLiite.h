@@ -84,7 +84,7 @@ namespace MUZI
 	public:
 		int bindDB();
 	public:
-		int driverSQL(const char* sql);
+		int driverSQL(const char* sql, int(*callback)(void*, int, char**, char**), void* flag);
 	public:
 		
 		sql_id_t registerSQL(const char* sql, int type);
