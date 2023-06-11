@@ -8,7 +8,7 @@
 #define __MUZI_MSQLITE_MAX_TEXT_BYTES_SIZE__ 2048
 namespace MUZI
 {
-	// 该类只能绑定一个db数据库
+	// 该类只能绑定一个db数据库, 且只限于简单sql
 	class MSQLite
 	{
 	public:
@@ -19,8 +19,7 @@ namespace MUZI
 		public:
 			MSelectResult();
 			MSelectResult(char*, int*, size_t, size_t size);
-			MSelectResult(MSelectResult&);
-			MSelectResult(const MSelectResult&) = delete;
+			MSelectResult(const MSelectResult&);
 			MSelectResult(MSelectResult&&);
 		public:
 			~MSelectResult();
@@ -38,6 +37,8 @@ namespace MUZI
 		private:
 			void setDataStream(char* data_stream, size_t size);
 			void setIndexList(int* index_list, size_t attributeNum);
+		public:
+			void operator=(const MSelectResult&);
 		public:
 			char* bin_data_stream;
 			int* index_list;

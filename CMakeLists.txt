@@ -20,7 +20,7 @@ set(SQLITE3_CODE_LIBRARY_PATH D:/sqlite)
 
 
 # 添加头文件路径
-file(GLOB_RECURSE SRC_PATH src/*.h src/*.cpp)
+file(GLOB_RECURSE CPP_FILE_PATH src/*.cpp)
 file(GLOB_RECURSE TEST_PATH test/*.h test/*.cpp)
 file(GLOB_RECURSE H_FILE_PATH src/*.h)
 
@@ -78,11 +78,50 @@ if(SQLite3_FOUND)
 	message(STATUS "Sqlite3_LIBRARY_DIRS=${SQLite3_LIBRARIES}")
 endif()
 
+set(HEADERS
+	${H_FILE_PATH}
+	"src/MSTL/h/MTreeMap.h" 
+	"src/MSTL/h/MHashMap.h" 
+	"src/MSTL/h/MList.h" 
+	"src/MBase/MError.h" 
+	"src/MSTL/h/MStack.h" 
+	"src/MSTL/h/MDeque.h" 
+	"src/MFTP/MFTP.cpp" 
+	"src/MFTP/MFTPProto.h" 
+	"src/MFileSystem/MFileDataBase.h" 
+	"src/MFileSystem/MFileDataBase.cpp" 
+	"src/MFileSystem/MFileInput.h" 
+	"src/MFileSystem/MFileOutput.cpp" 
+	"src/MFileSystem/MFileOutput.h"  
+	"src/MFileSystem/FileIOQueue.h"  
+	"src/MFileSystem/MFileBase/MFileInWin.h" 
+	"src/MSQLite/MSQLiite.h"
+	"src/MAllocator/MPoolAllocator.h" 
+	"src/MAllocator/MLOKIAllocator.h" 
+	"src/MAllocator/MArrayAllocaor.h"
+	
+)
+
+set(SOURCES
+	${CPP_FILE_PATH}
+	"src/MSQLite/MSQLite.cpp"
+	"src/MFileSystem/FileIOQueue.cpp"
+	"src/MFileSystem/MFileInput.cpp" 
+	"src/MFileSystem/MFile.cpp" 
+	"src/MAllocator/MPoolAllocator.cpp" 
+	"src/MAllocator/MLOKIAllocator.cpp" 
+)
+
 
 # 将源代码添加到此项目的可执行文件。
 # 将测试添加到此项目的可执行文件。
 # add_executable (TESTMAIN ${TEST_PATH} ${H_FILE_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp")
-add_executable (CppSTL-shikounuzi "CppSTL-shikounuzi.cpp" "CppSTL-shikounuzi.h" ${SRC_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp" "src/MSTL/h/MTreeMap.h" "src/MSTL/h/MHashMap.h" "src/MSTL/h/MList.h" "src/MBase/MError.h" "src/MSTL/h/MStack.h" "src/MSTL/h/MDeque.h" "src/MFTP/MFTP.cpp" "src/MFTP/MFTPProto.h" "src/MFileSystem/MFileDataBase.h" "src/MFileSystem/MFileDataBase.cpp" "src/MFileSystem/MFileInput.h" "src/MFileSystem/MFileOutput.cpp" "src/MFileSystem/MFileOutput.h" "src/MFileSystem/MFileInput.cpp" "src/MFileSystem/MFile.cpp"   "src/MFileSystem/FileIOQueue.h" "src/MFileSystem/FileIOQueue.cpp" "src/MFileSystem/MFileBase/MFileInWin.h" "src/MSQLite/MSQLiite.h" "src/MSQLite/MSQLite.cpp")
+add_executable (CppSTL-shikounuzi 
+	"CppSTL-shikounuzi.cpp" 
+	"CppSTL-shikounuzi.h" 
+	${SOURCES}
+	${HEADERS}
+)
 
 
 

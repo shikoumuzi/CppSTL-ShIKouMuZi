@@ -54,7 +54,7 @@ namespace MUZI
 		objectnum(nullptr)
 	{}
 
-	MSQLite::MSelectResult::MSelectResult(MSelectResult& that)
+	MSQLite::MSelectResult::MSelectResult(const MSelectResult& that)
 		:bin_data_stream(that.bin_data_stream),
 		index_list(that.index_list),
 		attribute_num(that.attribute_num),
@@ -216,6 +216,15 @@ namespace MUZI
 		}
 	}
 
+	void MSQLite::MSelectResult::operator=(const MSelectResult& that)
+	{
+		this->bin_data_stream = that.bin_data_stream;
+		this->index_list = that.index_list;
+		this->attribute_num = that.attribute_num;
+		this->size = size;
+		this->objectnum = that.objectnum;
+		*that.objectnum += 1;
+	}
 
 
 	// MSQLite
