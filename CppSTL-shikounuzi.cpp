@@ -12,6 +12,8 @@
 #include"MDeque.h"
 #include"MFileSystem/MFileDataBase.h"
 #include"MSQLite/MSQLiite.h"
+
+#include"MNet/MEndPoint/MClientEndPoint.h"
 class a
 {
 

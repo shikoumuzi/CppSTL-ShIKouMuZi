@@ -86,12 +86,9 @@ set(HEADERS
 	"src/MBase/MError.h" 
 	"src/MSTL/h/MStack.h" 
 	"src/MSTL/h/MDeque.h" 
-	"src/MFTP/MFTP.cpp" 
 	"src/MFTP/MFTPProto.h" 
 	"src/MFileSystem/MFileDataBase.h" 
-	"src/MFileSystem/MFileDataBase.cpp" 
 	"src/MFileSystem/MFileInput.h" 
-	"src/MFileSystem/MFileOutput.cpp" 
 	"src/MFileSystem/MFileOutput.h"  
 	"src/MFileSystem/FileIOQueue.h"  
 	"src/MFileSystem/MFileBase/MFileInWin.h" 
@@ -99,6 +96,8 @@ set(HEADERS
 	"src/MAllocator/MPoolAllocator.h" 
 	"src/MAllocator/MLOKIAllocator.h" 
 	"src/MAllocator/MArrayAllocaor.h"
+	"src/MNet/MEndPoint/MClientEndPoint.h"
+	"src/MNet/MEndPoint/MServerEndPoint.h"
 	
 )
 
@@ -110,6 +109,11 @@ set(SOURCES
 	"src/MFileSystem/MFile.cpp" 
 	"src/MAllocator/MPoolAllocator.cpp" 
 	"src/MAllocator/MLOKIAllocator.cpp" 
+	"src/MFileSystem/MFileOutput.cpp" 
+	"src/MFileSystem/MFileDataBase.cpp" 
+	"src/MFTP/MFTP.cpp" 
+	"src/MNet/MEndPoint/MClientEndPoint.cpp"
+	"src/MNet/MEndPoint/MServerEndPoint.cpp"
 )
 
 
@@ -121,7 +125,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-)
+    "src/MNet/MNetBase.h" "src/MNet/MSocket/MSocket.h" "src/MNet/MSocket/MSocket.cpp" "src/MLog/MLog.h" "src/MLog/MLog.cpp")
 
 
 
