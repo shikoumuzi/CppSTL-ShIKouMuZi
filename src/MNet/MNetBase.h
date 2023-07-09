@@ -16,6 +16,8 @@ namespace MUZI::NET
 	using IOContext = boost::asio::io_context;
 	using TCPAcceptor = boost::asio::ip::tcp::acceptor;
 	using Port = uint16_t;
+	using HostQuery = boost::asio::ip::tcp::resolver::query;
+	using HostResolver = boost::asio::ip::tcp::resolver;
 }
 
 

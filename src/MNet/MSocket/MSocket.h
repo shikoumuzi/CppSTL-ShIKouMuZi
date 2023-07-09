@@ -18,6 +18,8 @@ namespace MUZI::NET
 		~MSocket();
 	public:// server
 		int bind();
+		int listen();
+		int accept();
 	public:// client
 		int connect(const MServerEndPoint& endpoint);
 		/// @brief 

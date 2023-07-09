@@ -1,13 +1,13 @@
 #include "MSocket.h"
 #include"MLog/MLog.h"
 #include"MBase/MError.h"
+#include"boost/algorithm/string.hpp"
 namespace MUZI::NET
 {
 
 	struct MSocket::MSocketData
 	{
-		IOContext io_context;
-		Protocol protocol;
+	public:
 		struct ServerSocketData
 		{
 			TCPAcceptor acceptor;
@@ -20,13 +20,20 @@ namespace MUZI::NET
 		{
 			ServerSocketData server;
 			ClientSocketData client;
-		}data;
-		bool isServer;
+		};
 		union LocalEndPoint
 		{
 			MServerEndPoint server_endpoint;
 			MClientEndPoint client_endpoint;
-		}local_endpoint;
+		};
+
+	public:
+		bool isServer;
+
+		IOContext io_context;
+		Protocol protocol;
+		union SocketData data;
+		union LocalEndPoint local_endpoint;
 	};
 
 	MSocket::MSocket() : m_data(static_cast<MSocketData*>(operator new(sizeof(MSocketData))))
@@ -56,7 +63,18 @@ namespace MUZI::NET
 	{
 		if (this->m_data != nullptr)
 		{
-			delete this->m_data;
+			this->m_data->io_context.~io_context();
+			if (this->m_data->isServer)
+			{
+				this->m_data->data.server.acceptor.~basic_socket_acceptor();
+				this->m_data->local_endpoint.server_endpoint.~MServerEndPoint();
+			}
+			else
+			{
+				this->m_data->data.client.socket.~basic_stream_socket();
+				this->m_data->local_endpoint.client_endpoint.~MClientEndPoint();
+			}
+			operator delete(this->m_data);
 			m_data = nullptr;
 		}
 	}
@@ -76,7 +94,7 @@ namespace MUZI::NET
 			this->m_data->data.server.acceptor.bind(*endpoint, error_code);
 			if (error_code.value() != 0)
 			{
-				MLog::w("MSocket::bind", "endpoint is not construct, Error Code is %d, Error Message is %s", MERROR::BIND_ERROR, error_code.message().c_str());
+				MLog::w("MSocket::bind", "bind is failed, Error Code is %d, Error Message is %s", MERROR::BIND_ERROR, error_code.message().c_str());
 				return MERROR::BIND_ERROR;
 			}
 		}
@@ -100,15 +118,25 @@ namespace MUZI::NET
 		this->m_data->data.client.socket.connect(*ep, error_code);
 		if (error_code.value() != 0)
 		{
-			MLog::w("MSocket::bind", "endpoint is not construct, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, error_code.message().c_str());
+			MLog::w("MSocket::bind", "connet is failed, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, error_code.message().c_str());
 			return MERROR::BIND_ERROR;
 		}
 
 		return 0;
 	}
 
-	int MSocket::connect(const String& dns, Port port)
+	int MSocket::connect(const String& host, Port port)
 	{
+		HostQuery resolver_query(host, std::to_string(port), HostQuery::numeric_service);
+		HostResolver resolver(this->m_data->io_context);
+		EC ec;
+		// 这里采用查询器和解析器进行，由于返回结果可能不止一个，所以需要用迭代器进行轮询
+		HostResolver::iterator it = resolver.resolve(resolver_query);
+		boost::asio::connect(this->m_data->data.client.socket, it,ec);
+		if (ec.value() != 0)
+		{
+			MLog::w("MSocket::connect", "connet is failed, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, ec.message().c_str());
+		}
 		return 0;
 	}
 
