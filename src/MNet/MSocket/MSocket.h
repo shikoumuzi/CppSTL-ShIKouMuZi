@@ -29,6 +29,10 @@ namespace MUZI::NET
 		/// @return return 0 if success, other is error_code
 		int connect(const String& host, Port port);
 		
+	public:// io
+
+
+
 	private:
 		struct MSocketData* m_data;
 	};

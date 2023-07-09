@@ -18,6 +18,11 @@ namespace MUZI::NET
 	using Port = uint16_t;
 	using HostQuery = boost::asio::ip::tcp::resolver::query;
 	using HostResolver = boost::asio::ip::tcp::resolver;
+	using ReadBuff = boost::asio::const_buffer;
+	using WriteBuff = boost::asio::mutable_buffer;
+	using ReadBuffs = boost::asio::const_buffers_1;
+	using WriteBuffs = boost::asio::mutable_buffers_1;
+
 }
 
 
