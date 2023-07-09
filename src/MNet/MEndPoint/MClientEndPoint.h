@@ -12,7 +12,7 @@ namespace MUZI::NET
 	public:
 		struct MClientEndPointData;
 	public:
-		MClientEndPoint(String raw_ip_address, uint16_t port, int& ec);
+		MClientEndPoint(String raw_ip_address, Port port, int& ec);
 		MClientEndPoint(const MClientEndPoint& endpoint);
 		MClientEndPoint(MClientEndPoint&& endpoint);
 		~MClientEndPoint();

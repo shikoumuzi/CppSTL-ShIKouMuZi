@@ -5,12 +5,12 @@ namespace MUZI::NET
 	struct MClientEndPoint::MClientEndPointData
 	{
 		Address server_address;
-		uint16_t server_port;
+		Port server_port;
 		EndPoint endpoint;
 	};
 
 
-	MClientEndPoint::MClientEndPoint(String raw_ip_address, uint16_t port, int& ec) :m_data(new MClientEndPointData())
+	MClientEndPoint::MClientEndPoint(String raw_ip_address, Port port, int& ec) :m_data(new MClientEndPointData())
 	{
 		EC error_code;
 		this->m_data->server_address = Address::from_string(raw_ip_address, error_code);

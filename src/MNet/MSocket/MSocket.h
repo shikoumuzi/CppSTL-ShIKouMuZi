@@ -20,8 +20,11 @@ namespace MUZI::NET
 		int bind();
 	public:// client
 		int connect(const MServerEndPoint& endpoint);
-		int connect(const String& dns);
-
+		/// @brief 
+		/// @param host an str witch is decribe net
+		/// @return return 0 if success, other is error_code
+		int connect(const String& host, Port port);
+		
 	private:
 		struct MSocketData* m_data;
 	};

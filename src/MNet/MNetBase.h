@@ -15,6 +15,7 @@ namespace MUZI::NET
 	using TCPSocket = boost::asio::ip::tcp::socket;
 	using IOContext = boost::asio::io_context;
 	using TCPAcceptor = boost::asio::ip::tcp::acceptor;
+	using Port = uint16_t;
 }
 
 

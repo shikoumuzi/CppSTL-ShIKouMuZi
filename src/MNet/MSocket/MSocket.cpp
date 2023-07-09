@@ -107,4 +107,9 @@ namespace MUZI::NET
 		return 0;
 	}
 
+	int MSocket::connect(const String& dns, Port port)
+	{
+		return 0;
+	}
+
 }

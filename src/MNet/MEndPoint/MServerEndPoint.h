@@ -13,7 +13,7 @@ namespace MUZI::NET
 	public:
 		struct MServerEndPointData;
 	public:
-		MServerEndPoint(uint16_t port);
+		MServerEndPoint(Port port);
 		MServerEndPoint(const MServerEndPoint& endpoint);
 		MServerEndPoint(MServerEndPoint&& endpoint);
 		~MServerEndPoint();

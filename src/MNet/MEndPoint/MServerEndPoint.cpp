@@ -5,12 +5,12 @@ namespace MUZI::NET
 	struct MServerEndPoint::MServerEndPointData
 	{
 		Address server_address;
-		uint16_t server_port;
+		Port server_port;
 		EndPoint endpoint;
 
 	};
 
-	MServerEndPoint::MServerEndPoint(uint16_t port) :m_data(new MServerEndPointData())
+	MServerEndPoint::MServerEndPoint(Port port) :m_data(new MServerEndPointData())
 	{
 		EC error_code;
 		this->m_data->server_address = AddressSeccion::any();
