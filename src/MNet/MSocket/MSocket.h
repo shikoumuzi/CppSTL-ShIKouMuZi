@@ -25,14 +25,14 @@ namespace MUZI::NET
 	public:// client
 		int connect(const MServerEndPoint& endpoint);
 		/// @brief 
-		/// @param host an str witch is decribe net
+		/// @param host an str witch is domain name
 		/// @return return 0 if success, other is error_code
 		int connect(const String& host, Port port);
 		
 	public:// io
-		int write(String& data, int& error_code);
-		int write(void* data, uint64_t data_size, int& error_code);
-		int read();
+		int write(String& data);
+		int write(void* data, uint64_t data_size);
+		int read(void* buff, uint64_t maxsize);
 
 
 	private:

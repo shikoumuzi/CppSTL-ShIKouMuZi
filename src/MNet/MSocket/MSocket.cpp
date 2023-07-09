@@ -45,7 +45,8 @@ namespace MUZI::NET
 	{
 		this->m_data->isServer = true;
 		new(&(this->m_data->protocol)) Protocol(Protocol::v4());// 初始化协议
-		new(&(this->m_data->data.server)) MSocketData::ServerSocketData({std::move(TCPAcceptor(this->m_data->io_context)), std::move(TCPSocket(this->m_data->io_context))});// 初始化acceptor
+		new(&(this->m_data->data.server)) \
+			MSocketData::ServerSocketData({std::move(TCPAcceptor(this->m_data->io_context)), std::move(TCPSocket(this->m_data->io_context, this->m_data->protocol))});// 初始化acceptor
 		new(&(this->m_data->local_endpoint.server_endpoint)) MServerEndPoint(endpoint);// 初始化endpoint
 	}
 
@@ -164,23 +165,27 @@ namespace MUZI::NET
 		}
 		return 0;
 	}
-	int MSocket::write(String& data, int& error_code)
+	int MSocket::write(String& data)
 	{
-		this->write((char*)(data.c_str()), data.size(), error_code);
+		return this->write((char*)(data.c_str()), data.size());
 	}
 
-	int MSocket::write(void* data, uint64_t data_size, int& error_code)
+	int MSocket::write(void* data, uint64_t data_size)
 	{
-		uint64_t total_bytes = 0;
-		error_code = 0;
+		int64_t total_bytes = 0;
+		EC ec;
 		if (this->m_data->isServer)
 		{
 			while (total_bytes != data_size)
 			{
 				// 通过调用write_some来向网络写入数据，每次从偏移量开始， 类似Linux 的send api
 				this->m_data->data.server.
-					socket.write_some(boost::asio::buffer(static_cast<char*>(data) + total_bytes, data_size - total_bytes));
-
+					socket.write_some(boost::asio::buffer(static_cast<char*>(data) + total_bytes, data_size - total_bytes), ec);
+				if (ec.value() != 0)
+				{
+					MLog::w("MSocket::write", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+					return MERROR::SOCKET_SYSTEM_ERROR;
+				}
 			}
 		}
 		else
@@ -188,14 +193,48 @@ namespace MUZI::NET
 			while (total_bytes != data_size)
 			{
 				this->m_data->data.client.
-					socket.write_some(boost::asio::buffer(static_cast<char*>(data) + total_bytes, data_size - total_bytes));
+					socket.write_some(boost::asio::buffer(static_cast<char*>(data) + total_bytes, data_size - total_bytes), ec);
+				if (ec.value() != 0)
+				{
+					MLog::w("MSocket::write", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+					return MERROR::SOCKET_SYSTEM_ERROR;
+				}
 			}
 		}
 		return 0;
 	}
 
-	int MSocket::read()
+	int MSocket::read(void* buff, uint64_t requiredsize)
 	{
+		int64_t total_bytes = 0;
+		EC ec;
+		if (this->m_data->isServer)
+		{
+			while (total_bytes != requiredsize)
+			{
+				// 通过调用write_some来向网络写入数据，每次从偏移量开始， 类似Linux 的send api
+				this->m_data->data.server.
+					socket.read_some(boost::asio::buffer(static_cast<char*>(buff) + total_bytes, requiredsize - total_bytes), ec);
+				if (ec.value() != 0)
+				{
+					MLog::w("MSocket::read", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+					return MERROR::SOCKET_SYSTEM_ERROR;
+				}
+			}
+		}
+		else
+		{
+			while (total_bytes != requiredsize)
+			{
+				this->m_data->data.client.
+					socket.read_some(boost::asio::buffer(static_cast<char*>(buff) + total_bytes, requiredsize - total_bytes), ec);
+				if (ec.value() != 0)
+				{
+					MLog::w("MSocket::read", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+					return MERROR::SOCKET_SYSTEM_ERROR;
+				}
+			}
+		}
 		return 0;
 	}
 
