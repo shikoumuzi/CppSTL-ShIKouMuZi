@@ -11,6 +11,7 @@ namespace MUZI::NET
 		struct ServerSocketData
 		{
 			TCPAcceptor acceptor;
+			TCPSocket socket;
 		};
 		struct ClientSocketData
 		{
@@ -29,7 +30,6 @@ namespace MUZI::NET
 
 	public:
 		bool isServer;
-
 		IOContext io_context;
 		Protocol protocol;
 		union SocketData data;
@@ -45,7 +45,7 @@ namespace MUZI::NET
 	{
 		this->m_data->isServer = true;
 		new(&(this->m_data->protocol)) Protocol(Protocol::v4());// 初始化协议
-		new(&(this->m_data->data.server)) MSocketData::ServerSocketData({std::move(TCPAcceptor(this->m_data->io_context))});// 初始化acceptor
+		new(&(this->m_data->data.server)) MSocketData::ServerSocketData({std::move(TCPAcceptor(this->m_data->io_context)), std::move(TCPSocket(this->m_data->io_context))});// 初始化acceptor
 		new(&(this->m_data->local_endpoint.server_endpoint)) MServerEndPoint(endpoint);// 初始化endpoint
 	}
 
@@ -67,6 +67,7 @@ namespace MUZI::NET
 			if (this->m_data->isServer)
 			{
 				this->m_data->data.server.acceptor.~basic_socket_acceptor();
+				this->m_data->data.client.socket.~basic_stream_socket();
 				this->m_data->local_endpoint.server_endpoint.~MServerEndPoint();
 			}
 			else
@@ -101,6 +102,30 @@ namespace MUZI::NET
 		else
 		{
 			return MERROR::OBJECT_IS_NO_SERVER;
+		}
+		return 0;
+	}
+
+	int MSocket::listen()
+	{
+		EC ec;
+		this->m_data->data.server.acceptor.listen(this->back_log);
+		if (ec.value() != 0)
+		{
+			MLog::w("MSocket::accept", "listen is failed, Error Code is %d, Error Message is %s", MERROR::LISTEN_ERROR, ec.message());
+			return  MERROR::LISTEN_ERROR;
+		}
+		return 0;
+	}
+
+	int MSocket::accept()
+	{
+		EC ec;
+		this->m_data->data.server.acceptor.accept(this->m_data->data.server.socket, ec);
+		if (ec.value() != 0)
+		{
+			MLog::w("MSocket::accept", "accept is failed, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message());
+			return  MERROR::ACCEPT_ERROR;
 		}
 		return 0;
 	}

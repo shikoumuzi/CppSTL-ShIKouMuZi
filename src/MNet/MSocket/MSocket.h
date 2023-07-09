@@ -10,6 +10,8 @@ namespace MUZI::NET
 	class MSocket
 	{
 	public:
+		static int back_log;
+	public:
 		struct MSocketData;
 	public:
 		MSocket();
@@ -31,6 +33,8 @@ namespace MUZI::NET
 		struct MSocketData* m_data;
 	};
 
+
+	int MSocket::back_log = 30;
 
 }
 
