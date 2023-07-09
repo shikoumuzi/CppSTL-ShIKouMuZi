@@ -4,6 +4,7 @@
 #include<string>
 #include<boost/asio.hpp>
 #include<boost/asio/io_context.hpp>
+#include<vector>
 namespace MUZI::NET
 {
 	using String = std::string;
@@ -22,7 +23,8 @@ namespace MUZI::NET
 	using WriteBuff = boost::asio::mutable_buffer;
 	using ReadBuffs = boost::asio::const_buffers_1;
 	using WriteBuffs = boost::asio::mutable_buffers_1;
-
+	template<typename T>
+	using Vector = std::vector<T>;
 }
 
 

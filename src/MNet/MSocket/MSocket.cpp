@@ -164,5 +164,40 @@ namespace MUZI::NET
 		}
 		return 0;
 	}
+	int MSocket::write(String& data, int& error_code)
+	{
+		this->write((char*)(data.c_str()), data.size(), error_code);
+	}
+
+	int MSocket::write(void* data, uint64_t data_size, int& error_code)
+	{
+		uint64_t total_bytes = 0;
+		error_code = 0;
+		if (this->m_data->isServer)
+		{
+			while (total_bytes != data_size)
+			{
+				// 通过调用write_some来向网络写入数据，每次从偏移量开始， 类似Linux 的send api
+				this->m_data->data.server.
+					socket.write_some(boost::asio::buffer(static_cast<char*>(data) + total_bytes, data_size - total_bytes));
+
+			}
+		}
+		else
+		{
+			while (total_bytes != data_size)
+			{
+				this->m_data->data.client.
+					socket.write_some(boost::asio::buffer(static_cast<char*>(data) + total_bytes, data_size - total_bytes));
+			}
+		}
+		return 0;
+	}
+
+	int MSocket::read()
+	{
+		return 0;
+	}
+
 
 }

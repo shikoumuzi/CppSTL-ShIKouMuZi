@@ -125,7 +125,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-    "src/MNet/MNetBase.h" "src/MNet/MSocket/MSocket.h" "src/MNet/MSocket/MSocket.cpp" "src/MLog/MLog.h" "src/MLog/MLog.cpp")
+    "src/MNet/MNetBase.h" "src/MNet/MSocket/MSocket.h" "src/MNet/MSocket/MSocket.cpp" "src/MLog/MLog.h" "src/MLog/MLog.cpp" "src/MNet/MData/MData.h")
 
 
 

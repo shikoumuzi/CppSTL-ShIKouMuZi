@@ -30,7 +30,9 @@ namespace MUZI::NET
 		int connect(const String& host, Port port);
 		
 	public:// io
-
+		int write(String& data, int& error_code);
+		int write(void* data, uint64_t data_size, int& error_code);
+		int read();
 
 
 	private:
