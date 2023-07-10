@@ -32,7 +32,7 @@ namespace MUZI::NET
 	public:// io
 		int write(String& data);
 		int write(void* data, uint64_t data_size);
-		int read(void* buff, uint64_t maxsize);
+		int read(void* buff, uint64_t requiredsize);
 
 
 	private:

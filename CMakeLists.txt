@@ -11,6 +11,14 @@ endif()
 
 project (CppSTL-shikounuzi)
 
+# 设置输出路径
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)# 可执行文件
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})# 静态库输出
+
+
+# 基础设置
+add_definitions("-DUNICODE" "-D_UNICODE") # 设置为unicode字符集
+
 # 指定平台工具集
  set(CMAKE_GENERATOR_PLATFORM v143) 
 
@@ -125,7 +133,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-    "src/MNet/MNetBase.h" "src/MNet/MSocket/MSocket.h" "src/MNet/MSocket/MSocket.cpp" "src/MLog/MLog.h" "src/MLog/MLog.cpp" "src/MNet/MData/MData.h")
+    "src/MNet/MNetBase.h" "src/MNet/MSocket/MSocket.h" "src/MNet/MSocket/MSocket.cpp" "src/MLog/MLog.h" "src/MLog/MLog.cpp")
 
 
 
@@ -140,14 +148,29 @@ add_executable (CppSTL-shikounuzi
 if(SQLite3_FOUND)
 # cmake变量名是区分大小写的
 	target_link_libraries(CppSTL-shikounuzi PUBLIC ${SQLite3_LIBRARIES}) # Link with sqlite3 library
+	message(STATUS "sqlite is targeted")
 endif()
 
 if(Boost_FOUND)
 	target_link_libraries(CppSTL-shikounuzi PUBLIC ${BOOST_LIBRARIES})
+	message(STATUS "boost is targeted")
 endif()
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CppSTL-shikounuzi PROPERTY CXX_STANDARD 20)
 endif()
+
+# 设置dll拷贝
+# file(copy ${SQLite3_LIBRARIES}/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
+install(FILES ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}/../bin)
+
+
+
+message(STATUS "CMAKE Install 项目信息：")
+message(STATUS "SQLITE.LIB=${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200/sqlite3.dll")
+
+message(STATUS "CMAKE 项目输出信息：")
+message(STATUS "EXECUTABLE_OUTPUT_PATH=${EXECUTABLE_OUTPUT_PATH}")
+message(STATUS "CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 
 # TODO: 如有需要，请添加测试并安装目标。

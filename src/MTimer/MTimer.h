@@ -4,7 +4,7 @@
 #include"../MBase/MObjectBase.h"
 #include<stdint.h>
 #include<chrono>
-namespace MUZI
+namespace MUZI::Timer
 {
 #define __MUZI_MTIMER_MAX_TASK_SIZE__ 1016
 #define __MUZI_MTIMER_MAX_THREAD_SIZE__ 8

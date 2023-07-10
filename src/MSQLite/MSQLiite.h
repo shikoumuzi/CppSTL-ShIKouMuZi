@@ -6,7 +6,7 @@
 #define __MUZI_MSQLITE_SQL_CODE_SIZE__ 1024
 #define __MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__ 8
 #define __MUZI_MSQLITE_MAX_TEXT_BYTES_SIZE__ 2048
-namespace MUZI
+namespace MUZI::SQLite
 {
 	// 该类只能绑定一个db数据库, 且只限于简单sql
 	class MSQLite

@@ -10,7 +10,7 @@
 #include<vector>
 
 
-namespace MUZI
+namespace MUZI::SQLite
 {
 	struct MSQLite::__SQL_TABLE__
 	{

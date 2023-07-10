@@ -6,7 +6,7 @@
 #include<stdint.h>
 #include<errno.h>
 
-namespace MUZI
+namespace MUZI::Timer
 {
 	// 数据结构
 	static class MTimerData* __MUZI_MTIMER_DATA__ = nullptr;

@@ -11,7 +11,7 @@
 #include"MFTP/MFTP.h"
 #include"MDeque.h"
 #include"MFileSystem/MFileDataBase.h"
-#include"MSQLite/MSQLiite.h"
+//#include"MSQLite/MSQLiite.h"
 
 #include"MNet/MEndPoint/MClientEndPoint.h"
 class a
@@ -36,5 +36,5 @@ int main()
 	//{
 	//	std::cout << "i: " << i++ << std::endl;
 	//}
-
+	std::cout << "hello world " << std::endl;
 }
