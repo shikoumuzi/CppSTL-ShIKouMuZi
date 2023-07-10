@@ -22,6 +22,9 @@ namespace MUZI::NET
 			this->~MClientEndPoint();
 			return;
 		}
+		this->m_data->endpoint.address(this->m_data->server_address);
+		this->m_data->endpoint.port(port);
+
 		ec = 0;
 	}
 	MClientEndPoint::MClientEndPoint(const MClientEndPoint& endpoint)
@@ -45,12 +48,6 @@ namespace MUZI::NET
 			delete this->m_data;
 			this->m_data = nullptr;
 		}
-	}
-	int MClientEndPoint::createEndPoint()
-	{
-		this->m_data->endpoint.address(this->m_data->server_address);
-		this->m_data->endpoint.port(this->m_data->server_port);
-		return 0;
 	}
 
 	EndPoint* MClientEndPoint::getEndPoint(int& error_code)

@@ -17,7 +17,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})# 静态库输出
 
 
 # 基础设置
-add_definitions("-DUNICODE" "-D_UNICODE") # 设置为unicode字符集
+# add_definitions("-DUNICODE" "-D_UNICODE") # 设置为unicode字符集
 
 # 指定平台工具集
  set(CMAKE_GENERATOR_PLATFORM v143) 
@@ -106,6 +106,9 @@ set(HEADERS
 	"src/MAllocator/MArrayAllocaor.h"
 	"src/MNet/MEndPoint/MClientEndPoint.h"
 	"src/MNet/MEndPoint/MServerEndPoint.h"
+	"src/MNet/MNetBase.h"
+	"src/MNet/MSocket/MSocket.h"
+	"src/MLog/MLog.h"
 	
 )
 
@@ -122,6 +125,8 @@ set(SOURCES
 	"src/MFTP/MFTP.cpp" 
 	"src/MNet/MEndPoint/MClientEndPoint.cpp"
 	"src/MNet/MEndPoint/MServerEndPoint.cpp"
+	"src/MNet/MSocket/MSocket.cpp"  
+	"src/MLog/MLog.cpp"
 )
 
 
@@ -133,7 +138,9 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-    "src/MNet/MNetBase.h" "src/MNet/MSocket/MSocket.h" "src/MNet/MSocket/MSocket.cpp" "src/MLog/MLog.h" "src/MLog/MLog.cpp")
+    
+
+)
 
 
 

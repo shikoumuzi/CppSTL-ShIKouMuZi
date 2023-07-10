@@ -12,17 +12,13 @@ namespace MUZI::NET
 
 	MServerEndPoint::MServerEndPoint(Port port) :m_data(new MServerEndPointData())
 	{
-		EC error_code;
 		this->m_data->server_address = AddressSeccion::any();
 		this->m_data->server_port = port;
-		
+		this->m_data->endpoint.address(this->m_data->server_address);
+		this->m_data->endpoint.port(port);
 	}
-	MServerEndPoint::MServerEndPoint(const MServerEndPoint& endpoint)
+	MServerEndPoint::MServerEndPoint(const MServerEndPoint& endpoint) :m_data(new MServerEndPointData())
 	{
-		if (this->m_data == nullptr)
-		{
-			this->m_data = new MServerEndPointData;
-		}
 		this->m_data->server_address = endpoint.m_data->server_address;
 		this->m_data->server_port = endpoint.m_data->server_port;
 		this->m_data->endpoint = endpoint.m_data->endpoint;
@@ -37,19 +33,6 @@ namespace MUZI::NET
 		{
 			delete this->m_data;
 			this->m_data = nullptr;
-		}
-	}
-	int MServerEndPoint::createEndPoint()
-	{
-		if (this->m_data != nullptr)
-		{
-			this->m_data->endpoint.address(this->m_data->server_address);
-			this->m_data->endpoint.port(this->m_data->server_port);
-			return 0;
-		}
-		else
-		{
-			return MERROR::OBJECT_IS_NULL;
 		}
 	}
 
@@ -69,7 +52,16 @@ namespace MUZI::NET
 
 	EndPoint* MServerEndPoint::getEndPoint(int& error_code) const
 	{
-		return this->getEndPoint(error_code);
+		// TODO: 在此处插入 return 语句
+		if (this->m_data != nullptr)
+		{
+			return &this->m_data->endpoint;
+		}
+		else
+		{
+			error_code = MERROR::OBJECT_IS_NULL;
+			return nullptr;
+		}
 	}
 
 }

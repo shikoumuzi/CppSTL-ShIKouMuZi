@@ -17,7 +17,6 @@ namespace MUZI::NET
 		MClientEndPoint(MClientEndPoint&& endpoint);
 		~MClientEndPoint();
 	public:
-		int createEndPoint();
 		EndPoint* getEndPoint(int& error_code);
 		EndPoint* getEndPoint(int& error_code) const;
 	private:

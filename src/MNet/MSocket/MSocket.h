@@ -21,18 +21,18 @@ namespace MUZI::NET
 	public:// server
 		int bind();
 		int listen();
-		int accept();
+		NetIOAdapt accept(int& error_code);
 	public:// client
-		int connect(const MServerEndPoint& endpoint);
+		int connect(const NetIOAdapt& adapt, const MServerEndPoint& endpoint);
 		/// @brief 
 		/// @param host an str witch is domain name
 		/// @return return 0 if success, other is error_code
-		int connect(const String& host, Port port);
+		int connect(const NetIOAdapt& adapt, const String& host, Port port);
 		
 	public:// io
-		int write(String& data);
-		int write(void* data, uint64_t data_size);
-		int read(void* buff, uint64_t requiredsize);
+		int write(const NetIOAdapt& adapt, String& data);
+		int write(const NetIOAdapt& adapt, void* data, uint64_t data_size);
+		int read(const NetIOAdapt& adapt, void* buff, uint64_t requiredsize, bool immediate_request_mode = false);
 
 
 	private:
@@ -40,7 +40,7 @@ namespace MUZI::NET
 	};
 
 
-	int MSocket::back_log = 30;
+
 
 }
 

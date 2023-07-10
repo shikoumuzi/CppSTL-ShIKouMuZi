@@ -18,7 +18,6 @@ namespace MUZI::NET
 		MServerEndPoint(MServerEndPoint&& endpoint);
 		~MServerEndPoint();
 	public:
-		int createEndPoint();
 		EndPoint* getEndPoint(int& error_code);
 		EndPoint* getEndPoint(int& error_code) const;
 	private:
