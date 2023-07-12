@@ -14,7 +14,7 @@
 //#include"MSQLite/MSQLiite.h"
 
 #include"MNet/MEndPoint/MClientEndPoint.h"
-#include"MNet/MSocket/MSocket.h"
+#include"MNet/MSyncSocket/MSyncSocket.h"
 #include"MNet/MEndPoint/MServerEndPoint.h"
 #include"MNet/MEndPoint/MClientEndPoint.h"
 #include<thread>
@@ -23,7 +23,7 @@
 
 void server()
 {
-	MUZI::NET::MSocket socket(std::move(MUZI::NET::MServerEndPoint(10086)));
+	MUZI::NET::SYNC::MSyncSocket socket(std::move(MUZI::NET::MServerEndPoint(10086)));
 	int error_code = 0;
 	socket.bind();
 	socket.listen();
@@ -47,7 +47,9 @@ void server()
 						{
 							break;
 						}
-						std::cout << data << std::endl;
+						std::cout << adapt.get()->remote_endpoint() << ": " << data  << std::endl;
+
+						ec = socket.write(adapt, std::string(data));
 					}
 
 					}));

@@ -5,19 +5,19 @@
 #include"MNet/MEndPoint/MServerEndPoint.h"
 #include"MNet/MEndPoint/MClientEndPoint.h"
 
-namespace MUZI::NET
+namespace MUZI::NET::SYNC
 {
-	class MSocket
+	class MSyncSocket
 	{
 	public:
 		static int back_log;
 	public:
-		struct MSocketData;
+		struct MSyncSocketData;
 	public:
-		MSocket();
-		MSocket(const MServerEndPoint& endpoint);
-		MSocket(const MClientEndPoint& endpoint);
-		~MSocket();
+		MSyncSocket();
+		MSyncSocket(const MServerEndPoint& endpoint);
+		MSyncSocket(const MClientEndPoint& endpoint);
+		~MSyncSocket();
 	public:// server
 		int bind();
 		int listen();
@@ -30,13 +30,13 @@ namespace MUZI::NET
 		int connect(const NetIOAdapt& adapt, const String& host, Port port);
 		
 	public:// io
-		int write(const NetIOAdapt& adapt, String& data);
+		int write(const NetIOAdapt& adapt, const String& data);
 		int write(const NetIOAdapt& adapt, void* data, uint64_t data_size);
 		int read(const NetIOAdapt& adapt, void* buff, uint64_t requiredsize, bool immediate_request_mode = false);
 
 
 	private:
-		struct MSocketData* m_data;
+		struct MSyncSocketData* m_data;
 	};
 
 

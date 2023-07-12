@@ -107,7 +107,7 @@ set(HEADERS
 	"src/MNet/MEndPoint/MClientEndPoint.h"
 	"src/MNet/MEndPoint/MServerEndPoint.h"
 	"src/MNet/MNetBase.h"
-	"src/MNet/MSocket/MSocket.h"
+	"src/MNet/MSyncSocket/MSyncSocket.h"
 	"src/MLog/MLog.h"
 	
 )
@@ -125,7 +125,7 @@ set(SOURCES
 	"src/MFTP/MFTP.cpp" 
 	"src/MNet/MEndPoint/MClientEndPoint.cpp"
 	"src/MNet/MEndPoint/MServerEndPoint.cpp"
-	"src/MNet/MSocket/MSocket.cpp"  
+	"src/MNet/MSyncSocket/MSyncSocket.cpp"  
 	"src/MLog/MLog.cpp"
 )
 

@@ -1,11 +1,11 @@
-#include "MSocket.h"
+#include "MSyncSocket.h"
 #include"MLog/MLog.h"
 #include"MBase/MError.h"
 #include"boost/algorithm/string.hpp"
-namespace MUZI::NET
+namespace MUZI::NET::SYNC
 {
 
-	struct MSocket::MSocketData
+	struct MSyncSocket::MSyncSocketData
 	{
 	public:
 		struct ServerSocketData
@@ -34,35 +34,35 @@ namespace MUZI::NET
 		union LocalEndPoint local_endpoint;
 	};
 
-	int MSocket::back_log = 30;
+	int MSyncSocket::back_log = 30;
 
-	MSocket::MSocket() : m_data(static_cast<MSocketData*>(operator new(sizeof(MSocketData))))
+	MSyncSocket::MSyncSocket() : m_data(static_cast<MSyncSocketData*>(operator new(sizeof(MSyncSocketData))))
 	{
 		new(&(this->m_data->io_context)) IOContext;
 	}
 
-	MSocket::MSocket(const MServerEndPoint& endpoint) :MSocket()
+	MSyncSocket::MSyncSocket(const MServerEndPoint& endpoint) :MSyncSocket()
 	{
 		int ec = 0;
 		this->m_data->isServer = true;
 		new(&(this->m_data->protocol)) Protocol(Protocol::v4());// 初始化协议
 		new(&(this->m_data->data.server)) \
-			MSocketData::ServerSocketData({ std::move(TCPAcceptor(this->m_data->io_context, endpoint.getEndPoint(ec)->protocol()))});// 初始化acceptor
+			MSyncSocketData::ServerSocketData({ std::move(TCPAcceptor(this->m_data->io_context, endpoint.getEndPoint(ec)->protocol()))});// 初始化acceptor
 		new(&(this->m_data->local_endpoint.server_endpoint)) MServerEndPoint(endpoint);// 初始化endpoint
 		//this->m_data->data.server.acceptor
 	}
 
-	MSocket::MSocket(const MClientEndPoint& endpoint)
+	MSyncSocket::MSyncSocket(const MClientEndPoint& endpoint)
 	{
 		this->m_data->isServer = false;
 		int ec = 0;
 		EndPoint* ep = endpoint.getEndPoint(ec);
 		new(&(this->m_data->protocol)) Protocol(Protocol::v4());
-		new(&(this->m_data->data.client)) MSocketData::ClientSocketData();// 初始化socket
+		new(&(this->m_data->data.client)) MSyncSocketData::ClientSocketData();// 初始化socket
 		new(&(this->m_data->local_endpoint.client_endpoint)) MClientEndPoint(endpoint);
 	}
 
-	MSocket::~MSocket()
+	MSyncSocket::~MSyncSocket()
 	{
 		if (this->m_data != nullptr)
 		{
@@ -81,7 +81,7 @@ namespace MUZI::NET
 		}
 	}
 
-	int MSocket::bind()
+	int MSyncSocket::bind()
 	{
 		if (this->m_data->isServer)
 		{
@@ -90,7 +90,7 @@ namespace MUZI::NET
 			EndPoint* endpoint = this->m_data->local_endpoint.server_endpoint.getEndPoint(ec);
 			if (endpoint == nullptr)
 			{
-				//MLog::w("MSocket::bind", "endpoint is not construct, Error Code is %d", ec);
+				//MLog::w("MSyncSocket::bind", "endpoint is not construct, Error Code is %d", ec);
 				return ec;
 			}
 			this->m_data->data.server.acceptor.bind(*endpoint, error_code);
@@ -99,7 +99,7 @@ namespace MUZI::NET
 				std::cerr << error_code.message();
 				char* data = error_code.message().data();
 
-				//MLog::w("MSocket::bind", "bind is failed, Error Code is %d, Error Message is %s", MERROR::BIND_ERROR, data);
+				//MLog::w("MSyncSocket::bind", "bind is failed, Error Code is %d, Error Message is %s", MERROR::BIND_ERROR, data);
 				return MERROR::BIND_ERROR;
 			}
 		}
@@ -110,7 +110,7 @@ namespace MUZI::NET
 		return 0;
 	}
 
-	int MSocket::listen()
+	int MSyncSocket::listen()
 	{
 		if (this->m_data->isServer)
 		{
@@ -119,7 +119,7 @@ namespace MUZI::NET
 			if (ec.value() != 0)
 			{
 				std::cerr << ec.message() << std::endl;
-				//MLog::w("MSocket::accept", "listen is failed, Error Code is %d, Error Message is %s", MERROR::LISTEN_ERROR, ec.message());
+				//MLog::w("MSyncSocket::accept", "listen is failed, Error Code is %d, Error Message is %s", MERROR::LISTEN_ERROR, ec.message());
 				return  MERROR::LISTEN_ERROR;
 			}
 			return 0;
@@ -130,7 +130,7 @@ namespace MUZI::NET
 		}
 	}
 
-	NetIOAdapt MSocket::accept(int& error_code)
+	NetIOAdapt MSyncSocket::accept(int& error_code)
 	{
 		if (this->m_data->isServer)
 		{
@@ -141,7 +141,7 @@ namespace MUZI::NET
 			if (ec.value() != 0)
 			{
 				std::cerr << ec.message();
-				/*MLog::w("MSocket::accept", "accept is failed, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());*/
+				/*MLog::w("MSyncSocket::accept", "accept is failed, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());*/
 				error_code = MERROR::ACCEPT_ERROR;
 				return NetIOAdapt();
 			}
@@ -154,7 +154,7 @@ namespace MUZI::NET
 		}
 	}
 
-	int MSocket::connect(const NetIOAdapt& adapt, const MServerEndPoint& endpoint)
+	int MSyncSocket::connect(const NetIOAdapt& adapt, const MServerEndPoint& endpoint)
 	{
 		if (!this->m_data->isServer)
 		{
@@ -163,13 +163,13 @@ namespace MUZI::NET
 			const EndPoint* ep = endpoint.getEndPoint(ec);
 			if (ep == nullptr)
 			{
-				MLog::w("MSocket::bind", "endpoint is not construct, Error Code is %d", MERROR::ENDPOINT_IS_NO_CREATED);
+				MLog::w("MSyncSocket::bind", "endpoint is not construct, Error Code is %d", MERROR::ENDPOINT_IS_NO_CREATED);
 				return ec;
 			}
 			adapt->connect(*ep, error_code);
 			if (error_code.value() != 0)
 			{
-				MLog::w("MSocket::bind", "connet is failed, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, error_code.message().c_str());
+				MLog::w("MSyncSocket::bind", "connet is failed, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, error_code.message().c_str());
 				return MERROR::BIND_ERROR;
 			}
 
@@ -181,7 +181,7 @@ namespace MUZI::NET
 		}
 	}
 
-	int MSocket::connect(const NetIOAdapt& adapt, const String& host, Port port)
+	int MSyncSocket::connect(const NetIOAdapt& adapt, const String& host, Port port)
 	{
 		if (!this->m_data->isServer)
 		{
@@ -193,7 +193,7 @@ namespace MUZI::NET
 			boost::asio::connect(*adapt, it, ec);
 			if (ec.value() != 0)
 			{
-				MLog::w("MSocket::connect", "connet is failed, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, ec.message().c_str());
+				MLog::w("MSyncSocket::connect", "connet is failed, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, ec.message().c_str());
 			}
 			return 0;
 		}
@@ -202,12 +202,12 @@ namespace MUZI::NET
 			return MERROR::OBJECT_IS_NO_CLIENT;
 		}
 	}
-	int MSocket::write(const NetIOAdapt& adapt, String& data)
+	int MSyncSocket::write(const NetIOAdapt& adapt, const String& data)
 	{
 		return this->write(adapt, (char*)(data.c_str()), data.size());
 	}
 
-	int MSocket::write(const NetIOAdapt& adapt, void* data, uint64_t data_size)
+	int MSyncSocket::write(const NetIOAdapt& adapt, void* data, uint64_t data_size)
 	{
 		int64_t total_bytes = 0;
 		EC ec;
@@ -219,7 +219,7 @@ namespace MUZI::NET
 				total_bytes += adapt->write_some(boost::asio::buffer(static_cast<char*>(data) + total_bytes, data_size - total_bytes), ec);
 				if (ec.value() != 0)
 				{
-					MLog::w("MSocket::write", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+					MLog::w("MSyncSocket::write", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
 					return MERROR::SOCKET_SYSTEM_ERROR;
 				}
 			}
@@ -231,7 +231,7 @@ namespace MUZI::NET
 				total_bytes += adapt->write_some(boost::asio::buffer(static_cast<char*>(data) + total_bytes, data_size - total_bytes), ec);
 				if (ec.value() != 0)
 				{
-					MLog::w("MSocket::write", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+					MLog::w("MSyncSocket::write", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
 					return MERROR::SOCKET_SYSTEM_ERROR;
 				}
 			}
@@ -239,7 +239,7 @@ namespace MUZI::NET
 		return 0;
 	}
 
-	int MSocket::read(const NetIOAdapt& adapt, void* buff, uint64_t requiredsize, bool immediate_request_mode)
+	int MSyncSocket::read(const NetIOAdapt& adapt, void* buff, uint64_t requiredsize, bool immediate_request_mode)
 	{
 		int64_t total_bytes = 0;
 		EC ec;
@@ -255,7 +255,7 @@ namespace MUZI::NET
 				}
 				if (ec.value() != 0)
 				{
-					MLog::w("MSocket::read", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+					MLog::w("MSyncSocket::read", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
 					return MERROR::SOCKET_SYSTEM_ERROR;
 				}
 			}
@@ -271,7 +271,7 @@ namespace MUZI::NET
 					}
 					if (ec.value() != 0)
 					{
-						MLog::w("MSocket::read", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+						MLog::w("MSyncSocket::read", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
 						return MERROR::SOCKET_SYSTEM_ERROR;
 					}
 				}
@@ -284,7 +284,7 @@ namespace MUZI::NET
 				adapt->read_some(boost::asio::buffer(static_cast<char*>(buff) + total_bytes, requiredsize - total_bytes), ec);
 				if (ec.value() != 0)
 				{
-					MLog::w("MSocket::read", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
+					MLog::w("MSyncSocket::read", "socket have system error, Error Code is %d, Error Message is %d", MERROR::SOCKET_SYSTEM_ERROR, ec.message());
 					return MERROR::SOCKET_SYSTEM_ERROR;
 				}
 			}
