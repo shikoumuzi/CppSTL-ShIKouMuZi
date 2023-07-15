@@ -130,12 +130,12 @@ namespace MUZI::NET::SYNC
 		}
 	}
 
-	NetIOAdapt MSyncSocket::accept(int& error_code)
+	NetSyncIOAdapt MSyncSocket::accept(int& error_code)
 	{
 		if (this->m_data->isServer)
 		{
 			EC ec;
-			NetIOAdapt socket(new TCPSocket(this->m_data->io_context));
+			NetSyncIOAdapt socket(new TCPSocket(this->m_data->io_context));
 			/*std::make_shared<TCPSocket>(std::move(TCPSocket(this->m_data->io_context, this->m_data->protocol)));*/
 			this->m_data->data.server.acceptor.accept(*socket, ec);
 			if (ec.value() != 0)
@@ -143,18 +143,18 @@ namespace MUZI::NET::SYNC
 				std::cerr << ec.message();
 				/*MLog::w("MSyncSocket::accept", "accept is failed, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());*/
 				error_code = MERROR::ACCEPT_ERROR;
-				return NetIOAdapt();
+				return NetSyncIOAdapt();
 			}
 			return socket;
 		}
 		else
 		{
 			error_code = MERROR::OBJECT_IS_NO_SERVER;
-			return NetIOAdapt();
+			return NetSyncIOAdapt();
 		}
 	}
 
-	int MSyncSocket::connect(const NetIOAdapt& adapt, const MServerEndPoint& endpoint)
+	int MSyncSocket::connect(const NetSyncIOAdapt& adapt, const MServerEndPoint& endpoint)
 	{
 		if (!this->m_data->isServer)
 		{
@@ -181,7 +181,7 @@ namespace MUZI::NET::SYNC
 		}
 	}
 
-	int MSyncSocket::connect(const NetIOAdapt& adapt, const String& host, Port port)
+	int MSyncSocket::connect(const NetSyncIOAdapt& adapt, const String& host, Port port)
 	{
 		if (!this->m_data->isServer)
 		{
@@ -202,12 +202,12 @@ namespace MUZI::NET::SYNC
 			return MERROR::OBJECT_IS_NO_CLIENT;
 		}
 	}
-	int MSyncSocket::write(const NetIOAdapt& adapt, const String& data)
+	int MSyncSocket::write(const NetSyncIOAdapt& adapt, const String& data)
 	{
 		return this->write(adapt, (char*)(data.c_str()), data.size());
 	}
 
-	int MSyncSocket::write(const NetIOAdapt& adapt, void* data, uint64_t data_size)
+	int MSyncSocket::write(const NetSyncIOAdapt& adapt, void* data, uint64_t data_size)
 	{
 		int64_t total_bytes = 0;
 		EC ec;
@@ -239,7 +239,7 @@ namespace MUZI::NET::SYNC
 		return 0;
 	}
 
-	int MSyncSocket::read(const NetIOAdapt& adapt, void* buff, uint64_t requiredsize, bool immediate_request_mode)
+	int MSyncSocket::read(const NetSyncIOAdapt& adapt, void* buff, uint64_t requiredsize, bool immediate_request_mode)
 	{
 		int64_t total_bytes = 0;
 		EC ec;

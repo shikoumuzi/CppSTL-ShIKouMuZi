@@ -25,7 +25,7 @@ namespace MUZI::NET
 	using WriteBuff = boost::asio::mutable_buffer;
 	using ReadBuffs = boost::asio::const_buffers_1;
 	using WriteBuffs = boost::asio::mutable_buffers_1;
-	using NetIOAdapt = std::shared_ptr<TCPSocket>;
+	
 	template<typename T>
 	using Vector = std::vector<T>;
 }

@@ -32,7 +32,7 @@ void server()
 	int i = 0;
 	while (1)
 	{
-		MUZI::NET::NetIOAdapt adapt = socket.accept(error_code);
+		MUZI::NET::SYNC::NetSyncIOAdapt adapt = socket.accept(error_code);
 		if (error_code == 0)
 		{
 			thread_list.emplace_back(

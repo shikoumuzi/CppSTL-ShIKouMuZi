@@ -140,7 +140,7 @@ add_executable (CppSTL-shikounuzi
 	${HEADERS}
     
 
-)
+ "src/MNet/MAsyncSocket/MAsyncServerSocket.h" "src/MNet/MAsyncSocket/MAsyncServerSocket.cpp")
 
 
 
