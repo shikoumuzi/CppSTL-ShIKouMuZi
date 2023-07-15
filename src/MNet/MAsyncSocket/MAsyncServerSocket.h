@@ -4,6 +4,7 @@
 #include"MNet/MNetBase.h"
 #include<queue>
 #include"MNet/MEndPoint/MServerEndPoint.h"
+#define __MUZI_MASYNCSERVERSOCKET_RECV_ONCE_SIZE_IN_BYTES__ 1024
 namespace MUZI::NET::ASYNC
 {
 	class MsgNode
@@ -29,11 +30,14 @@ namespace MUZI::NET::ASYNC
 		Session(TCPSocket socket);
 		~Session();
 	public:
-		bool isComplete() { return send_pending; }
+		inline bool isWriteCompleted();
+		inline bool isReadCompleted();
 	private:
-		std::queue<std::shared_ptr<MsgNode>> msg_queue;
+		std::queue<std::shared_ptr<MsgNode>> send_queue;
+		std::shared_ptr<MsgNode> recv_queue;
 		TCPSocket socket;
 		bool send_pending;
+		bool recv_pending;
 	};
 
 	using NetAsyncIOAdapt = std::shared_ptr<Session>;
@@ -56,8 +60,8 @@ namespace MUZI::NET::ASYNC
 		int wtiteToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size);
 		int wtiteAllToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size);
 
-		int readFromSocket(NetAsyncIOAdapt& adapt);
-		int readAllFromeSocket(NetAsyncIOAdapt& adapt);
+		int readFromSocket(NetAsyncIOAdapt& adapt, uint64_t size);
+		int readAllFromeSocket(NetAsyncIOAdapt& adapt, uint64_t size);
 	public:
 		class MAsyncServerSocketData* m_data;
 

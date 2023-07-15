@@ -61,6 +61,14 @@
 
 namespace MUZI
 {
+
+	class __declspec(novtable) IMAllocator
+	{
+	public:
+		virtual void* allocate() = 0;
+		virtual void* deallocate() = 0;
+	};
+
 	class MAllocator
 	{
 	public:
@@ -78,6 +86,8 @@ namespace MUZI
 			operator delete(p, size);
 		}
 	};
+
+
 };
 
 

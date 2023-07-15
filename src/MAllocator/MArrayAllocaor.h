@@ -8,7 +8,7 @@ namespace MUZI {
 		class ArraryAllocateArgs
 		{
 		public:
-			friend class MArrayAllocate;
+			friend class MArrayAllocator;
 		public:
 			// ArraryAllocateArgs¼þ
 			ArraryAllocateArgs(void* p_array, size_t type_size, size_t array_length)
