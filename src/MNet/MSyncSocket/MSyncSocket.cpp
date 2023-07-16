@@ -154,7 +154,7 @@ namespace MUZI::NET::SYNC
 		}
 	}
 
-	int MSyncSocket::connect(const NetSyncIOAdapt& adapt, const MServerEndPoint& endpoint)
+	NetSyncIOAdapt MSyncSocket::connect(const MServerEndPoint& endpoint)
 	{
 		if (!this->m_data->isServer)
 		{
@@ -164,24 +164,25 @@ namespace MUZI::NET::SYNC
 			if (ep == nullptr)
 			{
 				MLog::w("MSyncSocket::bind", "endpoint is not construct, Error Code is %d", MERROR::ENDPOINT_IS_NO_CREATED);
-				return ec;
+				return NetSyncIOAdapt();
 			}
+			NetSyncIOAdapt adapt(new TCPSocket(this->m_data->io_context));
 			adapt->connect(*ep, error_code);
 			if (error_code.value() != 0)
 			{
 				MLog::w("MSyncSocket::bind", "connet is failed, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, error_code.message().c_str());
-				return MERROR::BIND_ERROR;
+				return NetSyncIOAdapt();
 			}
 
-			return 0;
+			return adapt;
 		}
 		else
 		{
-			return MERROR::OBJECT_IS_NO_CLIENT;
+			return NetSyncIOAdapt();
 		}
 	}
 
-	int MSyncSocket::connect(const NetSyncIOAdapt& adapt, const String& host, Port port)
+	NetSyncIOAdapt MSyncSocket::connect(const String& host, Port port)
 	{
 		if (!this->m_data->isServer)
 		{
@@ -190,16 +191,17 @@ namespace MUZI::NET::SYNC
 			EC ec;
 			// 这里采用查询器和解析器进行，由于返回结果可能不止一个，所以需要用迭代器进行轮询
 			HostResolver::iterator it = resolver.resolve(resolver_query);
+			NetSyncIOAdapt adapt(new TCPSocket(this->m_data->io_context));
 			boost::asio::connect(*adapt, it, ec);
 			if (ec.value() != 0)
 			{
 				MLog::w("MSyncSocket::connect", "connet is failed, Error Code is %d, Error Message is %s", MERROR::CONNECT_ERROR, ec.message().c_str());
 			}
-			return 0;
+			return adapt;
 		}
 		else
 		{
-			return MERROR::OBJECT_IS_NO_CLIENT;
+			return NetSyncIOAdapt() ;
 		}
 	}
 	int MSyncSocket::write(const NetSyncIOAdapt& adapt, const String& data)

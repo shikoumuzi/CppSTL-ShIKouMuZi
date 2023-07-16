@@ -30,7 +30,6 @@ namespace MUZI::NET::ASYNC
 			error_code = MERROR::ACCEPT_ERROR;
 			MLog::w("MAsyncServer", "Bind Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());
 			return NetAsyncIOAdapt();
-
 		}
 		return adapt;
 	}

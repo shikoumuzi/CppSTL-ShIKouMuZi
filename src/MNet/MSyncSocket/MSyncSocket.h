@@ -25,11 +25,11 @@ namespace MUZI::NET::SYNC
 		int listen();
 		NetSyncIOAdapt accept(int& error_code);
 	public:// client
-		int connect(const NetSyncIOAdapt& adapt, const MServerEndPoint& endpoint);
+		NetSyncIOAdapt connect(const MServerEndPoint& endpoint);
 		/// @brief 
 		/// @param host an str witch is domain name
 		/// @return return 0 if success, other is error_code
-		int connect(const NetSyncIOAdapt& adapt, const String& host, Port port);
+		NetSyncIOAdapt connect(const String& host, Port port);
 		
 	public:// io
 		int write(const NetSyncIOAdapt& adapt, const String& data);
