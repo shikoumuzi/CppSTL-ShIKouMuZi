@@ -28,6 +28,7 @@ namespace MUZI::NET::ASYNC
 	public:
 		friend class MAsyncSocket;
 		friend class MAsyncServer;
+		friend class MAsyncClient;
 	public:
 		Session(TCPSocket socket);
 		~Session();
