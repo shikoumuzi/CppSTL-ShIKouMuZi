@@ -61,7 +61,6 @@
 
 namespace MUZI
 {
-
 	class __declspec(novtable) IMAllocator
 	{
 	public:

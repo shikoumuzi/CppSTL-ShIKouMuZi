@@ -109,6 +109,7 @@ set(HEADERS
 	"src/MNet/MNetBase.h"
 	"src/MNet/MSyncSocket/MSyncSocket.h"
 	"src/MLog/MLog.h"
+	"src/MNet/MAsyncSocket/MAsyncSocket.h"
 	
 )
 
@@ -127,6 +128,7 @@ set(SOURCES
 	"src/MNet/MEndPoint/MServerEndPoint.cpp"
 	"src/MNet/MSyncSocket/MSyncSocket.cpp"  
 	"src/MLog/MLog.cpp"
+	 "src/MNet/MAsyncSocket/MAsyncSocket.cpp"
 )
 
 
@@ -138,9 +140,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-    
-
- "src/MNet/MAsyncSocket/MAsyncServerSocket.h" "src/MNet/MAsyncSocket/MAsyncServerSocket.cpp")
+     "src/MNet/MAsyncSocket/MAsyncServer.h" "src/MNet/MAsyncSocket/MAsyncServer.cpp" "src/MNet/MEndPoint/MEndPoint.h")
 
 
 

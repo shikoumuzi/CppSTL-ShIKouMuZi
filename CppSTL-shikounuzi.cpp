@@ -19,7 +19,7 @@
 #include"MNet/MEndPoint/MClientEndPoint.h"
 #include<thread>
 #include<iostream>
-
+#include"MLog/MLog.h"
 
 void server()
 {
@@ -81,8 +81,10 @@ int main(int arg, char* argv[])
 	//	std::cout << "i: " << i++ << std::endl;
 	//}
 	std::cout << "hello world " << std::endl;
-	server();
+	//server();
 
+	const char8_t* s = u8"text string";
+	MUZI::MLog::w("Main Text", "error message is %s", s);
 
 
 }

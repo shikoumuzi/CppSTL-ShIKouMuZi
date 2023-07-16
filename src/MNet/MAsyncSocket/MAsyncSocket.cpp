@@ -1,18 +1,14 @@
-#include"MAsyncServerSocket.h"
+#include"MAsyncSocket.h"
 #include<functional>
 
 namespace MUZI::NET::ASYNC
 {
 
-	class MAsyncServerSocket::MAsyncServerSocketData
+	class MAsyncSocket::MAsyncSocketData
 	{
 	public:
-		MAsyncServerSocketData(MAsyncServerSocket* parent, MServerEndPoint& endpoint) :parent(parent), io_context(IOContext()), acceptor(io_context)
-		{
-			int error_code;
-			EC ec;
-			this->acceptor.bind(*endpoint.getEndPoint(error_code), ec);
-		}
+		MAsyncSocketData(MAsyncSocket* parent) :parent(parent), io_context(IOContext())
+		{}
 
 	public:
 		void writeCallback(const EC& ec, NetAsyncIOAdapt& adapt, std::size_t bytes_transaferred)
@@ -52,6 +48,10 @@ namespace MUZI::NET::ASYNC
 		{
 			if (ec.value() != 0)
 			{
+				if (ec.value() == boost::asio::error::eof)
+				{
+					return;
+				}
 				return;
 			}
 
@@ -100,17 +100,17 @@ namespace MUZI::NET::ASYNC
 			adapt->recv_queue.pop();
 			adapt->recv_pending = false;
 		}
-		MAsyncServerSocket* parent;
+
+		MAsyncSocket* parent;
 		IOContext io_context;
-		TCPAcceptor acceptor;
 	};
 
 
 
-	MAsyncServerSocket::MAsyncServerSocket(MServerEndPoint& endpoint):m_data(new MAsyncServerSocketData(this, endpoint))
+	MAsyncSocket::MAsyncSocket():m_data(new MAsyncSocketData(this))
 	{}
 
-	MAsyncServerSocket::~MAsyncServerSocket()
+	MAsyncSocket::~MAsyncSocket()
 	{
 		if (this->m_data != nullptr)
 		{
@@ -118,24 +118,18 @@ namespace MUZI::NET::ASYNC
 		}
 	}
 
-	int MAsyncServerSocket::listen(int back_log)
+	IOContext& MAsyncSocket::getIOContext()
 	{
-		this->m_data->acceptor.listen(back_log);
-		return 0;
+		return this->m_data->io_context;
 	}
 
-	NetAsyncIOAdapt MAsyncServerSocket::accept(int& ec)
-	{
 
-		return NetAsyncIOAdapt();
-	}
-
-	int MAsyncServerSocket::writeToSocket(NetAsyncIOAdapt& adapt, String& data)
+	int MAsyncSocket::writeToSocket(NetAsyncIOAdapt& adapt, String& data)
 	{
 		return this->wtiteToSocket(adapt, (void*)(data.c_str()), data.size());
 	}
 
-	int MAsyncServerSocket::wtiteToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size)
+	int MAsyncSocket::wtiteToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size)
 	{
 		adapt->send_queue.emplace(new MsgNode(data, size));
 		if (adapt->send_pending) {
@@ -151,7 +145,7 @@ namespace MUZI::NET::ASYNC
 		return 0;
 	}
 
-	int MAsyncServerSocket::wtiteAllToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size)
+	int MAsyncSocket::wtiteAllToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size)
 	{
 		adapt->send_queue.emplace(new MsgNode(data, size));
 		if (adapt->send_pending) {
@@ -163,7 +157,7 @@ namespace MUZI::NET::ASYNC
 		return 0;
 	}
 
-	int MAsyncServerSocket::readFromSocket(NetAsyncIOAdapt& adapt, uint64_t size = __MUZI_MASYNCSERVERSOCKET_RECV_ONCE_SIZE_IN_BYTES__)
+	int MAsyncSocket::readFromSocket(NetAsyncIOAdapt& adapt, uint64_t size = __MUZI_MAsyncSocket_RECV_ONCE_SIZE_IN_BYTES__)
 	{
 		adapt->recv_queue.emplace(new MsgNode(new char[size], size));
 		// 说明当前仍然在读
@@ -180,7 +174,7 @@ namespace MUZI::NET::ASYNC
 		return 0;
 	}
 
-	int MAsyncServerSocket::readAllFromeSocket(NetAsyncIOAdapt& adapt, uint64_t size)
+	int MAsyncSocket::readAllFromeSocket(NetAsyncIOAdapt& adapt, uint64_t size)
 	{
 		adapt->recv_queue.emplace(new MsgNode(new char[size], size));
 		if (adapt->recv_pending) {
@@ -209,6 +203,11 @@ namespace MUZI::NET::ASYNC
 	inline bool Session::isReadCompleted()
 	{
 		return this->recv_pending;
+	}
+
+	inline TCPSocket& Session::Socket()
+	{
+		return this->socket;
 	}
 
 

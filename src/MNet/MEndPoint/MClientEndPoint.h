@@ -5,9 +5,10 @@
 #include<boost/asio.hpp>
 #include<boost/system/error_code.hpp>
 #include"MNet/MNetBase.h"
+#include"MEndPoint.h"
 namespace MUZI::NET
 {
-	class MClientEndPoint
+	class MClientEndPoint:public IMEndPoint
 	{
 	public:
 		struct MClientEndPointData;
@@ -17,7 +18,7 @@ namespace MUZI::NET
 		MClientEndPoint(MClientEndPoint&& endpoint);
 		~MClientEndPoint();
 	public:
-		EndPoint* getEndPoint(int& error_code);
+		EndPoint* getEndPoint(int& error_code) override;
 		EndPoint* getEndPoint(int& error_code) const;
 	private:
 		struct MClientEndPointData* m_data;
