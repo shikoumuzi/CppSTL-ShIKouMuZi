@@ -11,9 +11,11 @@ namespace MUZI
 	}
 	void MLog::w(String tag, String msg, ...)
 	{
+		char buffer[1024]{ '\0' };
 		va_list args;
 		va_start(args, msg);
-		fprintf(stderr, (tag + ": :" + msg).c_str(), args);
+		vsprintf(buffer, (tag + ": :" + msg).c_str(), args);
+		fprintf(stderr, buffer);
 		va_end(args);
 	}
 	void MLog::s(String tag, String msg, ...)

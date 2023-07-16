@@ -3,13 +3,13 @@
 #define __MUZI_MASYNCSERVER_H__
 #include"MNet/MNetBase.h"
 #include"MAsyncSocket.h"
-
+#include"MBase/MError.h"
 namespace MUZI::NET::ASYNC
 {
 	class MAsyncServer : public MAsyncSocket
 	{
 	public:
-		MAsyncServer(MServerEndPoint& endpoint);
+		MAsyncServer(int& error_code, MServerEndPoint& endpoint);
 
 
 	public:
