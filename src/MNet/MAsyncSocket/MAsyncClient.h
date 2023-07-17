@@ -14,10 +14,8 @@ namespace MUZI::NET::ASYNC
 		MAsyncClient(MClientEndPoint& endpoint);
 
 	public:
-		NetAsyncIOAdapt connect(int& error_code, const MServerEndPoint& endpoint);
-
-		
-
+		NetAsyncIOAdapt connect(int& error_code, const MClientEndPoint& endpoint);
+		void connect();
 	};
 
 

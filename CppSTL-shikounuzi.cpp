@@ -17,6 +17,7 @@
 #include"MNet/MSyncSocket/MSyncSocket.h"
 #include"MNet/MEndPoint/MServerEndPoint.h"
 #include"MNet/MEndPoint/MClientEndPoint.h"
+#include"MNet/MAsyncSocket/MAsyncServer.h"
 #include<thread>
 #include<iostream>
 #include"MLog/MLog.h"
@@ -61,6 +62,11 @@ void server()
 
 }
 
+void async_server()
+{
+	int error_code = 0;
+	MUZI::NET::ASYNC::MAsyncServer server(error_code, MUZI::NET::MServerEndPoint(10086));
+}
 
 
 int main(int arg, char* argv[])

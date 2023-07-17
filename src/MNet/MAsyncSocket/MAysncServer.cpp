@@ -1,8 +1,9 @@
+#include "MAsyncServer.h"
 #include"MAsyncServer.h"
 
 namespace MUZI::NET::ASYNC
 {
-	MAsyncServer::MAsyncServer(int& error_code, MServerEndPoint& endpoint) :MAsyncSocket(), acceptor(this->getIOContext())
+	MAsyncServer::MAsyncServer(int& error_code, const MServerEndPoint& endpoint) :MAsyncSocket(), acceptor(this->getIOContext())
 	{
 		EC ec;
 		
@@ -24,7 +25,14 @@ namespace MUZI::NET::ASYNC
 	{
 		EC ec;
 		NetAsyncIOAdapt adapt(new Session(TCPSocket(this->getIOContext())));
-		this->acceptor.accept(adapt->socket, ec);
+		this->acceptor.async_accept(adapt->socket, 
+			[this, &adapt](const EC& ec)->void 
+			{
+				int lambda_errorcode;
+				if (this->handle_accpet(adapt, ec) == 0) {
+					this->accept(lambda_errorcode);
+				}
+			});
 		if (ec.value() != 0)
 		{
 			error_code = MERROR::ACCEPT_ERROR;
@@ -32,6 +40,21 @@ namespace MUZI::NET::ASYNC
 			return NetAsyncIOAdapt();
 		}
 		return adapt;
+	}
+
+	void MAsyncServer::accept()
+	{
+	}
+
+	int MAsyncServer::handle_accpet(NetAsyncIOAdapt& adapt, const EC& ec)
+	{
+		if (ec.value() != 0)
+		{
+			MLog::w("MAsyncServer::handle_accpet", "async_handle error, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message());
+			adapt.reset();
+			return MERROR::ACCEPT_ERROR;
+		}
+		return 0;
 	}
 
 }
