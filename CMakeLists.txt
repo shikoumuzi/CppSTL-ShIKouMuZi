@@ -110,6 +110,8 @@ set(HEADERS
 	"src/MNet/MSyncSocket/MSyncSocket.h"
 	"src/MLog/MLog.h"
 	"src/MNet/MAsyncSocket/MAsyncSocket.h"
+	"src/MNet/MAsyncSocket/MAsyncServer.h"
+
 	
 )
 
@@ -128,7 +130,8 @@ set(SOURCES
 	"src/MNet/MEndPoint/MServerEndPoint.cpp"
 	"src/MNet/MSyncSocket/MSyncSocket.cpp"  
 	"src/MLog/MLog.cpp"
-	 "src/MNet/MAsyncSocket/MAsyncSocket.cpp"
+	"src/MNet/MAsyncSocket/MAsyncSocket.cpp"
+	"src/MNet/MAsyncSocket/MAsyncServer.cpp"
 )
 
 

@@ -1,5 +1,8 @@
 #include"MAsyncSocket.h"
 #include<functional>
+#include<boost/uuid/uuid.hpp>
+
+#include<boost/uuid/uuid_io.hpp>
 
 namespace MUZI::NET::ASYNC
 {
@@ -187,9 +190,12 @@ namespace MUZI::NET::ASYNC
 		return 0;
 	}
 
-	Session::Session(TCPSocket socket) : socket(std::move(socket)), send_pending(false), recv_pending(false)
-	{
-	}
+	Session::Session(TCPSocket socket) 
+		:socket(std::move(socket)), 
+		send_pending(false), 
+		recv_pending(false), 
+		uuid(boost::uuids::to_string(rgen()))
+	{}
 
 	Session::~Session()
 	{
@@ -203,6 +209,11 @@ namespace MUZI::NET::ASYNC
 	inline bool Session::isReadCompleted()
 	{
 		return this->recv_pending;
+	}
+
+	String Session::getUUID()
+	{
+		return this->uuid;
 	}
 
 	inline TCPSocket& Session::Socket()

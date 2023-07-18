@@ -5,6 +5,8 @@
 #include<queue>
 #include"MNet/MEndPoint/MServerEndPoint.h"
 #include"MNet/MEndPoint/MEndPoint.h"
+#include<boost/uuid/uuid_generators.hpp>
+
 #define __MUZI_MAsyncSocket_RECV_ONCE_SIZE_IN_BYTES__ 1024
 namespace MUZI::NET::ASYNC
 {
@@ -22,19 +24,24 @@ namespace MUZI::NET::ASYNC
 		uint64_t cur_size;
 		uint64_t total_size;
 	};
-
-	class Session
+	// std::enable_shared_from_this<Session> 用以同步引用计数
+	class Session:std::enable_shared_from_this<Session>
 	{
 	public:
 		friend class MAsyncSocket;
 		friend class MAsyncServer;
 		friend class MAsyncClient;
 	public:
+		static boost::uuids::string_generator sgen;
+
+	public:
 		Session(TCPSocket socket);
 		~Session();
 	public:
 		inline bool isWriteCompleted();
 		inline bool isReadCompleted();
+	public:
+		String getUUID();
 	public:
 		inline TCPSocket& Socket();
 	private:
@@ -43,6 +50,7 @@ namespace MUZI::NET::ASYNC
 		TCPSocket socket;
 		bool send_pending;
 		bool recv_pending;
+		String uuid;
 	};
 
 	using NetAsyncIOAdapt = std::shared_ptr<Session>;

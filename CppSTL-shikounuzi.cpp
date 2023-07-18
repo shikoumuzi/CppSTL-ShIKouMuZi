@@ -66,6 +66,13 @@ void async_server()
 {
 	int error_code = 0;
 	MUZI::NET::ASYNC::MAsyncServer server(error_code, MUZI::NET::MServerEndPoint(10086));
+	server.listen(20);
+	int error_code = 0;
+	auto adapt = server.accept(error_code);
+
+	server.readAllFromeSocket(adapt, 20);
+	server.wtiteAllToSocket(adapt, "sdada", 5);
+
 }
 
 

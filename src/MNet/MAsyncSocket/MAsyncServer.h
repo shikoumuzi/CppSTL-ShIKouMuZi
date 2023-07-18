@@ -5,23 +5,29 @@
 #include"MAsyncSocket.h"
 #include"MBase/MError.h"
 #include"MLog/MLog.h"
+#include<map>
+#include<string>
 
 namespace MUZI::NET::ASYNC
 {
 	class MAsyncServer: public MAsyncSocket
 	{
 	public:
+		class MAsyncServerData;
+	public:
+		friend class MAsyncServerData;
+	public:
 		MAsyncServer(int& error_code, const MServerEndPoint& endpoint);
 
 	public:
 		int listen(int back_log);
 		NetAsyncIOAdapt accept(int& ec);
-		void accept();
+		int accept(NetAsyncIOAdapt adapt);
 	public:
-		int handle_accpet(NetAsyncIOAdapt& adapt, const EC& ec);
-		int handle_text();
+		int handle_accpet(NetAsyncIOAdapt adapt, const EC& ec);
 	private:
-		TCPAcceptor acceptor;
+		class MAsyncServerData* m_data;
+		
 	};
 }
 
