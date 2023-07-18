@@ -7,6 +7,7 @@
 #include"MLog/MLog.h"
 #include<map>
 #include<string>
+#include<functional>
 
 namespace MUZI::NET::ASYNC
 {
@@ -20,8 +21,8 @@ namespace MUZI::NET::ASYNC
 		MAsyncServer(int& error_code, const MServerEndPoint& endpoint);
 	public:
 		int listen(int back_log);
-		NetAsyncIOAdapt accept(int& ec);
-		int accept(NetAsyncIOAdapt adapt);
+
+		int accept(std::function<void(NetAsyncIOAdapt)>& adapt_output);
 	public:
 		std::map<String, NetAsyncIOAdapt>& getSessions();
 	public:
