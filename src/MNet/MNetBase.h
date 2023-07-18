@@ -7,6 +7,8 @@
 #include<vector>
 #include<memory>
 #include<iostream>
+#include<boost/lockfree/queue.hpp>
+#include<boost/lockfree/spsc_queue.hpp>
 namespace MUZI::NET
 {
 	using String = std::string;
@@ -25,7 +27,11 @@ namespace MUZI::NET
 	using WriteBuff = boost::asio::mutable_buffer;
 	using ReadBuffs = boost::asio::const_buffers_1;
 	using WriteBuffs = boost::asio::mutable_buffers_1;
-	
+
+	template<typename T, typename U>
+	using LockfreeQueue = boost::lockfree::queue<T, U>;
+	template<typename T, typename U>
+	using SpecQueue = boost::lockfree::spsc_queue<T, U>;
 	template<typename T>
 	using Vector = std::vector<T>;
 }

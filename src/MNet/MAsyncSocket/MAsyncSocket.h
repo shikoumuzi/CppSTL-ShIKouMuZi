@@ -5,56 +5,15 @@
 #include<queue>
 #include"MNet/MEndPoint/MServerEndPoint.h"
 #include"MNet/MEndPoint/MEndPoint.h"
+#include<boost/uuid/uuid.hpp>
 #include<boost/uuid/uuid_generators.hpp>
-
-#define __MUZI_MAsyncSocket_RECV_ONCE_SIZE_IN_BYTES__ 1024
+#include<boost/uuid/uuid_io.hpp>
+#include<boost/lockfree/spsc_queue.hpp>
+#define __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__ 1024
+#include"MMsgNode.h"
+#include"MSession.h"
 namespace MUZI::NET::ASYNC
 {
-	class MsgNode
-	{
-	public:
-		friend class MAsyncSocket;
-	public:
-		class MsgNodeData;
-	public:
-		MsgNode(void* data, uint64_t size) :data(static_cast<void*>(data)), total_size(size),cur_size(0) {}
-		~MsgNode() { data = nullptr; }
-	private:
-		void* data;
-		uint64_t cur_size;
-		uint64_t total_size;
-	};
-	// std::enable_shared_from_this<Session> 用以同步引用计数
-	class Session:std::enable_shared_from_this<Session>
-	{
-	public:
-		friend class MAsyncSocket;
-		friend class MAsyncServer;
-		friend class MAsyncClient;
-	public:
-		static boost::uuids::string_generator sgen;
-
-	public:
-		Session(TCPSocket socket);
-		~Session();
-	public:
-		inline bool isWriteCompleted();
-		inline bool isReadCompleted();
-	public:
-		String getUUID();
-	public:
-		inline TCPSocket& Socket();
-	private:
-		std::queue<std::shared_ptr<MsgNode>> send_queue;
-		std::queue<std::shared_ptr<MsgNode>> recv_queue;
-		TCPSocket socket;
-		bool send_pending;
-		bool recv_pending;
-		String uuid;
-	};
-
-	using NetAsyncIOAdapt = std::shared_ptr<Session>;
-
 
 	class __declspec(novtable) MAsyncSocket
 	{

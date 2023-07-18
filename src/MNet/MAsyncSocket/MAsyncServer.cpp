@@ -6,9 +6,7 @@ namespace MUZI::NET::ASYNC
 	{
 	public:
 		MAsyncServerData(MAsyncServer* parent, IOContext& io_context): parent(parent), acceptor(io_context)
-		{
-
-		}
+		{}
 	public:
 		MAsyncServer* parent;
 		TCPAcceptor acceptor;
@@ -40,13 +38,14 @@ namespace MUZI::NET::ASYNC
 	NetAsyncIOAdapt MAsyncServer::accept(int& error_code)
 	{
 		EC ec;
-		NetAsyncIOAdapt adapt(new Session(TCPSocket(this->getIOContext())));
+		NetAsyncIOAdapt adapt(new MSession(TCPSocket(this->getIOContext())));
+		this->m_data->sessions.emplace(adapt->getUUID(), adapt);
 		this->m_data->acceptor.async_accept(adapt->socket, 
 			[this, adapt](const EC& ec)->void 
 			{
 				int lambda_errorcode;
 				if (this->handle_accpet(adapt, ec) == 0) {
-					this->accept(adapt);
+					this->accept(lambda_errorcode);
 				}
 			});
 		if (ec.value() != 0)
@@ -72,9 +71,13 @@ namespace MUZI::NET::ASYNC
 		{
 			MLog::w("MAsyncServer", "Bind Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());
 			return MERROR::ACCEPT_ERROR;
-
 		}
 		return 0;
+	}
+
+	std::map<String, NetAsyncIOAdapt>& MAsyncServer::getSessions()
+	{
+		return this->m_data->sessions;
 	}
 
 
@@ -84,7 +87,7 @@ namespace MUZI::NET::ASYNC
 		{
 			MLog::w("MAsyncServer::handle_accpet", "async_handle error, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message());
 			// 置空以放开连接
-			adapt.reset();
+			this->m_data->sessions.erase(adapt->getUUID());
 			return MERROR::ACCEPT_ERROR;
 		}
 		return 0;
