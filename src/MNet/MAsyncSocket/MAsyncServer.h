@@ -19,14 +19,13 @@ namespace MUZI::NET::ASYNC
 		friend class MAsyncServerData;
 	public:
 		MAsyncServer(int& error_code, const MServerEndPoint& endpoint);
+		~MAsyncServer();
 	public:
 		int listen(int back_log);
-		int accept(std::function<void(NetAsyncIOAdapt)>& adapt_output);
+		int accept(const std::function<void(NetAsyncIOAdapt)>& adapt_output = [](NetAsyncIOAdapt)->void {});
 		NetAsyncIOAdapt accept(int& error_code);
 	public:
 		std::map<String, NetAsyncIOAdapt>& getNetAsyncIOAdapt();
-	public:
-		int handle_accpet(NetAsyncIOAdapt adapt, const EC& ec);
 	private:
 		class MAsyncServerData* m_data;
 		

@@ -66,15 +66,20 @@ void async_server()
 {
 	int error_code = 0;
 	MUZI::NET::ASYNC::MAsyncServer server(error_code, MUZI::NET::MServerEndPoint(10086));
+	if (error_code != 0)
+	{
+		return;
+	}
 	server.listen(20);
-	auto adapt = server.accept(error_code);
+	//auto adapt = server.accept(error_code);
+	int adapt = server.accept();
 
-	server.readAllFromeSocket(adapt, 20);
+	//server.readAllFromeSocket(adapt, 20);
 
-	auto msg = adapt->getPopFrontRecvMsg();
-	std::cout << static_cast<char*>(msg->getData()) << std::endl;
+	//auto msg = adapt->getPopFrontRecvMsg();
+	/*std::cout << static_cast<char*>(msg->getData()) << std::endl;*/
 	//server.wtiteAllToSocket(adapt, "sdada", 5);
-
+	server.run();
 }
 
 
@@ -108,7 +113,9 @@ int main(int arg, char* argv[])
 	//fprintf(stdout, "fprintf Text: :error message is %s\n", s);
 	//fprintf(stdout, "fprintf Text: :error message is %s\n", r);
 
-	
+	async_server();
+
+	return 0;
 
 
 }

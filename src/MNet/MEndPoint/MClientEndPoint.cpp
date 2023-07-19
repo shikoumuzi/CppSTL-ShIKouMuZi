@@ -50,23 +50,16 @@ namespace MUZI::NET
 		}
 	}
 
-	EndPoint* MClientEndPoint::getEndPoint(int& error_code)
+	EndPoint* MClientEndPoint::getEndPoint()
 	{
-		// TODO: 在此处插入 return 语句
-		if (this->m_data != nullptr)
-		{
-			return &this->m_data->endpoint;
-		}
-		else
-		{
-			error_code = MERROR::OBJECT_IS_NULL;
-			return nullptr;
-		}
+
+		return &this->m_data->endpoint;
+
 	}
 
-	EndPoint* MClientEndPoint::getEndPoint(int& error_code) const
+	EndPoint* MClientEndPoint::getEndPoint() const
 	{
-		return this->getEndPoint(error_code);
+		return &this->m_data->endpoint;
 	}
 
 }

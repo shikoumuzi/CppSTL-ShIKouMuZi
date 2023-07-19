@@ -7,12 +7,13 @@
 #include<boost/uuid/uuid_generators.hpp>
 #include<boost/uuid/uuid_io.hpp>
 #include<boost/lockfree/spsc_queue.hpp>
+#include<queue>
 #define __MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ 2048
 namespace MUZI::NET::ASYNC
 {
 
 	// std::enable_shared_from_this<MSession> 用以同步引用计数
-	class MSession :std::enable_shared_from_this<MSession>
+	class MSession
 	{
 	public:
 		friend class MAsyncSocket;
@@ -20,7 +21,7 @@ namespace MUZI::NET::ASYNC
 		friend class MAsyncClient;
 	private:
 		static String createUUID();
-		static MsgPackage null;
+		//static MsgPackage null;
 	public:
 		MSession(TCPSocket socket);
 		~MSession();
@@ -33,9 +34,13 @@ namespace MUZI::NET::ASYNC
 		TCPSocket& getSocket();
 		MsgPackage getPopFrontRecvMsg();
 	private:
-		SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__>> send_queue;
-		SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
-		SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_completed_queue;
+		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__>> send_queue;
+		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
+		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
+		std::queue<MsgPackage> send_queue;
+		std::queue<MsgPackage> recv_queue;
+		std::queue<MsgPackage> recv_completed_queue;
+
 		TCPSocket socket;
 		bool send_pending;
 		bool recv_pending;

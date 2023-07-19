@@ -5,8 +5,22 @@ namespace MUZI::NET::ASYNC
 	class MAsyncServer::MAsyncServerData
 	{
 	public:
-		MAsyncServerData(MAsyncServer* parent, IOContext& io_context): parent(parent), acceptor(io_context)
+		MAsyncServerData(MAsyncServer* parent, IOContext& io_context, const MServerEndPoint& endpoint)
+			: parent(parent), acceptor(io_context, *endpoint.getEndPoint())
 		{}
+	public:
+		int accpetCallback(NetAsyncIOAdapt adapt, const EC& ec)
+		{
+			if (ec.value() != 0)
+			{
+				MLog::w("MAsyncServer::handle_accpet", "async_handle error, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message());
+				return MERROR::ACCEPT_ERROR;
+			}
+			// 连接成功了才放入池子当中
+			this->sessions.emplace(adapt->getUUID(), adapt);
+			this->parent->readFromSocket(adapt);
+			return 0;
+		}
 	public:
 		MAsyncServer* parent;
 		TCPAcceptor acceptor;
@@ -15,42 +29,46 @@ namespace MUZI::NET::ASYNC
 
 
 	MAsyncServer::MAsyncServer(int& error_code, const MServerEndPoint& endpoint) 
-		:MAsyncSocket(),
-		m_data(new MAsyncServerData(this, this->getIOContext()))
-		
+		:m_data(new MAsyncServerData(this, this->getIOContext(), endpoint))
+	{}
+
+	MAsyncServer::~MAsyncServer()
 	{
-		EC ec;
-		
-		this->m_data->acceptor.bind(*endpoint.getEndPoint(error_code), ec);
-		if (ec.value() != 0)
+		if (this->m_data != nullptr)
 		{
-			MLog::w("MAsyncServer", "Bind Error Code is %d, Error Message is %s", MERROR::BIND_ERROR, ec.message().c_str());
-			error_code = MERROR::BIND_ERROR;
+			delete this->m_data;
+			this->m_data = nullptr;
 		}
 	}
 
 	int MAsyncServer::listen(int back_log)
 	{
-		this->m_data->acceptor.listen(back_log);
+		EC ec;
+		this->m_data->acceptor.listen(back_log, ec);
+		if (ec.value() != 0)
+		{
+			MLog::w("MAsyncServer::listen", "listen is error, Error Code is %d, Error Messahe is %s\n", MERROR::LISTEN_ERROR, ec.message().c_str());
+			return MERROR::LISTEN_ERROR;
+		}
 		return 0;
 	}
 
-	int MAsyncServer::accept(std::function<void(NetAsyncIOAdapt)>& adapt_output)
+	int MAsyncServer::accept(const std::function<void(NetAsyncIOAdapt)>& adapt_output)
 	{
 		EC ec;
 		NetAsyncIOAdapt adapt(new MSession(TCPSocket(this->getIOContext())));
 		
 		this->m_data->acceptor.async_accept(adapt->socket, 
-			[this, adapt, &adapt_output](const EC& ec)->void
+			[this, adapt, adapt_output](const EC& ec)->void
 			{
-				if (this->handle_accpet(adapt, ec) == 0) {
+				if (this->m_data->accpetCallback(adapt, ec) == 0) {
 					adapt_output(adapt);
 					this->accept(adapt_output);
 				}
 			});
 		if (ec.value() != 0)
 		{
-			MLog::w("MAsyncServer", "Bind Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());
+			MLog::w("MAsyncServer", "Bind Error Code is %d, Error Message is %s\n", MERROR::ACCEPT_ERROR, ec.message().c_str());
 			return MERROR::ACCEPT_ERROR;
 		}
 		return 0;
@@ -75,19 +93,6 @@ namespace MUZI::NET::ASYNC
 	std::map<String, NetAsyncIOAdapt>& MAsyncServer::getNetAsyncIOAdapt()
 	{
 		return this->m_data->sessions;
-	}
-
-
-	int MAsyncServer::handle_accpet(NetAsyncIOAdapt adapt, const EC& ec)
-	{
-		if (ec.value() != 0)
-		{
-			MLog::w("MAsyncServer::handle_accpet", "async_handle error, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message());
-			return MERROR::ACCEPT_ERROR;
-		}
-		// 连接成功了才放入池子当中
-		this->m_data->sessions.emplace(adapt->getUUID(), adapt);
-		return 0;
 	}
 
 }

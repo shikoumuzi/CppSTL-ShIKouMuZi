@@ -16,7 +16,7 @@
 namespace MUZI::NET::ASYNC
 {
 
-	class __declspec(novtable) MAsyncSocket
+	class MAsyncSocket
 	{
 	public:
 		class MAsyncSocketData;
@@ -27,12 +27,14 @@ namespace MUZI::NET::ASYNC
 	public:
 		IOContext& getIOContext();
 	public:
-		int writeToSocket(NetAsyncIOAdapt& adapt, String& data);
-		int wtiteToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size);
-		int wtiteAllToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size);
+		int writeToSocket(NetAsyncIOAdapt adapt, String& data);
+		int wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint64_t size);
+		int wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint64_t size);
 
-		int readFromSocket(NetAsyncIOAdapt& adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__);
-		int readAllFromeSocket(NetAsyncIOAdapt& adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__);
+		int readFromSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__);
+		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__);
+	public:
+		void run();
 	public:
 		class MAsyncSocketData* m_data;
 

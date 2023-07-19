@@ -47,7 +47,7 @@ namespace MUZI::NET::SYNC
 		this->m_data->isServer = true;
 		new(&(this->m_data->protocol)) Protocol(Protocol::v4());// 初始化协议
 		new(&(this->m_data->data.server)) \
-			MSyncSocketData::ServerSocketData({ std::move(TCPAcceptor(this->m_data->io_context, endpoint.getEndPoint(ec)->protocol()))});// 初始化acceptor
+			MSyncSocketData::ServerSocketData({ std::move(TCPAcceptor(this->m_data->io_context, endpoint.getEndPoint()->protocol()))});// 初始化acceptor
 		new(&(this->m_data->local_endpoint.server_endpoint)) MServerEndPoint(endpoint);// 初始化endpoint
 		//this->m_data->data.server.acceptor
 	}
@@ -56,7 +56,7 @@ namespace MUZI::NET::SYNC
 	{
 		this->m_data->isServer = false;
 		int ec = 0;
-		EndPoint* ep = endpoint.getEndPoint(ec);
+		EndPoint* ep = endpoint.getEndPoint();
 		new(&(this->m_data->protocol)) Protocol(Protocol::v4());
 		new(&(this->m_data->data.client)) MSyncSocketData::ClientSocketData();// 初始化socket
 		new(&(this->m_data->local_endpoint.client_endpoint)) MClientEndPoint(endpoint);
@@ -87,12 +87,7 @@ namespace MUZI::NET::SYNC
 		{
 			int ec = 0;
 			EC error_code;
-			EndPoint* endpoint = this->m_data->local_endpoint.server_endpoint.getEndPoint(ec);
-			if (endpoint == nullptr)
-			{
-				//MLog::w("MSyncSocket::bind", "endpoint is not construct, Error Code is %d", ec);
-				return ec;
-			}
+			EndPoint* endpoint = this->m_data->local_endpoint.server_endpoint.getEndPoint();
 			this->m_data->data.server.acceptor.bind(*endpoint, error_code);
 			if (error_code.value() != 0)
 			{
@@ -160,12 +155,7 @@ namespace MUZI::NET::SYNC
 		{
 			EC error_code;
 			int ec = 0;
-			const EndPoint* ep = endpoint.getEndPoint(ec);
-			if (ep == nullptr)
-			{
-				MLog::w("MSyncSocket::bind", "endpoint is not construct, Error Code is %d", MERROR::ENDPOINT_IS_NO_CREATED);
-				return NetSyncIOAdapt();
-			}
+			const EndPoint* ep = endpoint.getEndPoint();
 			NetSyncIOAdapt adapt(new TCPSocket(this->m_data->io_context));
 			adapt->connect(*ep, error_code);
 			if (error_code.value() != 0)

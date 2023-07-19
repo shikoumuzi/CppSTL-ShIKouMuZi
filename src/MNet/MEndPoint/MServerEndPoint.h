@@ -16,11 +16,11 @@ namespace MUZI::NET
 	public:
 		MServerEndPoint(Port port);
 		MServerEndPoint(const MServerEndPoint& endpoint);
-		MServerEndPoint(MServerEndPoint&& endpoint);
+		MServerEndPoint(MServerEndPoint&& endpoint) = delete;
 		~MServerEndPoint();
 	public:
-		EndPoint* getEndPoint(int& error_code) override;
-		EndPoint* getEndPoint(int& error_code) const;
+		EndPoint* getEndPoint() override;
+		EndPoint* getEndPoint() const;
 	private:
 		struct MServerEndPointData* m_data;
 	};

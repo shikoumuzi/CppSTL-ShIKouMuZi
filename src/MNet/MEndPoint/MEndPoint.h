@@ -7,7 +7,7 @@ namespace MUZI::NET
 {
 	__interface IMEndPoint
 	{
-		virtual EndPoint* getEndPoint(int& error_code) = 0;
+		virtual EndPoint* getEndPoint() = 0;
 	};
 
 }

@@ -23,10 +23,6 @@ namespace MUZI::NET
 		this->m_data->server_port = endpoint.m_data->server_port;
 		this->m_data->endpoint = endpoint.m_data->endpoint;
 	}
-	MServerEndPoint::MServerEndPoint(MServerEndPoint&& endpoint):m_data(endpoint.m_data)
-	{
-		endpoint.m_data = nullptr;
-	}
 	MServerEndPoint::~MServerEndPoint()
 	{
 		if (this->m_data != nullptr)
@@ -36,32 +32,14 @@ namespace MUZI::NET
 		}
 	}
 
-	EndPoint* MServerEndPoint::getEndPoint(int& error_code)
+	EndPoint* MServerEndPoint::getEndPoint()
 	{
-		// TODO: 在此处插入 return 语句
-		if (this->m_data != nullptr)
-		{
-			return &this->m_data->endpoint;
-		}
-		else
-		{
-			error_code = MERROR::OBJECT_IS_NULL;
-			return nullptr;
-		}
+		return &this->m_data->endpoint;
 	}
 
-	EndPoint* MServerEndPoint::getEndPoint(int& error_code) const
+	EndPoint* MServerEndPoint::getEndPoint() const
 	{
-		// TODO: 在此处插入 return 语句
-		if (this->m_data != nullptr)
-		{
-			return &this->m_data->endpoint;
-		}
-		else
-		{
-			error_code = MERROR::OBJECT_IS_NULL;
-			return nullptr;
-		}
+		return &this->m_data->endpoint;
 	}
 
 }

@@ -18,8 +18,8 @@ namespace MUZI::NET
 		MClientEndPoint(MClientEndPoint&& endpoint);
 		~MClientEndPoint();
 	public:
-		EndPoint* getEndPoint(int& error_code) override;
-		EndPoint* getEndPoint(int& error_code) const;
+		EndPoint* getEndPoint() override;
+		EndPoint* getEndPoint() const;
 	private:
 		struct MClientEndPointData* m_data;
 	};
