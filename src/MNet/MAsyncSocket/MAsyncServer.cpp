@@ -43,7 +43,6 @@ namespace MUZI::NET::ASYNC
 		this->m_data->acceptor.async_accept(adapt->socket, 
 			[this, adapt, &adapt_output](const EC& ec)->void
 			{
-				int lambda_errorcode;
 				if (this->handle_accpet(adapt, ec) == 0) {
 					adapt_output(adapt);
 					this->accept(adapt_output);
@@ -57,25 +56,23 @@ namespace MUZI::NET::ASYNC
 		return 0;
 	}
 
-	int MAsyncServer::accept(NetAsyncIOAdapt adapt)
+	NetAsyncIOAdapt MAsyncServer::accept(int& error_code)
 	{
 		EC ec;
-		this->m_data->acceptor.async_accept(adapt->socket,
-			[this, adapt](const EC& ec)->void
-			{
-				if (this->handle_accpet(adapt, ec) == 0) {
-					this->accept(adapt);
-				}
-			});
+		NetAsyncIOAdapt adapt(new MSession(TCPSocket(this->getIOContext())));
+		/*std::make_shared<TCPSocket>(std::move(TCPSocket(this->m_data->io_context, this->m_data->protocol)));*/
+		this->m_data->acceptor.accept(adapt->getSocket(), ec);
 		if (ec.value() != 0)
 		{
-			MLog::w("MAsyncServer", "Bind Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());
-			return MERROR::ACCEPT_ERROR;
+			std::cerr << ec.message();
+			/*MLog::w("MSyncSocket::accept", "accept is failed, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());*/
+			error_code = MERROR::ACCEPT_ERROR;
+			return NetAsyncIOAdapt();
 		}
-		return 0;
+		return adapt;
 	}
 
-	std::map<String, NetAsyncIOAdapt>& MAsyncServer::getSessions()
+	std::map<String, NetAsyncIOAdapt>& MAsyncServer::getNetAsyncIOAdapt()
 	{
 		return this->m_data->sessions;
 	}

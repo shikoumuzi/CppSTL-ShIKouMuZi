@@ -20,6 +20,7 @@ namespace MUZI::NET::ASYNC
 		friend class MAsyncClient;
 	private:
 		static String createUUID();
+		static MsgPackage null;
 	public:
 		MSession(TCPSocket socket);
 		~MSession();
@@ -29,12 +30,12 @@ namespace MUZI::NET::ASYNC
 	public:
 		const String& getUUID();
 	public:
-		inline TCPSocket& getSocket();
+		TCPSocket& getSocket();
 		MsgPackage getPopFrontRecvMsg();
 	private:
 		SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__>> send_queue;
-		SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__>> recv_queue;
-		SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__>> recv_completed_queue;
+		SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
+		SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_completed_queue;
 		TCPSocket socket;
 		bool send_pending;
 		bool recv_pending;

@@ -17,7 +17,7 @@ namespace MUZI::NET::ASYNC
 				: data(static_cast<void*>(data)), total_size(size), cur_size(0), isNew(isNew) {}
 			~MMsgNodeData()
 			{
-				if (isNew)
+				if (isNew && this->data != nullptr)
 				{
 					delete this->data;
 				} 

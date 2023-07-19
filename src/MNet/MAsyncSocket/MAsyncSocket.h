@@ -12,6 +12,7 @@
 #define __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__ 1024
 #include"MMsgNode.h"
 #include"MSession.h"
+#include<functional>
 namespace MUZI::NET::ASYNC
 {
 
@@ -30,8 +31,8 @@ namespace MUZI::NET::ASYNC
 		int wtiteToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size);
 		int wtiteAllToSocket(NetAsyncIOAdapt& adapt, void* data, uint64_t size);
 
-		int readFromSocket(NetAsyncIOAdapt& adapt, uint64_t size);
-		int readAllFromeSocket(NetAsyncIOAdapt& adapt, uint64_t size);
+		int readFromSocket(NetAsyncIOAdapt& adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__);
+		int readAllFromeSocket(NetAsyncIOAdapt& adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__);
 	public:
 		class MAsyncSocketData* m_data;
 

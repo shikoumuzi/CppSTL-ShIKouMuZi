@@ -32,15 +32,22 @@ namespace MUZI::NET::ASYNC
 		return this->uuid;
 	}
 
-	inline TCPSocket& MSession::getSocket()
+	TCPSocket& MSession::getSocket()
 	{
 		return this->socket;
 	}
 
 	MsgPackage MSession::getPopFrontRecvMsg()
 	{
-		MsgPackage ret_msg = this->recv_completed_queue.front();
-		this->recv_queue.pop();
-		return ret_msg;
+		if (this->recv_completed_queue.empty())
+		{
+			MsgPackage ret_msg = this->recv_completed_queue.front();
+			this->recv_queue.pop();
+			return ret_msg;
+		}
+		else
+		{
+			return this->null;
+		}
 	}
 }

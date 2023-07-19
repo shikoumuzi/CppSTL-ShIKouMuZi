@@ -158,7 +158,7 @@ namespace MUZI::NET::ASYNC
 		return 0;
 	}
 
-	int MAsyncSocket::readFromSocket(NetAsyncIOAdapt& adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__)
+	int MAsyncSocket::readFromSocket(NetAsyncIOAdapt& adapt, uint64_t size)
 	{
 		adapt->recv_queue.push(MsgPackage(new MMsgNode(new char[size], size, true)));
 		// 说明当前仍然在读

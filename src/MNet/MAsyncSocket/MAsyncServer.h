@@ -21,10 +21,10 @@ namespace MUZI::NET::ASYNC
 		MAsyncServer(int& error_code, const MServerEndPoint& endpoint);
 	public:
 		int listen(int back_log);
-
 		int accept(std::function<void(NetAsyncIOAdapt)>& adapt_output);
+		NetAsyncIOAdapt accept(int& error_code);
 	public:
-		std::map<String, NetAsyncIOAdapt>& getSessions();
+		std::map<String, NetAsyncIOAdapt>& getNetAsyncIOAdapt();
 	public:
 		int handle_accpet(NetAsyncIOAdapt adapt, const EC& ec);
 	private:

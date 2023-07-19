@@ -71,6 +71,8 @@ void async_server()
 
 	server.readAllFromeSocket(adapt, 20);
 
+	auto msg = adapt->getPopFrontRecvMsg();
+	std::cout << static_cast<char*>(msg->getData()) << std::endl;
 	//server.wtiteAllToSocket(adapt, "sdada", 5);
 
 }
@@ -96,15 +98,15 @@ int main(int arg, char* argv[])
 	std::cout << "hello world " << std::endl;
 	//server();
 
-	const char8_t* s = u8"text string";
-	std::string data = "dfsfdndlskfjldksjfklsd";
-	char r[] = "dasjjfdsjflksdfjlkdsfjlsdkfja[opjpgjnglkfmglkfmgs[";
-	MUZI::MLog::w("MLog::w Text", "error message is %s\n", data.c_str());
-	MUZI::MLog::w("MLog::w Text", "error message is %s\n", s);
-	MUZI::MLog::w("MLog::w Text", "error message is %s\n", r);
-	fprintf(stdout, "fprintf Text: :error message is %s\n", data.c_str());
-	fprintf(stdout, "fprintf Text: :error message is %s\n", s);
-	fprintf(stdout, "fprintf Text: :error message is %s\n", r);
+	//const char8_t* s = u8"text string";
+	//std::string data = "dfsfdndlskfjldksjfklsd";
+	//char r[] = "dasjjfdsjflksdfjlkdsfjlsdkfja[opjpgjnglkfmglkfmgs[";
+	//MUZI::MLog::w("MLog::w Text", "error message is %s\n", data.c_str());
+	//MUZI::MLog::w("MLog::w Text", "error message is %s\n", s);
+	//MUZI::MLog::w("MLog::w Text", "error message is %s\n", r);
+	//fprintf(stdout, "fprintf Text: :error message is %s\n", data.c_str());
+	//fprintf(stdout, "fprintf Text: :error message is %s\n", s);
+	//fprintf(stdout, "fprintf Text: :error message is %s\n", r);
 
 	
 
