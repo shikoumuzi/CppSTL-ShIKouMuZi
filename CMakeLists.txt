@@ -143,7 +143,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-       "src/MNet/MEndPoint/MEndPoint.h" "src/MNet/MAsyncSocket/MAsyncClient.h" "src/MNet/MAsyncSocket/MAsyncClient.cpp" "src/MNet/MAsyncSocket/MMsgNode.h" "src/MNet/MAsyncSocket/MSession.h" "src/MNet/MAsyncSocket/MSession.cpp")
+       "src/MNet/MEndPoint/MEndPoint.h" "src/MNet/MAsyncSocket/MAsyncClient.h" "src/MNet/MAsyncSocket/MAsyncClient.cpp" "src/MNet/MAsyncSocket/MMsgNode.h" "src/MNet/MAsyncSocket/MSession.h" "src/MNet/MAsyncSocket/MSession.cpp" "src/MSTL/h/MSyncAnnularQueue.h")
 
 
 
