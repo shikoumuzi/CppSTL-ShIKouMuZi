@@ -9,7 +9,7 @@
 #include<boost/lockfree/spsc_queue.hpp>
 #include<queue>
 #define __MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ 2048
-namespace MUZI::NET::ASYNC
+namespace MUZI::net::async
 {
 
 	// std::enable_shared_from_this<MSession> 用以同步引用计数

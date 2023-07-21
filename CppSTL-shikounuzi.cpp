@@ -21,10 +21,11 @@
 #include<thread>
 #include<iostream>
 #include"MLog/MLog.h"
+#include<MSTL/h/MSyncAnnularQueue.h>	
 
 void server()
 {
-	MUZI::NET::SYNC::MSyncSocket socket(std::move(MUZI::NET::MServerEndPoint(10086)));
+	MUZI::net::sync::MSyncSocket socket(std::move(MUZI::net::MServerEndPoint(10086)));
 	int error_code = 0;
 	socket.bind();
 	socket.listen();
@@ -33,7 +34,7 @@ void server()
 	int i = 0;
 	while (1)
 	{
-		MUZI::NET::SYNC::NetSyncIOAdapt adapt = socket.accept(error_code);
+		MUZI::net::sync::NetSyncIOAdapt adapt = socket.accept(error_code);
 		if (error_code == 0)
 		{
 			thread_list.emplace_back(
@@ -65,7 +66,7 @@ void server()
 void async_server()
 {
 	int error_code = 0;
-	MUZI::NET::ASYNC::MAsyncServer server(error_code, MUZI::NET::MServerEndPoint(10086));
+	MUZI::net::async::MAsyncServer server(error_code, MUZI::net::MServerEndPoint(10086));
 	if (error_code != 0)
 	{
 		return;
@@ -82,6 +83,48 @@ void async_server()
 	server.run();
 }
 
+void SyncAnnularQueueTest()
+{
+	MUZI::MSyncAnnularQueue<int> queue;
+	std::thread t1(
+		[&queue]()
+		{
+			for (int i = 0; i < 1000000000; ++i)
+				queue.push(i);
+		});
+	std::thread t2(
+		[&queue]()
+		{
+			for (int i = 0; i < 1000000; ++i)
+			{
+				int* p = queue.front();
+				if (p != nullptr)
+				{
+					std::cout << std::this_thread::get_id() << ":" << *p << "\n";
+				}
+				queue.pop();
+			}
+		}
+	);
+	//std::thread t3(
+	//	[&queue]()
+	//	{
+	//		for (int i = 0; i < 10000; ++i)
+	//		{
+	//			int* p = queue.front();
+	//			if (p != nullptr)
+	//			{
+	//				std::cout << std::this_thread::get_id() << ":" << *p << "\n";
+	//			}
+	//			std::this_thread::sleep_for(std::chrono::seconds(1));
+	//		}
+	//	}
+	//);
+
+	t1.join();
+	t2.join();
+	//t3.join();
+}
 
 int main(int arg, char* argv[])
 {
@@ -113,7 +156,9 @@ int main(int arg, char* argv[])
 	//fprintf(stdout, "fprintf Text: :error message is %s\n", s);
 	//fprintf(stdout, "fprintf Text: :error message is %s\n", r);
 
-	async_server();
+	//async_server();
+
+	SyncAnnularQueueTest();
 
 	return 0;
 

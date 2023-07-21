@@ -53,32 +53,32 @@ namespace MUZI {
 
 	public://数据结构
 		// 不同规格的申请量所规定的数组序列， 内部的指针维持着一个单向链表
-		static union MAllocatorRep* pool_mem_pool[__MUZI_ALLOCATOR_MOD_POOL_SPECIFICATION_COUNT__];
-		static size_t pool_mem_total;// 分配出去的内存总量
-		static size_t pool_mem_from_sys_total;// 向系统申请的内存总量
-		static union MAllocatorRep* pool_start_free_pool_ptr;// 控制战备池头部元素的地址
-		static union MAllocatorRep* pool_end_free_pool_ptr;// 控制战备池尾部元素的地址 -> 改战备池的末地址
-		static MAllocatorRep** sys_memory_block;
+		union MAllocatorRep* pool_mem_pool[__MUZI_ALLOCATOR_MOD_POOL_SPECIFICATION_COUNT__];
+		size_t pool_mem_total;// 分配出去的内存总量
+		size_t pool_mem_from_sys_total;// 向系统申请的内存总量
+		union MAllocatorRep* pool_start_free_pool_ptr;// 控制战备池头部元素的地址
+		union MAllocatorRep* pool_end_free_pool_ptr;// 控制战备池尾部元素的地址 -> 改战备池的末地址
+		MAllocatorRep** sys_memory_block;
 
 	private:
-		static void pool_init(void*);
-		static void pool_delete(void*);
+		void pool_init();
+		void pool_delete();
 	private:
 		// 追加量 调整数据大小上界，并且调整数据为8的边界
-		static size_t pool_RoundUp(size_t bytes);// 调整申请内存边界
-		static size_t pool_freelist_index(size_t bytes);// 获取对应freelist的数组下标
-		static MAllocatorRep* pool_mem_split(MAllocatorRep* start_ptr, size_t mem_specification, size_t mem_block_count);// 内存分片函数, 返回尾元素的指针
-		static inline size_t pool_get_mem_array_free_index();
-		static void* pool_apply_mem_from_sys(size_t mem_size);// 管理从系统申请的每一个元素
-		static bool is_error_sys_mem(void** mem_ptr);//检查不是nullptr的错误分配内存 即sys_memory_block的第一个元素地址
+		size_t pool_RoundUp(size_t bytes);// 调整申请内存边界
+		size_t pool_freelist_index(size_t bytes);// 获取对应freelist的数组下标
+		MAllocatorRep* pool_mem_split(MAllocatorRep* start_ptr, size_t mem_specification, size_t mem_block_count);// 内存分片函数, 返回尾元素的指针
+		inline size_t pool_get_mem_array_free_index();
+		void* pool_apply_mem_from_sys(size_t mem_size);// 管理从系统申请的每一个元素
+		bool is_error_sys_mem(void** mem_ptr);//检查不是nullptr的错误分配内存 即sys_memory_block的第一个元素地址
 
 	public:
-		static void* pool_allocate(size_t type_size);// 申请分配内存
-		static void pool_deallocate(void* ptr, size_t mem_size);// 回收内存, 在这里采用传入指针地址的方式，将原指针地址指向空以保证不会越权访问
-		static void* pool_reallocate();// 延长原先申请的内存空间
-		static void* pool_chunk_allocate();// 大块内存分配请求
-		static void* pool_refill();// 充值战备池
-		static bool pool_is_possible_mem_board(void* p);//查看当前指针所指向的一个字节是否包含内存边界
+		void* pool_allocate(size_t type_size);// 申请分配内存
+		void pool_deallocate(void* ptr, size_t mem_size);// 回收内存, 在这里采用传入指针地址的方式，将原指针地址指向空以保证不会越权访问
+		void* pool_reallocate();// 延长原先申请的内存空间
+		void* pool_chunk_allocate();// 大块内存分配请求
+		void* pool_refill();// 充值战备池
+		bool pool_is_possible_mem_board(void* p);//查看当前指针所指向的一个字节是否包含内存边界
 	public:
 		void* allocate(size_t size) override
 		{

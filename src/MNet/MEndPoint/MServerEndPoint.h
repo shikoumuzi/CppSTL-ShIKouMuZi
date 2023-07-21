@@ -7,7 +7,7 @@
 #include<boost/system/error_code.hpp>
 #include"MNet/MNetBase.h"
 #include"MEndPoint.h"
-namespace MUZI::NET
+namespace MUZI::net
 {
 	class MServerEndPoint:public IMEndPoint
 	{

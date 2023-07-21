@@ -1,7 +1,7 @@
 #include"MAsyncSocket.h"
 #include<functional>
 
-namespace MUZI::NET::ASYNC
+namespace MUZI::net::async
 {
 
 	class MAsyncSocket::MAsyncSocketData

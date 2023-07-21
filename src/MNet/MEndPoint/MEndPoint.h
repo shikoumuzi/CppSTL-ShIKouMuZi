@@ -3,7 +3,7 @@
 #define __MUZI_MENDPOINT_H__
 #include"MNet/MNetBase.h"
 
-namespace MUZI::NET
+namespace MUZI::net
 {
 	__interface IMEndPoint
 	{

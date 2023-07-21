@@ -5,7 +5,7 @@
 #include"MNet/MEndPoint/MServerEndPoint.h"
 #include"MNet/MEndPoint/MClientEndPoint.h"
 
-namespace MUZI::NET::SYNC
+namespace MUZI::net::sync
 {
 	using NetSyncIOAdapt = std::shared_ptr<TCPSocket>;
 

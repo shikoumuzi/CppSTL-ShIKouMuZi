@@ -2,7 +2,7 @@
 #include"MLog/MLog.h"
 #include"MBase/MError.h"
 #include"boost/algorithm/string.hpp"
-namespace MUZI::NET::SYNC
+namespace MUZI::net::sync
 {
 
 	struct MSyncSocket::MSyncSocketData

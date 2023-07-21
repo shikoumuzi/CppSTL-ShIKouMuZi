@@ -9,7 +9,7 @@
 #include<iostream>
 #include<boost/lockfree/queue.hpp>
 #include<boost/lockfree/spsc_queue.hpp>
-namespace MUZI::NET
+namespace MUZI::net
 {
 	using String = std::string;
 	using Address = boost::asio::ip::address;

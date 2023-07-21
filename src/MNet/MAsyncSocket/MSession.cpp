@@ -1,5 +1,5 @@
 #include"MSession.h"
-namespace MUZI::NET::ASYNC
+namespace MUZI::net::async
 {
 	String MSession::createUUID()
 	{

@@ -9,7 +9,7 @@
 #include<string>
 #include<functional>
 
-namespace MUZI::NET::ASYNC
+namespace MUZI::net::async
 {
 	class MAsyncServer: public MAsyncSocket
 	{

@@ -6,7 +6,7 @@
 #include"MNet/MEndPoint/MClientEndPoint.h"
 #include"MNet/MAsyncSocket/MAsyncSocket.h"
 
-namespace MUZI::NET::ASYNC
+namespace MUZI::net::async
 {
 	class MAsyncClient: public MAsyncSocket
 	{

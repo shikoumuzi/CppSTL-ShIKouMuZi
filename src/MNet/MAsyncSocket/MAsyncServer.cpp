@@ -1,6 +1,6 @@
 #include "MAsyncServer.h"
 
-namespace MUZI::NET::ASYNC
+namespace MUZI::net::async
 {
 	class MAsyncServer::MAsyncServerData
 	{

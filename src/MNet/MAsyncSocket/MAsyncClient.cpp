@@ -1,7 +1,7 @@
 #include"MAsyncClient.h"
 
 
-namespace MUZI::NET::ASYNC
+namespace MUZI::net::async
 {
 	
 

@@ -1,28 +1,29 @@
 #include"MPoolAllocator.h"
 namespace MUZI {
 	static std::atomic<int> thread_flag = 0;
-	size_t MPoolAllocator::pool_mem_total = 0;
-	size_t MPoolAllocator::pool_mem_from_sys_total = 0;
-	union MPoolAllocator::MAllocatorRep* MPoolAllocator::pool_mem_pool[__MUZI_ALLOCATOR_MOD_POOL_SPECIFICATION_COUNT__] = { nullptr };
-	union MPoolAllocator::MAllocatorRep* MPoolAllocator::pool_start_free_pool_ptr = nullptr;
-	union MPoolAllocator::MAllocatorRep* MPoolAllocator::pool_end_free_pool_ptr = nullptr;
-	MPoolAllocator::MAllocatorRep** MPoolAllocator::sys_memory_block = (MPoolAllocator::MAllocatorRep**)malloc
-	(sizeof(MPoolAllocator::MAllocatorRep*) * __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__);
+
 
 	MPoolAllocator::MPoolAllocator()
 	{
-
+		this->pool_mem_total = 0;
+		this->pool_mem_from_sys_total = 0;
+		this->pool_mem_pool[__MUZI_ALLOCATOR_MOD_POOL_SPECIFICATION_COUNT__] = { nullptr };
+		this->pool_start_free_pool_ptr = nullptr;
+		this->pool_end_free_pool_ptr = nullptr;
+		this->sys_memory_block = (MPoolAllocator::MAllocatorRep**)malloc
+		(sizeof(MPoolAllocator::MAllocatorRep*) * __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__);
+		this->pool_init();
 	}
 	MPoolAllocator::~MPoolAllocator()
 	{
-
+		this->pool_delete();
 	}
 
-	void MPoolAllocator::pool_init(void*)
+	void MPoolAllocator::pool_init()
 	{
 		memset(MPoolAllocator::sys_memory_block, (int)nullptr, __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__);
 	}
-	void MPoolAllocator::pool_delete(void*)
+	void MPoolAllocator::pool_delete()
 	{
 		for (int i = 0; i < __MUZI_ALLOCATOR_MOD_POOL_MEM_ARRAY_LENGTH__; ++i)
 		{

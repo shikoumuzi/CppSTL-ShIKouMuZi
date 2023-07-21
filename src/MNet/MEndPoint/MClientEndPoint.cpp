@@ -1,6 +1,6 @@
 #include "MClientEndPoint.h"
 #include"../MError.h"
-namespace MUZI::NET
+namespace MUZI::net
 {
 	struct MClientEndPoint::MClientEndPointData
 	{

@@ -3,7 +3,7 @@
 #define __MUZI_MASYNCSOCKET_MSGNODE_H__
 #include<stdint.h>
 #include<memory>
-namespace MUZI::NET::ASYNC
+namespace MUZI::net::async
 {
 	class MMsgNode
 	{

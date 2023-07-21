@@ -1,6 +1,6 @@
 #include "MServerEndPoint.h"
 #include"../MError.h"
-namespace MUZI::NET
+namespace MUZI::net
 {
 	struct MServerEndPoint::MServerEndPointData
 	{
