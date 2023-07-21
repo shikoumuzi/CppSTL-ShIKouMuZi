@@ -126,6 +126,20 @@ void SyncAnnularQueueTest()
 	//t3.join();
 }
 
+void shared_ptr_test()
+{
+	//int* p = new int(10086);
+	//std::shared_ptr<int> ptr(p);
+	//
+	//std::cout << p << "\n" << &ptr << "\n";
+
+	MUZI::MSyncAnnularQueue<std::shared_ptr<int>> queue;
+	for (int i = 0; i < 1000; ++i)
+	{
+		queue.push(std::shared_ptr<int>(new int(1000)));
+	}
+}
+
 int main(int arg, char* argv[])
 {
 	//std::cout << MUZI::__muzi_span_stl_type__<std::string> << std::endl;
@@ -158,7 +172,9 @@ int main(int arg, char* argv[])
 
 	//async_server();
 
-	SyncAnnularQueueTest();
+	//SyncAnnularQueueTest();
+
+	shared_ptr_test();
 
 	return 0;
 

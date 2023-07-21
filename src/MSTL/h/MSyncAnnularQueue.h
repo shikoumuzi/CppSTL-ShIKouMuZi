@@ -40,7 +40,7 @@ namespace MUZI
 		}
 		~MSyncAnnularQueue()
 		{
-			delete this->m_data;
+			delete[] this->m_data;
 			this->m_data = nullptr;
 			this->m_begin = nullptr;
 			this->m_end = nullptr;

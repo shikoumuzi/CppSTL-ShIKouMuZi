@@ -8,6 +8,9 @@
 #include<boost/uuid/uuid_io.hpp>
 #include<boost/lockfree/spsc_queue.hpp>
 #include<queue>
+#include"MSTL/h/MSyncAnnularQueue.h"
+#include<mutex>
+
 #define __MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ 2048
 namespace MUZI::net::async
 {
@@ -45,6 +48,7 @@ namespace MUZI::net::async
 		bool send_pending;
 		bool recv_pending;
 		String uuid;
+		std::mutex send_lock;
 	};
 
 	using NetAsyncIOAdapt = std::shared_ptr<MSession>;

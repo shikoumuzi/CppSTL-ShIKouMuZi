@@ -53,7 +53,7 @@ namespace MUZI::net::async
 		return 0;
 	}
 
-	int MAsyncServer::accept(const std::function<void(NetAsyncIOAdapt)>& adapt_output)
+	int MAsyncServer::accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output)
 	{
 		EC ec;
 		NetAsyncIOAdapt adapt(new MSession(TCPSocket(this->getIOContext())));
@@ -62,7 +62,7 @@ namespace MUZI::net::async
 			[this, adapt, adapt_output](const EC& ec)->void
 			{
 				if (this->m_data->accpetCallback(adapt, ec) == 0) {
-					adapt_output(adapt);
+					adapt_output(*this, adapt);
 					this->accept(adapt_output);
 				}
 			});
@@ -93,6 +93,11 @@ namespace MUZI::net::async
 	std::map<String, NetAsyncIOAdapt>& MAsyncServer::getNetAsyncIOAdapt()
 	{
 		return this->m_data->sessions;
+	}
+
+	void MAsyncServer::earse(String UUID)
+	{
+		this->m_data->sessions.erase(UUID);
 	}
 
 }

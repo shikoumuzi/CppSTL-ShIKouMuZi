@@ -22,10 +22,11 @@ namespace MUZI::net::async
 		~MAsyncServer();
 	public:
 		int listen(int back_log);
-		int accept(const std::function<void(NetAsyncIOAdapt)>& adapt_output = [](NetAsyncIOAdapt)->void {});
+		int accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output = [](NetAsyncIOAdapt)->void {});
 		NetAsyncIOAdapt accept(int& error_code);
 	public:
 		std::map<String, NetAsyncIOAdapt>& getNetAsyncIOAdapt();
+		void earse(String UUID);
 	private:
 		class MAsyncServerData* m_data;
 		
