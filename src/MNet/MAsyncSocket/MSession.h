@@ -51,7 +51,8 @@ namespace MUZI::net::async
 		bool send_pending;
 		bool recv_pending;
 		String uuid;
-		std::mutex send_lock;
+		uint64_t recv_id;
+		uint64_t send_id;
 	};
 
 	using NetAsyncIOAdapt = std::shared_ptr<MSession>;

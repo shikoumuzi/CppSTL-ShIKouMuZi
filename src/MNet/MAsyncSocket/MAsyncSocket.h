@@ -9,10 +9,11 @@
 #include<boost/uuid/uuid_generators.hpp>
 #include<boost/uuid/uuid_io.hpp>
 #include<boost/lockfree/spsc_queue.hpp>
-#define __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__ 1024
 #include"MMsgNode.h"
 #include"MSession.h"
 #include<functional>
+
+#define __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__ 1400
 namespace MUZI::net::async
 {
 
@@ -31,8 +32,11 @@ namespace MUZI::net::async
 		int wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint64_t size);
 		int wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint64_t size);
 
-		int readFromSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__);
-		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MASYNCSOCKET_RECV_ONCE_SIZE_IN_BYTES__);
+		int readFromSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__);
+		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__);
+
+	public:
+		int splitPackage(NetAsyncIOAdapt adapt, void* data, uint64_t size);
 	public:
 		void run();
 	public:

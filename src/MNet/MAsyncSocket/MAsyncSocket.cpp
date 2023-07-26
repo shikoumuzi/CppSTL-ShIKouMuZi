@@ -24,7 +24,7 @@ namespace MUZI::net::async
 				return;
 			}
 
-			auto& send_data = *send_data_ptr;
+			auto send_data = *send_data_ptr;
 			send_data.getCurSize() += bytes_transaferred;
 			if (send_data.getCurSize() < send_data.getTotalSize())
 			{
@@ -275,6 +275,23 @@ namespace MUZI::net::async
 			{ 
 				this->m_data->readAllCallback(ec, adapt, size); 
 			});
+
+		return 0;
+	}
+
+	int MAsyncSocket::splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint64_t size)
+	{
+		uint64_t capacity = (size / __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__) + 1;
+		uint64_t i = 0;
+		for (; i < capacity - 1; ++i)
+		{
+			MsgPackage tmp_package(
+				new MMsgNode(static_cast<char*>(data) + i * __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__, __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__));
+			tmp_package->setId(i + 1);
+			adapt->send_queue.push(tmp_package);
+		}
+		adapt->send_queue.push(MsgPackage(
+			new MMsgNode(static_cast<char*>(data) + i * __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__, size % __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__)));
 
 		return 0;
 	}
