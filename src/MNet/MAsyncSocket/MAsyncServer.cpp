@@ -68,7 +68,7 @@ namespace MUZI::net::async
 			});
 		if (ec.value() != 0)
 		{
-			MLog::w("MAsyncServer", "Bind Error Code is %d, Error Message is %s\n", MERROR::ACCEPT_ERROR, ec.message().c_str());
+			MLog::w("MAsyncServer::accept", "Bind Error Code is %d, Error Message is %s\n", MERROR::ACCEPT_ERROR, ec.message().c_str());
 			return MERROR::ACCEPT_ERROR;
 		}
 		return 0;
@@ -90,14 +90,29 @@ namespace MUZI::net::async
 		return adapt;
 	}
 
-	std::map<String, NetAsyncIOAdapt>& MAsyncServer::getNetAsyncIOAdapt()
+	MAsyncServer::iterator MAsyncServer::begin()
 	{
-		return this->m_data->sessions;
+		return this->m_data->sessions.begin();
+	}
+
+	MAsyncServer::iterator MAsyncServer::end()
+	{
+		return this->m_data->sessions.end();
+	}
+
+	NetAsyncIOAdapt& MAsyncServer::getNetAsyncIOAdapt(String UUID)
+	{
+		return this->m_data->sessions.at(UUID);
 	}
 
 	void MAsyncServer::earse(String UUID)
 	{
 		this->m_data->sessions.erase(UUID);
+	}
+
+	MAsyncServer::iterator MAsyncServer::earse(iterator& it)
+	{
+		return this->m_data->sessions.erase(it);
 	}
 
 }

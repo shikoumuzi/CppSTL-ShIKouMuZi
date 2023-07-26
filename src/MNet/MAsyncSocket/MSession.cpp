@@ -39,13 +39,13 @@ namespace MUZI::net::async
 
 	MsgPackage MSession::getPopFrontRecvMsg()
 	{
-		while (this->recv_completed_queue.empty())
+		while (this->recv_queue.empty())
 		{
 
 		}
-		MsgPackage ret_msg = this->recv_completed_queue.front();
+		auto ret_msg = this->recv_queue.front();
 		this->recv_queue.pop();
-		return ret_msg;
+		return *ret_msg;
 		
 	}
 }

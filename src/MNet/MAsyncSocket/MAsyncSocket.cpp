@@ -17,7 +17,14 @@ namespace MUZI::net::async
 			{
 				return;
 			}
-			auto& send_data = *adapt->send_queue.front();
+
+			auto& send_data_ptr = *adapt->send_queue.front();
+			if (send_data_ptr == nullptr)
+			{
+				return;
+			}
+
+			auto& send_data = *send_data_ptr;
 			send_data.getCurSize() += bytes_transaferred;
 			if (send_data.getCurSize() < send_data.getTotalSize())
 			{
@@ -36,7 +43,7 @@ namespace MUZI::net::async
 			}
 			else // 如果不为空则继续发送
 			{
-				auto& o_send_data = *adapt->send_queue.front();
+				auto& o_send_data = **adapt->send_queue.front();
 				o_send_data.getCurSize() += bytes_transaferred;
 				adapt->socket.async_write_some(
 					boost::asio::buffer(static_cast<char*>(o_send_data.getData()), o_send_data.getTotalSize()),
@@ -62,7 +69,13 @@ namespace MUZI::net::async
 			}
 			else
 			{
-				auto& send_data = *adapt->send_queue.front();
+				auto& send_data_ptr = *adapt->send_queue.front();
+				if (send_data_ptr == nullptr)
+				{
+					return;
+				}
+
+				auto& send_data = *send_data_ptr;
 				send_data.getCurSize() += bytes_transaferred;
 				adapt->socket.async_write_some(
 					boost::asio::buffer(static_cast<char*>(send_data.getData()) + send_data.getCurSize(), send_data.getTotalSize() - send_data.getCurSize()),
@@ -77,7 +90,13 @@ namespace MUZI::net::async
 				return;
 			}
 			
-			auto& recv_data = *adapt->recv_queue.front();
+			auto& recv_data_ptr = *adapt->recv_queue.front();
+			if (recv_data_ptr == nullptr)
+			{
+				return;
+			}
+
+			auto& recv_data = *recv_data_ptr;
 			recv_data.getCurSize() += bytes_transaferred;
 			if (recv_data.getCurSize() < recv_data.getTotalSize())
 			{
@@ -91,9 +110,6 @@ namespace MUZI::net::async
 
 				return;
 			}
-			// 数据转移
-			adapt->recv_completed_queue.push(adapt->recv_queue.front());
-			adapt->recv_queue.pop();
 			adapt->recv_pending = false;
 			
 		}
@@ -178,8 +194,14 @@ namespace MUZI::net::async
 			return 0;
 		}
 		
+		auto& recv_buff = *adapt->recv_queue.front();
+		if (recv_buff == nullptr)
+		{
+			return 0;
+		}
+
 		adapt->socket.async_read_some(
-			boost::asio::buffer(static_cast<char*>(adapt->recv_queue.front()->getData()), size),
+			boost::asio::buffer(static_cast<char*>(recv_buff->getData()), size),
 			[this, adapt](const EC& ec, std::size_t size) ->void
 			{
 				this->m_data->readCallback(ec, adapt, size); 
@@ -196,8 +218,13 @@ namespace MUZI::net::async
 		if (adapt->recv_pending) {
 			return 0;
 		}
+		auto& recv_buff = *adapt->recv_queue.front();
+		if (recv_buff == nullptr)
+		{
+			return 0;
+		}
 
-		adapt->socket.async_receive(boost::asio::buffer(adapt->recv_queue.front()->getData(), size),
+		adapt->socket.async_receive(boost::asio::buffer(recv_buff->getData(), size),
 			[this, adapt](const EC& ec, std::size_t size) ->void 
 			{ 
 				this->m_data->readAllCallback(ec, adapt, size); 

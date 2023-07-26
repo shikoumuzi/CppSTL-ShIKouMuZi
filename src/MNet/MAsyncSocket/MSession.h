@@ -40,9 +40,11 @@ namespace MUZI::net::async
 		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__>> send_queue;
 		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
 		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
-		std::queue<MsgPackage> send_queue;
-		std::queue<MsgPackage> recv_queue;
-		std::queue<MsgPackage> recv_completed_queue;
+		//std::queue<MsgPackage> send_queue;
+		//std::queue<MsgPackage> recv_queue;
+
+		MSyncAnnularQueue<MsgPackage> send_queue;
+		MSyncAnnularQueue<MsgPackage> recv_queue;
 
 		TCPSocket socket;
 		bool send_pending;

@@ -14,6 +14,8 @@ namespace MUZI::net::async
 	class MAsyncServer: public MAsyncSocket
 	{
 	public:
+		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;
+	public:
 		class MAsyncServerData;
 	public:
 		friend class MAsyncServerData;
@@ -22,11 +24,14 @@ namespace MUZI::net::async
 		~MAsyncServer();
 	public:
 		int listen(int back_log);
-		int accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output = [](NetAsyncIOAdapt)->void {});
+		int accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output = [](MAsyncServer&, NetAsyncIOAdapt)->void {});
 		NetAsyncIOAdapt accept(int& error_code);
 	public:
-		std::map<String, NetAsyncIOAdapt>& getNetAsyncIOAdapt();
+		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);
+		iterator begin();
+		iterator end();
 		void earse(String UUID);
+		iterator earse(iterator& it);
 	private:
 		class MAsyncServerData* m_data;
 		
