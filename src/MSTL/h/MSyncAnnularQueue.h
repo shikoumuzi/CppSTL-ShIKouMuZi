@@ -71,8 +71,8 @@ namespace MUZI
 			{
 				this->m_begin = this->m_begin->next;
 			}
-			this->m_end = this->m_end->next;
 			this->m_end->ele = ele;
+			this->m_end = this->m_end->next;
 
 			this->m_lock.unlock();
 		}

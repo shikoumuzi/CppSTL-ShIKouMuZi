@@ -1,6 +1,6 @@
 #include"MAsyncSocket.h"
 #include<functional>
-
+#include"MLog/MLog.h"
 namespace MUZI::net::async
 {
 
@@ -43,7 +43,12 @@ namespace MUZI::net::async
 			}
 			else // 如果不为空则继续发送
 			{
-				auto& o_send_data = **adapt->send_queue.front();
+				auto& o_send_data_ptr = *adapt->send_queue.front();
+				if (send_data_ptr == nullptr)
+				{
+					return;
+				}
+				auto& o_send_data = *o_send_data_ptr;
 				o_send_data.getCurSize() += bytes_transaferred;
 				adapt->socket.async_write_some(
 					boost::asio::buffer(static_cast<char*>(o_send_data.getData()), o_send_data.getTotalSize()),
@@ -76,9 +81,8 @@ namespace MUZI::net::async
 				}
 
 				auto& send_data = *send_data_ptr;
-				send_data.getCurSize() += bytes_transaferred;
 				adapt->socket.async_write_some(
-					boost::asio::buffer(static_cast<char*>(send_data.getData()) + send_data.getCurSize(), send_data.getTotalSize() - send_data.getCurSize()),
+					boost::asio::buffer(static_cast<char*>(send_data.getData()), send_data.getTotalSize()),
 					[this, adapt](const EC& ec, std::size_t size) ->void {this->writeAllCallback(ec, adapt, size); });
 				return;
 			}
@@ -87,30 +91,52 @@ namespace MUZI::net::async
 		{
 			if (ec.value() != 0)
 			{
+				MLog::w("MAsyncSocket::MAsyncSocketData::readCallback", "read is error, Error Message is: %s", ec.message().c_str());
 				return;
 			}
 			
-			auto& recv_data_ptr = *adapt->recv_queue.front();
-			if (recv_data_ptr == nullptr)
+			auto& recv_buff_ptr = *adapt->recv_queue.front();
+			if (recv_buff_ptr == nullptr)
 			{
 				return;
 			}
 
-			auto& recv_data = *recv_data_ptr;
-			recv_data.getCurSize() += bytes_transaferred;
-			if (recv_data.getCurSize() < recv_data.getTotalSize())
+			MMsgNode& recv_buff = *recv_buff_ptr;
+			recv_buff.getCurSize() += bytes_transaferred;
+			if (recv_buff.getCurSize() < recv_buff.getTotalSize())
 			{
 				adapt->socket.async_read_some(
-					boost::asio::buffer(static_cast<char*>(recv_data.getData()) + recv_data.getCurSize(), recv_data.getTotalSize() - recv_data.getCurSize()),
+					boost::asio::buffer(static_cast<char*>(recv_buff.getData()) + recv_buff.getCurSize(), recv_buff.getTotalSize() - recv_buff.getCurSize()),
 					[this, adapt](const EC& ec, std::size_t size) ->void 
 					{
 						this->readCallback(ec, adapt, size); 
 					});
-				//std::cout << static_cast<char*>(recv_data.getData()) << std::endl;
 
 				return;
 			}
-			adapt->recv_pending = false;
+
+			adapt->recv_completed_queue.push(*adapt->recv_queue.front());
+			adapt->recv_queue.pop();
+
+			if (adapt->recv_queue.empty())
+			{
+				adapt->recv_pending = false;
+			}
+			else
+			{
+				recv_buff_ptr = *adapt->recv_queue.front();
+				if (recv_buff_ptr == nullptr)
+				{
+					return;
+				}
+				auto& o_recv_buff = *recv_buff_ptr;
+				adapt->socket.async_read_some(
+					boost::asio::buffer(static_cast<char*>(o_recv_buff.getData()), o_recv_buff.getTotalSize()),
+					[this, adapt](const EC& ec, std::size_t size) ->void
+					{
+						this->readCallback(ec, adapt, size);
+					});
+			}
 			
 		}
 		void readAllCallback(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transaferred)
@@ -119,8 +145,28 @@ namespace MUZI::net::async
 			{
 				return;
 			}
-			/*adapt->recv_queue.pop();*/
-			adapt->recv_pending = false;
+
+			adapt->recv_completed_queue.push(*adapt->recv_queue.front());
+			adapt->recv_queue.pop();
+			if (adapt->recv_queue.empty())
+			{
+				adapt->recv_pending = false;
+			}
+			else
+			{
+				auto& recv_buff_ptr = *adapt->recv_queue.front();
+				if (recv_buff_ptr == nullptr)
+				{
+					return;
+				}
+				auto& o_recv_buff = *recv_buff_ptr;
+				adapt->socket.async_receive(
+					boost::asio::buffer(o_recv_buff.getData(), o_recv_buff.getTotalSize()),
+					[this, adapt](const EC& ec, std::size_t size) ->void
+					{
+						this->readAllCallback(ec, adapt, size);
+					});
+			}
 		}
 
 		MAsyncSocket* parent;

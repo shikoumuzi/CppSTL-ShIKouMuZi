@@ -73,7 +73,11 @@ void async_server()
 	}
 	server.listen(20);
 	//auto adapt = server.accept(error_code);
-	int adapt = server.accept();
+	int adapt = server.accept(
+		[](MUZI::net::async::MAsyncServer& server, MUZI::net::async::NetAsyncIOAdapt adapt)->void
+		{
+			server.readAllFromeSocket(adapt, 100);
+		});
 
 	//server.readAllFromeSocket(adapt, 20);
 
@@ -170,11 +174,11 @@ int main(int arg, char* argv[])
 	//fprintf(stdout, "fprintf Text: :error message is %s\n", s);
 	//fprintf(stdout, "fprintf Text: :error message is %s\n", r);
 
-	//async_server();
+	async_server();
 
 	//SyncAnnularQueueTest();
 
-	shared_ptr_test();
+	//shared_ptr_test();
 
 	return 0;
 

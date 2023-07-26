@@ -43,8 +43,8 @@ namespace MUZI::net::async
 		{
 
 		}
-		auto ret_msg = this->recv_queue.front();
-		this->recv_queue.pop();
+		auto ret_msg = this->recv_completed_queue.front();
+		this->recv_completed_queue.pop();
 		return *ret_msg;
 		
 	}

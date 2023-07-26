@@ -45,6 +45,7 @@ namespace MUZI::net::async
 
 		MSyncAnnularQueue<MsgPackage> send_queue;
 		MSyncAnnularQueue<MsgPackage> recv_queue;
+		MSyncAnnularQueue<MsgPackage> recv_completed_queue;
 
 		TCPSocket socket;
 		bool send_pending;

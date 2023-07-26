@@ -18,7 +18,7 @@ namespace MUZI::net::async
 			}
 			// 连接成功了才放入池子当中
 			this->sessions.emplace(adapt->getUUID(), adapt);
-			this->parent->readFromSocket(adapt);
+			//this->parent->readFromSocket(adapt);
 			return 0;
 		}
 	public:

@@ -20,7 +20,7 @@ namespace MUZI::net::async
 			MMsgNodeData(void* data, uint64_t size, bool isBuffer)
 				: total_size(size), cur_size(0), isBuffer(isBuffer)
 			{
-				this->data = static_cast<void*>(new char[size]);
+				this->data = static_cast<void*>(new char[size] {'\0'});
 				if (!isBuffer)
 				{
 					memcpy(this->data, data, size);
