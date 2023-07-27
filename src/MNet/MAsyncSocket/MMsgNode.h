@@ -3,6 +3,8 @@
 #define __MUZI_MASYNCSOCKET_MSGNODE_H__
 #include<stdint.h>
 #include<memory>
+
+
 namespace MUZI::net::async
 {
 	class MMsgNode
@@ -27,7 +29,7 @@ namespace MUZI::net::async
 			/// @param size data size in bytes
 			/// @param isBuffer true if need data hosting
 			MMsgNodeData(void* data, uint64_t size, bool isBuffer)
-				: total_size(size + 1 + sizeof(MMsgNodeDataBaseMsg)), msg_size(size), cur_size(0), isBuffer(isBuffer)
+				: total_size(size + 1 + sizeof(MMsgNodeDataBaseMsg)), msg_size(size), cur_size(0), isBuffer(isBuffer), id(0)
 			{
 				this->data = static_cast<void*>(new char[size + sizeof(MMsgNodeDataBaseMsg)] {'\0'});
 				if (!isBuffer)
@@ -38,6 +40,8 @@ namespace MUZI::net::async
 				id_ptr->msg_id = 0;
 				id_ptr->msg_size = size;
 				id_ptr->total_size = this->total_size;
+
+				this->capacity = this->total_size;
 			}
 			~MMsgNodeData()
 			{
@@ -52,6 +56,7 @@ namespace MUZI::net::async
 			uint64_t cur_size;
 			uint64_t total_size;
 			uint64_t msg_size;
+			uint64_t capacity;
 			bool isBuffer;
 			uint64_t id;
 		};
@@ -106,11 +111,27 @@ namespace MUZI::net::async
 		{
 			static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id = id;
 		}
+		inline bool isBuffer()
+		{
+			return this->m_data->isBuffer;
+		}
+		bool set(void* data, uint64_t size)
+		{
+			if (size > this->m_data->capacity)
+			{
+				return false;
+			}
+			memcpy(this->m_data->data, data, size);
+			this->m_data->cur_size = 0;
+			this->m_data->total_size = size + 1 + sizeof(MMsgNodeDataBaseMsg);
+			this->m_data->id = 0;
+		}
 	public:
 		void clear()
 		{
 			memset(this->m_data->data, '\0', this->m_data->total_size);
 			this->m_data->cur_size = 0;
+			this->m_data->id = 0;
 		}
 	public:
 		inline bool isEmpty() { return this->m_data == nullptr; }
@@ -119,6 +140,7 @@ namespace MUZI::net::async
 	};
 
 	using MsgPackage = std::shared_ptr<MMsgNode>;
+
 
 }
 #endif // !__MUZI_MASYNCSOCKET_MSGNODE_H__

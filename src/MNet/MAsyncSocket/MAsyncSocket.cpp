@@ -290,8 +290,10 @@ namespace MUZI::net::async
 			tmp_package->setId(i + 1);
 			adapt->send_queue.push(tmp_package);
 		}
-		adapt->send_queue.push(MsgPackage(
-			new MMsgNode(static_cast<char*>(data) + i * __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__, size % __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__)));
+		MsgPackage tmp_package(
+			new MMsgNode(static_cast<char*>(data) + i * __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__, __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__));
+		tmp_package->setId(i + 1);
+		adapt->send_queue.push(tmp_package);
 
 		return 0;
 	}

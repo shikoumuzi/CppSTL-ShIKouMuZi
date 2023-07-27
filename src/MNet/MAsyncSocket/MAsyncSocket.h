@@ -14,6 +14,7 @@
 #include<functional>
 
 #define __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__ 1400
+#define __MUZI_MASYNCSOCKET_MSGNODE_HEAD_SIZE_IN_BYTES__ sizeof(class MMsgNode::MMsgNodeDataBaseMsg)
 namespace MUZI::net::async
 {
 
@@ -36,7 +37,7 @@ namespace MUZI::net::async
 		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__);
 
 	public:
-		int splitPackage(NetAsyncIOAdapt adapt, void* data, uint64_t size);
+		int splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint64_t size);
 	public:
 		void run();
 	public:
