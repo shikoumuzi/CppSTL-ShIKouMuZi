@@ -66,7 +66,7 @@ namespace MUZI
 		{
 			this->m_lock.lock();
 
-			// 采用单向循环链表，天然的循环队列，如果满队列再push会直接覆盖数据
+			// 采用单向循环链表，如果满队列再push会直接覆盖数据
 			if (this->m_end->next == this->m_begin)
 			{
 				this->m_begin = this->m_begin->next;
@@ -79,7 +79,7 @@ namespace MUZI
 		void pop()
 		{
 			this->m_lock.lock();
-			
+			// 代表该队列目前仍然没有值
 			if (this->m_begin == this->m_end)
 			{
 				this->m_lock.unlock();
@@ -105,6 +105,31 @@ namespace MUZI
 
 			return ret_ptr;
 		}
+		T* back()
+		{
+			T* ret_ptr = nullptr;
+			this->m_lock.lock();
+			if (this->m_begin == this->m_end)
+			{
+				this->m_lock.unlock();
+				return nullptr;
+			}
+			// 如果循环队列尾端在数据头部，则取数据末尾元素
+			if (this->m_end == this->m_data)
+			{
+				ret_ptr = &((this->m_data + CAPACITY)->ele);
+				this->m_lock.unlock();
+
+				return ret_ptr;
+			}
+			
+			// 其他情况则是end前一位
+			ret_ptr = &((this->m_end - 1)->ele);
+
+			this->m_lock.unlock();
+
+			return ret_ptr;
+		}
 	public:
 		bool empty()
 		{
@@ -114,7 +139,7 @@ namespace MUZI
 		Lock_Type m_lock;
 		struct MSyncAnnularQueueNode<T>* m_data;
 		struct MSyncAnnularQueueNode<T>* m_begin;
-		struct MSyncAnnularQueueNode<T>* m_end;
+		struct MSyncAnnularQueueNode<T>* m_end;// 代表的是一个单独的末尾元素，其内部不包含可用值
 	};
 
 }

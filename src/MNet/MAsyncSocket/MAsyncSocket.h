@@ -13,8 +13,8 @@
 #include"MSession.h"
 #include<functional>
 
-#define __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__ 1400
 #define __MUZI_MASYNCSOCKET_MSGNODE_HEAD_SIZE_IN_BYTES__ sizeof(class MMsgNode::MMsgNodeDataBaseMsg)
+#define __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__ 1400 + __MUZI_MASYNCSOCKET_MSGNODE_HEAD_SIZE_IN_BYTES__
 namespace MUZI::net::async
 {
 

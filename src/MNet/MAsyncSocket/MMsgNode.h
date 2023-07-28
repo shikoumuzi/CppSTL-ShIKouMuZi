@@ -29,7 +29,12 @@ namespace MUZI::net::async
 			/// @param size data size in bytes
 			/// @param isBuffer true if need data hosting
 			MMsgNodeData(void* data, uint64_t size, bool isBuffer)
-				: total_size(size + 1 + sizeof(MMsgNodeDataBaseMsg)), msg_size(size), cur_size(0), isBuffer(isBuffer), id(0)
+				: total_size(size + 1 + sizeof(MMsgNodeDataBaseMsg)), 
+				msg_size(size), 
+				cur_size(0), 
+				isBuffer(isBuffer), 
+				id(0),
+				head_parse(false)
 			{
 				this->data = static_cast<void*>(new char[size + sizeof(MMsgNodeDataBaseMsg)] {'\0'});
 				if (!isBuffer)
@@ -59,6 +64,7 @@ namespace MUZI::net::async
 			uint64_t capacity;
 			bool isBuffer;
 			uint64_t id;
+			bool head_parse;
 		};
 
 	public:
@@ -103,13 +109,23 @@ namespace MUZI::net::async
 		{
 			return static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id;
 		}
+		inline bool getHeadParse()
+		{
+			return this->m_data->head_parse;
+		}
 		inline void setId(uint64_t& id)
 		{
 			static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id = id;
+			this->m_data->id = id;
 		}
 		inline void setId(uint64_t id)
 		{
 			static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id = id;
+			this->m_data->id = id;
+		}
+		inline void setHeadParse(bool head_parse)
+		{
+			this->m_data->head_parse = head_parse;
 		}
 		inline bool isBuffer()
 		{
@@ -125,13 +141,29 @@ namespace MUZI::net::async
 			this->m_data->cur_size = 0;
 			this->m_data->total_size = size + 1 + sizeof(MMsgNodeDataBaseMsg);
 			this->m_data->id = 0;
+			this->m_data->head_parse = false;
 		}
+
 	public:
 		void clear()
 		{
 			memset(this->m_data->data, '\0', this->m_data->total_size);
 			this->m_data->cur_size = 0;
 			this->m_data->id = 0;
+		}
+		MMsgNodeDataBaseMsg& analyzeHeader()
+		{
+			//struct MMsgNodeDataBaseMsg
+			//{
+			//	uint64_t msg_id;
+			//	uint64_t msg_size;
+			//	uint64_t total_size;
+			//};
+			//return {.msg_id = static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id,
+			//		.msg_size = static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_size,
+			//		.total_size = static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->total_size};
+			
+			return *static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data);
 		}
 	public:
 		inline bool isEmpty() { return this->m_data == nullptr; }

@@ -115,6 +115,7 @@ namespace MUZI::net::async
 				return;
 			}
 
+			// 如果已经完成复制，那么直接将结点数据拷贝到完成队列当中
 			adapt->recv_completed_queue.push(*adapt->recv_queue.front());
 			adapt->recv_queue.pop();
 
@@ -168,7 +169,71 @@ namespace MUZI::net::async
 					});
 			}
 		}
+		
+		void handleRread(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transaferred)
+		{
+			if (ec.value() != 0)
+			{
+				return;
+			}
 
+			int copy_len = 0;
+			MsgPackage recv_data_ptr = nullptr;
+			MsgPackage recv_completed_data_ptr = nullptr;
+			while(bytes_transaferred > 0)
+			{
+				recv_data_ptr = *adapt->recv_queue.front();
+				if (recv_data_ptr == nullptr)
+				{
+					return;
+				}
+				// 头部没有接收完成
+				if (!recv_data_ptr->getHeadParse())
+				{
+					// 头部数据没有接收完全
+					if (bytes_transaferred + recv_data_ptr->getCurSize() < __MUZI_MASYNCSOCKET_MSGNODE_HEAD_SIZE_IN_BYTES__)
+					{
+						
+						return;
+					}
+					// 如果收到的数据比头部多,但头部又没处理完（!recv_data_ptr->getHeadParse()）
+					// 头部剩余没有复制的长度
+					int head_remain = __MUZI_MASYNCSOCKET_MSGNODE_HEAD_SIZE_IN_BYTES__ - recv_data_ptr->getCurSize();
+
+					// 取出完成队列的尾部元素
+					if (adapt->recv_completed_queue.empty())
+					{
+						// 如果完成队列当中没有数据则传入一个空消息节点
+						recv_completed_data_ptr = MsgPackage(new MMsgNode(nullptr, recv_data_ptr->getTotalSize(), true));
+						adapt->recv_completed_queue.push(recv_completed_data_ptr);
+					}
+					else
+					{
+						recv_completed_data_ptr = *adapt->recv_completed_queue.back();
+					}
+
+					memcpy(recv_completed_data_ptr->getData(), recv_data_ptr->getData(), head_remain);
+					// 更新已处理的data长度和剩余未处理的长度
+					copy_len += head_remain;
+					bytes_transaferred -= head_remain;
+
+					// 获取头部数据
+					MMsgNode::MMsgNodeDataBaseMsg& header = recv_completed_data_ptr->analyzeHeader();
+					
+					// 表示头部长度非法
+					if (header.total_size > __MUZI_MASYNCSOCKET_PACKAGE_SIZE_IN_BYTES__)
+					{
+						
+					}
+
+
+					return;
+				}
+				
+
+				
+			}
+		}
 		MAsyncSocket* parent;
 		IOContext io_context;
 	};
