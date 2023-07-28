@@ -44,8 +44,9 @@ namespace MUZI::net::async
 		//std::queue<MsgPackage> recv_queue;
 
 		MSyncAnnularQueue<MsgPackage> send_queue;
-		MSyncAnnularQueue<MsgPackage> recv_queue;
 		MSyncAnnularQueue<MsgPackage> recv_completed_queue;
+		MsgPackage recv_tmp_buff;
+		MsgPackage recv_tmp_package;
 
 		TCPSocket socket;
 		bool send_pending;
@@ -53,6 +54,7 @@ namespace MUZI::net::async
 		String uuid;
 		uint64_t recv_id;
 		uint64_t send_id;
+		bool head_parse;
 	};
 
 	using NetAsyncIOAdapt = std::shared_ptr<MSession>;

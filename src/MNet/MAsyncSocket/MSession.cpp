@@ -11,7 +11,10 @@ namespace MUZI::net::async
 		:socket(std::move(socket)),
 		send_pending(false),
 		recv_pending(false),
-		uuid(MSession::createUUID())
+		uuid(MSession::createUUID()),
+		recv_tmp_package(new MMsgNode(nullptr)),
+		recv_tmp_buff(new MMsgNode(nullptr)),
+		head_parse(false)
 	{}
 
 	MSession::~MSession()
@@ -39,7 +42,7 @@ namespace MUZI::net::async
 
 	MsgPackage MSession::getPopFrontRecvMsg()
 	{
-		while (this->recv_queue.empty())
+		while (this->recv_completed_queue.empty())
 		{
 
 		}

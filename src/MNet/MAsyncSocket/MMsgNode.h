@@ -4,7 +4,8 @@
 #include<stdint.h>
 #include<memory>
 
-
+#define __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__ sizeof(class MMsgNode::MMsgNodeDataBaseMsg)
+#define __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__ 1400 + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__
 namespace MUZI::net::async
 {
 	class MMsgNode
@@ -33,20 +34,33 @@ namespace MUZI::net::async
 				msg_size(size), 
 				cur_size(0), 
 				isBuffer(isBuffer), 
-				id(0),
-				head_parse(false)
+				id(0)
 			{
-				this->data = static_cast<void*>(new char[size + sizeof(MMsgNodeDataBaseMsg)] {'\0'});
-				if (!isBuffer)
+				if (isBuffer)// 读缓存
 				{
-					memcpy(static_cast<char*>(this->data) + sizeof(MMsgNodeDataBaseMsg), data, size);
-				}
-				MMsgNodeDataBaseMsg* id_ptr = static_cast<MMsgNodeDataBaseMsg*>(this->data);
-				id_ptr->msg_id = 0;
-				id_ptr->msg_size = size;
-				id_ptr->total_size = this->total_size;
+					this->data = static_cast<void*>(new char[__MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__] {'\0'});
+					this->total_size = (this->total_size > this->capacity) ? this->capacity : this->total_size;
 
-				this->capacity = this->total_size;
+					// 取消息头部内容直接转换指针进行设置
+					MMsgNodeDataBaseMsg* id_ptr = static_cast<MMsgNodeDataBaseMsg*>(this->data);
+					id_ptr->msg_id = 0;
+					id_ptr->msg_size = this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1;
+					id_ptr->total_size = this->total_size;
+					this->capacity = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__;
+				}
+				else
+				{
+					this->capacity = this->total_size;
+					this->data = static_cast<void*>(new char[this->capacity] {'\0'});
+					memcpy(static_cast<char*>(this->data) + sizeof(MMsgNodeDataBaseMsg), data, this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1);
+
+					// 取消息头部内容直接转换指针进行设置
+					MMsgNodeDataBaseMsg* id_ptr = static_cast<MMsgNodeDataBaseMsg*>(this->data);
+					id_ptr->msg_id = 0;
+					id_ptr->msg_size = this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1;
+					id_ptr->total_size = this->total_size;
+				}
+
 			}
 			~MMsgNodeData()
 			{
@@ -64,7 +78,7 @@ namespace MUZI::net::async
 			uint64_t capacity;
 			bool isBuffer;
 			uint64_t id;
-			bool head_parse;
+
 		};
 
 	public:
@@ -72,7 +86,7 @@ namespace MUZI::net::async
 		/// @param data nullptr if msgnode is read buffer
 		/// @param size data size in bytes
 		/// @param isBuffer true if need data hosting
-		MMsgNode(void* data, uint64_t size, bool isBuffer = false)
+		MMsgNode(void* data, uint64_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, bool isBuffer = false)
 			:m_data(new MMsgNodeData(data, size, isBuffer)) {}
 		MMsgNode(const MMsgNode& msg)
 		{
@@ -91,7 +105,7 @@ namespace MUZI::net::async
 		};
 		inline void* getMsg()
 		{
-			return static_cast<char*>(this->m_data->data) + sizeof(MMsgNodeDataBaseMsg);
+			return static_cast<char*>(this->m_data->data) + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__;
 		}
 		inline uint64_t& getTotalSize()
 		{
@@ -109,10 +123,6 @@ namespace MUZI::net::async
 		{
 			return static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id;
 		}
-		inline bool getHeadParse()
-		{
-			return this->m_data->head_parse;
-		}
 		inline void setId(uint64_t& id)
 		{
 			static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id = id;
@@ -123,26 +133,24 @@ namespace MUZI::net::async
 			static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id = id;
 			this->m_data->id = id;
 		}
-		inline void setHeadParse(bool head_parse)
-		{
-			this->m_data->head_parse = head_parse;
-		}
 		inline bool isBuffer()
 		{
 			return this->m_data->isBuffer;
 		}
-		bool set(void* data, uint64_t size)
-		{
-			if (size > this->m_data->capacity)
-			{
-				return false;
-			}
-			memcpy(this->m_data->data, data, size);
-			this->m_data->cur_size = 0;
-			this->m_data->total_size = size + 1 + sizeof(MMsgNodeDataBaseMsg);
-			this->m_data->id = 0;
-			this->m_data->head_parse = false;
-		}
+
+		//bool set(void* data, uint64_t size)
+		//{
+		//	if (size > this->m_data->capacity)
+		//	{
+		//		return false;
+		//	}
+		//	memcpy(this->m_data->data, data, size);
+		//	this->m_data->cur_size = 0;
+		//	this->m_data->id = 0;
+		//	this->m_data->head_parse = false;
+		//	this->m_data->total_size = size + 1 + sizeof(MMsgNodeDataBaseMsg);
+		//	this->m_data->total_size = (this->m_data->total_size > this->m_data->capacity)? this->m_data->capacity: this->m_data->total_size;
+		//}
 
 	public:
 		void clear()
