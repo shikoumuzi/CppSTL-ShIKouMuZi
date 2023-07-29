@@ -12,8 +12,8 @@ namespace MUZI::net::async
 		send_pending(false),
 		recv_pending(false),
 		uuid(MSession::createUUID()),
-		recv_tmp_package(new MMsgNode(nullptr)),
-		recv_tmp_buff(new MMsgNode(nullptr)),
+		recv_tmp_package(new MMsgNode(nullptr, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, true)),
+		recv_tmp_buff(new MMsgNode(nullptr, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, true)),
 		head_parse(false)
 	{}
 

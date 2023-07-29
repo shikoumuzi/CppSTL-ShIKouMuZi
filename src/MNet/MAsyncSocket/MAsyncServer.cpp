@@ -39,7 +39,7 @@ namespace MUZI::net::async
 				// 头部没有接收完成
 				if (!adapt->head_parse)
 				{
-					// 头部数据没有接收完全,即头部数据小于头部规定长度
+					// 头部数据没有接收完全,即数据小于头部规定长度， 先复制一部分，然后继续监听
 					if (bytes_transafered + recv_data_ptr->getCurSize() < __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__)
 					{
 
@@ -79,19 +79,19 @@ namespace MUZI::net::async
 						// 先取出缓存
 						memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__,
 							recv_data_ptr->getData(), bytes_transafered);
-						// 保留头部，重新部署监听任务
+						// 保留头部，重新部署监听任务, 此时数据结构不需要再解析头部，由adapt->head_parse记录已解析，recv_tmp_package记录之前接收的头部数据
 						adapt->socket.async_read_some(
-							boost::asio::buffer(static_cast<char*>(recv_data_ptr->getData()) + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__,
-												__MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
+							boost::asio::buffer(static_cast<char*>(recv_data_ptr->getData()), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, std::size_t size)->void
 							{
 								this->handleRread(ec, adapt, size);
 							});
 						adapt->head_parse = true;
+						// 交由async_read_some，继续接收剩余数据
 						return;
 					}
 
-					// 如果接收到的数据小于总长度，发生了粘包现像, 此时包中假定存在完整数据
+					// 如果接收到的数据大于总长度，发生了粘包现像, 此时包中假定存在完整数据
 					memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__,
 							recv_data_ptr->getData(), header.msg_size);
 					adapt->recv_tmp_package->getCurSize() += header.msg_size + 1;
@@ -100,16 +100,32 @@ namespace MUZI::net::async
 					// 添加终止符
 					static_cast<char*>(adapt->recv_tmp_package->getData())[(adapt->recv_tmp_package->getTotalSize() - 1)] = '\0';
 
+					//将接收结果推送到队列当中
+					adapt->recv_completed_queue.push(adapt->recv_tmp_package);
+
 					adapt->head_parse = false;
+					// 重新构造结点
+					adapt->recv_tmp_package = std::make_shared<MMsgNode>(nullptr, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, true);
+					// 清空接收缓冲区
 					adapt->recv_tmp_buff->clear();
+
+					// 如果读完，则重新布置监听任务
 					if (bytes_transafered <= 0)
 					{
+						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
+							[this, adapt](const EC& ec, std::size_t size)->void
+							{
+								this->handleRread(ec, adapt, size);
+							});
 						return;
 					}
 
+					// 未读完则继续解析内容
 					continue;
 				}
 
+				//已经处理完头部，处理上次未接受完的消息数据
+				//接收的数据仍不足剩余未处理的
 
 
 			}
