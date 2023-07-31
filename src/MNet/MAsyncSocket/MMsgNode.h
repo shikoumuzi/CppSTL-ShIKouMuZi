@@ -3,9 +3,10 @@
 #define __MUZI_MASYNCSOCKET_MSGNODE_H__
 #include<stdint.h>
 #include<memory>
-
+#include<boost/asio.hpp>
 #define __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__ sizeof(class MMsgNode::MMsgNodeDataBaseMsg)
-#define __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__ 1400 + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__
+#define __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__ 1400
+#define __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__ __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__ + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__
 namespace MUZI::net::async
 {
 	class MMsgNode
@@ -15,9 +16,9 @@ namespace MUZI::net::async
 	public:
 		struct MMsgNodeDataBaseMsg
 		{
-			uint64_t msg_id;
-			uint64_t msg_size;
-			uint64_t total_size;
+			uint32_t msg_id;
+			uint32_t msg_size;
+			uint32_t total_size;
 		};
 
 		class MMsgNodeData
@@ -42,23 +43,25 @@ namespace MUZI::net::async
 					this->total_size = (this->total_size > this->capacity) ? this->capacity : this->total_size;
 
 					// 取消息头部内容直接转换指针进行设置
+					// 读包需要网络序转本地序
 					MMsgNodeDataBaseMsg* id_ptr = static_cast<MMsgNodeDataBaseMsg*>(this->data);
 					id_ptr->msg_id = 0;
-					id_ptr->msg_size = this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1;
-					id_ptr->total_size = this->total_size;
+					id_ptr->msg_size = boost::asio::detail::socket_ops::host_to_network_long(this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1);
+					id_ptr->total_size = boost::asio::detail::socket_ops::host_to_network_long(this->total_size);
 					this->capacity = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__;
 				}
-				else
+				else// 写信息包
 				{
 					this->capacity = this->total_size;
 					this->data = static_cast<void*>(new char[this->capacity] {'\0'});
 					memcpy(static_cast<char*>(this->data) + sizeof(MMsgNodeDataBaseMsg), data, this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1);
 
 					// 取消息头部内容直接转换指针进行设置
+					// 写包需要本地序转网络序
 					MMsgNodeDataBaseMsg* id_ptr = static_cast<MMsgNodeDataBaseMsg*>(this->data);
 					id_ptr->msg_id = 0;
-					id_ptr->msg_size = this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1;
-					id_ptr->total_size = this->total_size;
+					id_ptr->msg_size = boost::asio::detail::socket_ops::host_to_network_long(this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1);
+					id_ptr->total_size = boost::asio::detail::socket_ops::host_to_network_long(this->total_size);
 				}
 
 			}
@@ -72,12 +75,12 @@ namespace MUZI::net::async
 			}
 		public:
 			void* data;
-			uint64_t cur_size;
-			uint64_t total_size;
-			uint64_t msg_size;
-			uint64_t capacity;
+			uint32_t cur_size;
+			uint32_t total_size;
+			uint32_t msg_size;
+			uint32_t capacity;
 			bool isBuffer;
-			uint64_t id;
+			uint32_t id;
 
 		};
 
@@ -86,7 +89,7 @@ namespace MUZI::net::async
 		/// @param data nullptr if msgnode is read buffer
 		/// @param size data size in bytes
 		/// @param isBuffer true if need data hosting
-		MMsgNode(void* data, uint64_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, bool isBuffer = false)
+		MMsgNode(void* data, uint64_t size = __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__, bool isBuffer = false)
 			:m_data(new MMsgNodeData(data, size, isBuffer)) {}
 		MMsgNode(const MMsgNode& msg)
 		{
@@ -107,19 +110,19 @@ namespace MUZI::net::async
 		{
 			return static_cast<char*>(this->m_data->data) + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__;
 		}
-		inline uint64_t& getTotalSize()
+		inline uint32_t& getTotalSize()
 		{
 			return this->m_data->total_size;
 		}
-		inline uint64_t& getCurSize()
+		inline uint32_t& getCurSize()
 		{
 			return this->m_data->cur_size;
 		}
-		inline uint64_t& getMsgSize()
+		inline uint32_t& getMsgSize()
 		{
 			return this->m_data->msg_size;
 		}
-		inline uint64_t getId()
+		inline uint32_t getId()
 		{
 			return static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id;
 		}
@@ -170,7 +173,10 @@ namespace MUZI::net::async
 			//return {.msg_id = static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id,
 			//		.msg_size = static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_size,
 			//		.total_size = static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->total_size};
-			
+			this->m_data->total_size = boost::asio::detail::socket_ops::network_to_host_long(static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->total_size);
+			this->m_data->cur_size = 0;
+			this->m_data->id = boost::asio::detail::socket_ops::network_to_host_long(static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id);
+
 			return *static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data);
 		}
 	public:

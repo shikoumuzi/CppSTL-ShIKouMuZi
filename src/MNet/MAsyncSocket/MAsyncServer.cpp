@@ -27,44 +27,52 @@ namespace MUZI::net::async
 		{
 			if (ec.value() != 0)
 			{
+				MLog::w("MAsyncServer::MAsyncServerData::handleRread", "Error Code is %d, Error Message is %s", MERROR::RECV_ERROR, ec.message().c_str());
+				this->parent->earse(adapt->getUUID());
 				return;
 			}
 
 			int copy_len = 0;
-			MsgPackage recv_data_ptr = nullptr;
 			while (bytes_transafered > 0)
 			{
-				recv_data_ptr = adapt->recv_tmp_buff;
+				adapt->recv_tmp_buff = adapt->recv_tmp_buff;
 
 				// 头部没有接收完成
 				if (!adapt->head_parse)
 				{
 					// 头部数据没有接收完全,即数据小于头部规定长度， 先复制一部分，然后继续监听
-					if (bytes_transafered + recv_data_ptr->getCurSize() < __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__)
+					if (bytes_transafered + adapt->recv_tmp_buff->getCurSize() < __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__)
 					{
+						memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + adapt->recv_tmp_package->getCurSize(),
+							adapt->recv_tmp_buff->getData(), bytes_transafered);
 
-
-
-
-
-
+						adapt->recv_tmp_package->getCurSize() += bytes_transafered;
+						adapt->recv_tmp_buff->clear();
+						
+						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
+							[this, adapt](const EC& ec, size_t size)->void
+							{
+								this->handleRread(ec, adapt, size);
+							});
 
 						return;
 					}
-					// 如果收到的数据比头部多,但头部又没处理完（!recv_data_ptr->getHeadParse()）
+					// 如果收到的数据比头部多,但头部又没处理完（!adapt->recv_tmp_buff->getHeadParse()）
 					// 头部剩余没有复制的长度
-					int head_remain = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__ - recv_data_ptr->getCurSize();
+					int head_remain = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__ - adapt->recv_tmp_buff->getCurSize();
 
 					// 将头部剩余数据先缓存到recv_tmp_package当中
-					memcpy(adapt->recv_tmp_package->getData(), recv_data_ptr->getData(), head_remain);
+					memcpy(adapt->recv_tmp_package->getData(), adapt->recv_tmp_buff->getData(), head_remain);
 
 					// 更新已处理的data长度和剩余未处理的长度
 					copy_len += head_remain;
 					bytes_transafered -= head_remain;
+					adapt->recv_tmp_buff->getCurSize() += head_remain;
 
-					// 获取头部数据
+					// 获取头部数据,并更新缓存包
 					MMsgNode::MMsgNodeDataBaseMsg& header = adapt->recv_tmp_package->analyzeHeader();
 					adapt->recv_tmp_package->getCurSize() += head_remain;
+
 					// 表示头部长度非法
 					if (header.total_size > __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__)
 					{
@@ -78,34 +86,44 @@ namespace MUZI::net::async
 					{
 						// 先取出缓存
 						memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__,
-							recv_data_ptr->getData(), bytes_transafered);
-						// 保留头部，重新部署监听任务, 此时数据结构不需要再解析头部，由adapt->head_parse记录已解析，recv_tmp_package记录之前接收的头部数据
+							adapt->recv_tmp_buff->getData(), bytes_transafered);
+
+						// 更新
+						adapt->recv_tmp_package->getCurSize() += bytes_transafered;
+						adapt->recv_tmp_buff->clear();
+
+						// 重新部署监听任务, 此时数据结构不需要再解析头部，由adapt->head_parse记录已解析，recv_tmp_package记录之前接收的头部数据
 						adapt->socket.async_read_some(
-							boost::asio::buffer(static_cast<char*>(recv_data_ptr->getData()), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
+							boost::asio::buffer(static_cast<char*>(adapt->recv_tmp_buff->getData()), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, std::size_t size)->void
 							{
 								this->handleRread(ec, adapt, size);
 							});
 						adapt->head_parse = true;
+
+
 						// 交由async_read_some，继续接收剩余数据
 						return;
 					}
 
 					// 如果接收到的数据大于总长度，发生了粘包现像, 此时包中假定存在完整数据
 					memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__,
-							recv_data_ptr->getData(), header.msg_size);
+							adapt->recv_tmp_buff->getData(), header.msg_size);
+
 					adapt->recv_tmp_package->getCurSize() += header.msg_size + 1;
 					copy_len += header.msg_size;
 					bytes_transafered -= header.msg_size;
+
 					// 添加终止符
 					static_cast<char*>(adapt->recv_tmp_package->getData())[(adapt->recv_tmp_package->getTotalSize() - 1)] = '\0';
 
 					//将接收结果推送到队列当中
 					adapt->recv_completed_queue.push(adapt->recv_tmp_package);
 
+					// 获取结束，重新初始化内容
 					adapt->head_parse = false;
 					// 重新构造结点
-					adapt->recv_tmp_package = std::make_shared<MMsgNode>(nullptr, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, true);
+					adapt->recv_tmp_package = std::make_shared<MMsgNode>(nullptr, __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__, true);
 					// 清空接收缓冲区
 					adapt->recv_tmp_buff->clear();
 
@@ -126,8 +144,58 @@ namespace MUZI::net::async
 
 				//已经处理完头部，处理上次未接受完的消息数据
 				//接收的数据仍不足剩余未处理的
+				int msg_remain = adapt->recv_tmp_package->getTotalSize() - adapt->recv_tmp_package->getCurSize();
 
+				// 如果说接受的数据还是少于所需求的
+				if (bytes_transafered < msg_remain)
+				{
+					memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + adapt->recv_tmp_package->getCurSize(),
+						adapt->recv_tmp_buff->getData(), bytes_transafered);
 
+					adapt->recv_tmp_package->getCurSize() += bytes_transafered;
+					adapt->recv_tmp_buff->clear();
+
+					// 重新布置监听任务
+					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
+						[this, adapt](const EC& ec, std::size_t size)->void
+						{
+							this->handleRread(ec, adapt, size);
+						});
+					return;
+				}
+
+				// 如果接受数据长度大于等于所需要的信息长度，则代表发生了粘包现象
+				memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + adapt->recv_tmp_package->getCurSize(),
+					adapt->recv_tmp_buff->getData(), bytes_transafered);
+
+				// 更新接收数据
+				adapt->recv_tmp_package->getCurSize() += msg_remain + 1;
+				bytes_transafered -= msg_remain;
+				copy_len += msg_remain;
+
+				// 添加终止符
+				static_cast<char*>(adapt->recv_tmp_package->getData())[adapt->recv_tmp_package->getTotalSize() - 1] = '\0';
+
+				// 加入完成队列
+				adapt->recv_completed_queue.push(adapt->recv_tmp_package);
+				// 重新构造节点
+				adapt->recv_tmp_package = std::make_shared<MMsgNode>(nullptr, __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__, true);
+
+				adapt->head_parse = false;
+				adapt->recv_tmp_buff->clear();
+
+				if (bytes_transafered <= 0)
+				{
+					// 重新布置监听任务
+					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
+						[this, adapt](const EC& ec, std::size_t size)->void
+						{
+							this->handleRread(ec, adapt, size);
+						});
+					return;
+				}
+
+				continue;
 			}
 		}
 	public:
@@ -197,6 +265,23 @@ namespace MUZI::net::async
 			return NetAsyncIOAdapt();
 		}
 		return adapt;
+	}
+
+	int MAsyncServer::readPackage(NetAsyncIOAdapt adapt)
+	{
+		if (adapt->recv_pending)
+		{
+			return MERROR::READ_PENDING_NOW;
+		}
+
+		adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
+			[this, adapt](const EC& ec, size_t size)->void
+			{
+				this->m_data->handleRread(ec, adapt, size);
+			});
+
+
+		return 0;
 	}
 
 	MAsyncServer::iterator MAsyncServer::begin()

@@ -1,7 +1,7 @@
 ﻿# CMakeList.txt: CppSTL-shikounuzi 的 CMake 项目，在此处包括源代码并定义
 # 项目特定的逻辑。
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.0)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -10,11 +10,11 @@ if (POLICY CMP0141)
 endif()
 
 project (CppSTL-shikounuzi)
+set(PROJECT_NAME CppSTL-shikounuzi)
 
 # 设置输出路径
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)# 可执行文件
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})# 静态库输出
-
 
 # 基础设置
 # add_definitions("-DUNICODE" "-D_UNICODE") # 设置为unicode字符集
@@ -25,7 +25,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})# 静态库输出
 # 路径变量设置
 set(BOOST_CODE_LIBRARY_PATH F:/CodeLibrary/boost_1_79_0)
 set(SQLITE3_CODE_LIBRARY_PATH D:/sqlite)
-
+set(RAPIDJSON_CODE_LIBRARY_PATH D:/rapidjson)
 
 # 添加头文件路径
 file(GLOB_RECURSE CPP_FILE_PATH src/*.cpp)
@@ -86,6 +86,20 @@ if(SQLite3_FOUND)
 	message(STATUS "Sqlite3_LIBRARY_DIRS=${SQLite3_LIBRARIES}")
 endif()
 
+# rapidcpp 配置
+set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${RAPIDJSON_CODE_LIBRARY_PATH}/include/rapidjson)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${RAPIDJSON_CODE_LIBRARY_PATH}/build)
+set(RapidJSON_ROOT ${RAPIDJSON_CODE_LIBRARY_PATH}/build)
+
+find_package(RapidJSON REQUIRED)
+# 连接rapidjson
+if(RapidJSON_FOUND)
+	include_directories(${RapidJSON_INCLUDE_DIRS})
+	message(STATUS "rapidjson 库信息:")
+	message(STATUS "rapidjson_INCLUDE_DIRS=${RapidJSON_INCLUDE_DIRS}")
+endif()
+
+
 set(HEADERS
 	${H_FILE_PATH}
 	"src/MSTL/h/MTreeMap.h" 
@@ -111,8 +125,12 @@ set(HEADERS
 	"src/MLog/MLog.h"
 	"src/MNet/MAsyncSocket/MAsyncSocket.h"
 	"src/MNet/MAsyncSocket/MAsyncServer.h"
-
-	
+	"src/MNet/MEndPoint/MEndPoint.h"
+	"src/MNet/MAsyncSocket/MAsyncClient.h"
+	"src/MNet/MAsyncSocket/MMsgNode.h" 
+	"src/MNet/MAsyncSocket/MSession.h"
+	"src/MSTL/h/MSyncAnnularQueue.h" 
+	"src/MSTL/h/MAtomicLock.h"
 )
 
 set(SOURCES
@@ -132,6 +150,8 @@ set(SOURCES
 	"src/MLog/MLog.cpp"
 	"src/MNet/MAsyncSocket/MAsyncSocket.cpp"
 	"src/MNet/MAsyncSocket/MAsyncServer.cpp"
+	"src/MNet/MAsyncSocket/MAsyncClient.cpp"
+	"src/MNet/MAsyncSocket/MSession.cpp"
 )
 
 
@@ -143,7 +163,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-       "src/MNet/MEndPoint/MEndPoint.h" "src/MNet/MAsyncSocket/MAsyncClient.h" "src/MNet/MAsyncSocket/MAsyncClient.cpp" "src/MNet/MAsyncSocket/MMsgNode.h" "src/MNet/MAsyncSocket/MSession.h" "src/MNet/MAsyncSocket/MSession.cpp" "src/MSTL/h/MSyncAnnularQueue.h" "src/MSTL/h/MAtomicLock.h")
+            )
 
 
 
@@ -155,16 +175,19 @@ add_executable (CppSTL-shikounuzi
 # target_link_libraries
 # ————————————————————
 # link_directories一定要放在add_executable前面，target_link_libraries一定要放在add_executable后面
-if(SQLite3_FOUND)
-# cmake变量名是区分大小写的
-	target_link_libraries(CppSTL-shikounuzi PUBLIC ${SQLite3_LIBRARIES}) # Link with sqlite3 library
-	message(STATUS "sqlite is targeted")
-endif()
 
-if(Boost_FOUND)
-	target_link_libraries(CppSTL-shikounuzi PUBLIC ${BOOST_LIBRARIES})
-	message(STATUS "boost is targeted")
-endif()
+# cmake变量名是区分大小写的
+
+target_link_libraries(CppSTL-shikounuzi PUBLIC ${SQLite3_LIBRARIES}) # Link with sqlite3 library
+message(STATUS "sqlite is targeted")
+
+target_link_libraries(CppSTL-shikounuzi PUBLIC ${BOOST_LIBRARIES})
+message(STATUS "boost is targeted")
+
+target_link_libraries(CppSTL-shikounuzi PUBLIC ${rapidjson_LIRARIES})
+message(STATUS "boost is targeted")
+
+
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CppSTL-shikounuzi PROPERTY CXX_STANDARD 20)
@@ -173,7 +196,6 @@ endif()
 # 设置dll拷贝
 # file(copy ${SQLite3_LIBRARIES}/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
 install(FILES ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}/../bin)
-
 
 
 message(STATUS "CMAKE Install 项目信息：")
