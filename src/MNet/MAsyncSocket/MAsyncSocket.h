@@ -30,14 +30,14 @@ namespace MUZI::net::async
 		IOContext& getIOContext();
 	public:
 		int writeToSocket(NetAsyncIOAdapt adapt, String& data);
-		int wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint64_t size);
-		int wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint64_t size);
+		int wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size);
+		int wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size);
 
-		int readFromSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
-		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint64_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
+		int readFromSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
+		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
 
 	public:
-		int splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint64_t size);
+		int splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size, uint32_t id);
 	public:
 		void run();
 	public:

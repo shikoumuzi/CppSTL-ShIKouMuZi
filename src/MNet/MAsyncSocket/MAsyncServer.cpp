@@ -59,7 +59,7 @@ namespace MUZI::net::async
 					}
 					// 如果收到的数据比头部多,但头部又没处理完（!adapt->recv_tmp_buff->getHeadParse()）
 					// 头部剩余没有复制的长度
-					int head_remain = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__ - adapt->recv_tmp_buff->getCurSize();
+					int head_remain = __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__ - adapt->recv_tmp_buff->getCurSize();
 
 					// 将头部剩余数据先缓存到recv_tmp_package当中
 					memcpy(adapt->recv_tmp_package->getData(), adapt->recv_tmp_buff->getData(), head_remain);
@@ -70,7 +70,7 @@ namespace MUZI::net::async
 					adapt->recv_tmp_buff->getCurSize() += head_remain;
 
 					// 获取头部数据,并更新缓存包
-					MMsgNode::MMsgNodeDataBaseMsg& header = adapt->recv_tmp_package->analyzeHeader();
+					MRecvMsgNode::MMsgNodeDataBaseMsg& header = adapt->recv_tmp_package->analyzeHeader();
 					adapt->recv_tmp_package->getCurSize() += head_remain;
 
 					// 表示头部长度非法
@@ -123,7 +123,7 @@ namespace MUZI::net::async
 					// 获取结束，重新初始化内容
 					adapt->head_parse = false;
 					// 重新构造结点
-					adapt->recv_tmp_package = std::make_shared<MMsgNode>(nullptr, __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__, true);
+					adapt->recv_tmp_package = std::make_shared<MRecvMsgNode>();
 					// 清空接收缓冲区
 					adapt->recv_tmp_buff->clear();
 
@@ -144,7 +144,8 @@ namespace MUZI::net::async
 
 				//已经处理完头部，处理上次未接受完的消息数据
 				//接收的数据仍不足剩余未处理的
-				int msg_remain = adapt->recv_tmp_package->getTotalSize() - adapt->recv_tmp_package->getCurSize();
+				MRecvMsgNode::MMsgNodeDataBaseMsg& header = adapt->recv_tmp_package->analyzeHeader();
+				int msg_remain = header.total_size - adapt->recv_tmp_package->getCurSize();
 
 				// 如果说接受的数据还是少于所需求的
 				if (bytes_transafered < msg_remain)
@@ -174,12 +175,12 @@ namespace MUZI::net::async
 				copy_len += msg_remain;
 
 				// 添加终止符
-				static_cast<char*>(adapt->recv_tmp_package->getData())[adapt->recv_tmp_package->getTotalSize() - 1] = '\0';
+				static_cast<char*>(adapt->recv_tmp_package->getData())[adapt->recv_tmp_package->getCurSize() + 1] = '\0';
 
 				// 加入完成队列
 				adapt->recv_completed_queue.push(adapt->recv_tmp_package);
 				// 重新构造节点
-				adapt->recv_tmp_package = std::make_shared<MMsgNode>(nullptr, __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__, true);
+				adapt->recv_tmp_package = std::make_shared<MRecvMsgNode>();
 
 				adapt->head_parse = false;
 				adapt->recv_tmp_buff->clear();
@@ -202,6 +203,7 @@ namespace MUZI::net::async
 		MAsyncServer* parent;
 		TCPAcceptor acceptor;
 		std::map<std::string, NetAsyncIOAdapt> sessions;
+		MSyncAnnularQueue<NetAsyncIOAdapt> session_queue;
 	};
 
 

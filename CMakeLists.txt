@@ -163,7 +163,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-            )
+             "src/MObserver/MObserver.h" "src/MObserver/MSubject.h" "src/MNet/MAsyncSocket/MSendMsgNode.h" "src/MNet/MAsyncSocket/MRecvMsgNode.h")
 
 
 

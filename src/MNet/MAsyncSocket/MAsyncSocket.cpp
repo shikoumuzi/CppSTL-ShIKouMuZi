@@ -96,7 +96,7 @@ namespace MUZI::net::async
 			}
 			
 
-			MMsgNode& recv_buff = *adapt->recv_tmp_buff;
+			MRecvMsgNode& recv_buff = *adapt->recv_tmp_buff;
 			recv_buff.getCurSize() += bytes_transaferred;
 			if (recv_buff.getCurSize() < recv_buff.getTotalSize())
 			{
@@ -181,10 +181,10 @@ namespace MUZI::net::async
 		return this->wtiteToSocket(adapt, (void*)(data.c_str()), data.size());
 	}
 
-	int MAsyncSocket::wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint64_t size)
+	int MAsyncSocket::wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size)
 	{
 		//  std::make_shared<MMsgNode>(new MMsgNode(data, size))
-		adapt->send_queue.push(MsgPackage(new MMsgNode(data, size)));
+		adapt->send_queue.push(SendMsgPackage(new MSendMsgNode(data, size)));
 		if (adapt->send_pending) {
 			// 表示现在正在发送
 			return 0;
@@ -201,9 +201,9 @@ namespace MUZI::net::async
 		return 0;
 	}
 
-	int MAsyncSocket::wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint64_t size)
+	int MAsyncSocket::wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size)
 	{
-		adapt->send_queue.push(MsgPackage(new MMsgNode(data, size)));
+		adapt->send_queue.push(SendMsgPackage(new MSendMsgNode(data, size)));
 		if (adapt->send_pending) {
 			return 0;
 		}
@@ -216,7 +216,7 @@ namespace MUZI::net::async
 		return 0;
 	}
 
-	int MAsyncSocket::readFromSocket(NetAsyncIOAdapt adapt, uint64_t size)
+	int MAsyncSocket::readFromSocket(NetAsyncIOAdapt adapt, uint32_t size)
 	{
 		// 说明当前仍然在读
 		if (adapt->recv_pending){
@@ -235,7 +235,7 @@ namespace MUZI::net::async
 		return 0;
 	}
 
-	int MAsyncSocket::readAllFromeSocket(NetAsyncIOAdapt adapt, uint64_t size)
+	int MAsyncSocket::readAllFromeSocket(NetAsyncIOAdapt adapt, uint32_t size)
 	{
 		if (adapt->recv_pending) {
 			return 0;
@@ -250,19 +250,19 @@ namespace MUZI::net::async
 		return 0;
 	}
 
-	int MAsyncSocket::splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint64_t size)
+	int MAsyncSocket::splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size, uint32_t id)
 	{
-		uint64_t capacity = (size / __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__) + 1;
-		uint64_t i = 0;
+		uint32_t capacity = (size / __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__) + 1;
+		uint32_t i = 0;
 		for (; i < capacity - 1; ++i)
 		{
-			MsgPackage tmp_package(
-				new MMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__));
+			SendMsgPackage tmp_package(
+				new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__));
 			tmp_package->setId(i + 1);
 			adapt->send_queue.push(tmp_package);
 		}
-		MsgPackage tmp_package(
-			new MMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__));
+		SendMsgPackage tmp_package(
+			new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__));
 		tmp_package->setId(i + 1);
 		adapt->send_queue.push(tmp_package);
 

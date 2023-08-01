@@ -10,7 +10,8 @@
 #include<queue>
 #include"MSTL/h/MSyncAnnularQueue.h"
 #include<mutex>
-
+#include"MSendMsgNode.h"
+#include"MRecvMsgNode.h"
 #define __MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ 2048
 namespace MUZI::net::async
 {
@@ -35,7 +36,7 @@ namespace MUZI::net::async
 		const String& getUUID();
 	public:
 		TCPSocket& getSocket();
-		MsgPackage getPopFrontRecvMsg();
+		RecvMsgPackage getPopFrontRecvMsg();
 	private:
 		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__>> send_queue;
 		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
@@ -43,10 +44,10 @@ namespace MUZI::net::async
 		//std::queue<MsgPackage> send_queue;
 		//std::queue<MsgPackage> recv_queue;
 
-		MSyncAnnularQueue<MsgPackage> send_queue;
-		MSyncAnnularQueue<MsgPackage> recv_completed_queue;
-		MsgPackage recv_tmp_buff;
-		MsgPackage recv_tmp_package;
+		MSyncAnnularQueue<SendMsgPackage> send_queue;
+		MSyncAnnularQueue<RecvMsgPackage> recv_completed_queue;
+		RecvMsgPackage recv_tmp_buff;
+		RecvMsgPackage recv_tmp_package;
 
 		TCPSocket socket;
 		bool send_pending;
