@@ -27,7 +27,8 @@ namespace MUZI::net::async
 		int accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output = [](MAsyncServer&, NetAsyncIOAdapt)->void {});
 		NetAsyncIOAdapt accept(int& error_code);
 	public:
-		int readPackage(NetAsyncIOAdapt adapt);
+		int readRawPackage(NetAsyncIOAdapt adapt);
+		int readJsonPackage(NetAsyncIOAdapt adapt);
 	public:
 		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);
 		iterator begin();

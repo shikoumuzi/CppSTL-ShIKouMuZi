@@ -9,11 +9,11 @@
 #include<boost/uuid/uuid_generators.hpp>
 #include<boost/uuid/uuid_io.hpp>
 #include<boost/lockfree/spsc_queue.hpp>
-#include"MMsgNode.h"
+#include"../MMsgNode/MMsgNode.h"
+#include"../MMsgNode/MRecvMsgNode.h"
+#include"../MMsgNode/MSendMsgNode.h"
 #include"MSession.h"
 #include<functional>
-
-
 
 namespace MUZI::net::async
 {
@@ -22,7 +22,9 @@ namespace MUZI::net::async
 	{
 	public:
 		class MAsyncSocketData;
-
+	public:
+		using RawMRecvMsgNode = MRecvMsgNode;
+		using JsonMRecvMsgNode = MRecvMsgNode;
 	public:
 		MAsyncSocket();
 		~MAsyncSocket();

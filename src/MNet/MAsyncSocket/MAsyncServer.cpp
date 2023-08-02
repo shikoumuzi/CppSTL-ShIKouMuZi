@@ -2,6 +2,8 @@
 
 namespace MUZI::net::async
 {
+
+
 	class MAsyncServer::MAsyncServerData
 	{
 	public:
@@ -23,7 +25,7 @@ namespace MUZI::net::async
 		}
 
 	public:
-		void handleRread(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transafered)
+		void handleRawRread(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transafered)
 		{
 			if (ec.value() != 0)
 			{
@@ -52,7 +54,7 @@ namespace MUZI::net::async
 						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
-								this->handleRread(ec, adapt, size);
+								this->handleRawRread(ec, adapt, size);
 							});
 
 						return;
@@ -70,7 +72,7 @@ namespace MUZI::net::async
 					adapt->recv_tmp_buff->getCurSize() += head_remain;
 
 					// 获取头部数据,并更新缓存包
-					MRecvMsgNode::MMsgNodeDataBaseMsg& header = adapt->recv_tmp_package->analyzeHeader();
+					MMsgNodeDataBaseMsg header = adapt->recv_tmp_package->analyzeRawHeader();
 					adapt->recv_tmp_package->getCurSize() += head_remain;
 
 					// 表示头部长度非法
@@ -97,7 +99,7 @@ namespace MUZI::net::async
 							boost::asio::buffer(static_cast<char*>(adapt->recv_tmp_buff->getData()), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, std::size_t size)->void
 							{
-								this->handleRread(ec, adapt, size);
+								this->handleRawRread(ec, adapt, size);
 							});
 						adapt->head_parse = true;
 
@@ -123,7 +125,7 @@ namespace MUZI::net::async
 					// 获取结束，重新初始化内容
 					adapt->head_parse = false;
 					// 重新构造结点
-					adapt->recv_tmp_package = std::make_shared<MRecvMsgNode>();
+					adapt->recv_tmp_package = std::make_shared<RawMRecvMsgNode>();
 					// 清空接收缓冲区
 					adapt->recv_tmp_buff->clear();
 
@@ -133,7 +135,7 @@ namespace MUZI::net::async
 						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, std::size_t size)->void
 							{
-								this->handleRread(ec, adapt, size);
+								this->handleRawRread(ec, adapt, size);
 							});
 						return;
 					}
@@ -144,7 +146,7 @@ namespace MUZI::net::async
 
 				//已经处理完头部，处理上次未接受完的消息数据
 				//接收的数据仍不足剩余未处理的
-				MRecvMsgNode::MMsgNodeDataBaseMsg& header = adapt->recv_tmp_package->analyzeHeader();
+				MMsgNodeDataBaseMsg header = adapt->recv_tmp_package->analyzeRawHeader();
 				int msg_remain = header.total_size - adapt->recv_tmp_package->getCurSize();
 
 				// 如果说接受的数据还是少于所需求的
@@ -160,7 +162,7 @@ namespace MUZI::net::async
 					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 						[this, adapt](const EC& ec, std::size_t size)->void
 						{
-							this->handleRread(ec, adapt, size);
+							this->handleRawRread(ec, adapt, size);
 						});
 					return;
 				}
@@ -180,7 +182,7 @@ namespace MUZI::net::async
 				// 加入完成队列
 				adapt->recv_completed_queue.push(adapt->recv_tmp_package);
 				// 重新构造节点
-				adapt->recv_tmp_package = std::make_shared<MRecvMsgNode>();
+				adapt->recv_tmp_package = std::make_shared<RawMRecvMsgNode>();
 
 				adapt->head_parse = false;
 				adapt->recv_tmp_buff->clear();
@@ -191,7 +193,7 @@ namespace MUZI::net::async
 					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 						[this, adapt](const EC& ec, std::size_t size)->void
 						{
-							this->handleRread(ec, adapt, size);
+							this->handleRawRread(ec, adapt, size);
 						});
 					return;
 				}
@@ -269,7 +271,7 @@ namespace MUZI::net::async
 		return adapt;
 	}
 
-	int MAsyncServer::readPackage(NetAsyncIOAdapt adapt)
+	int MAsyncServer::readRawPackage(NetAsyncIOAdapt adapt)
 	{
 		if (adapt->recv_pending)
 		{
@@ -279,10 +281,14 @@ namespace MUZI::net::async
 		adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 			[this, adapt](const EC& ec, size_t size)->void
 			{
-				this->m_data->handleRread(ec, adapt, size);
+				this->m_data->handleRawRread(ec, adapt, size);
 			});
 
+		return 0;
+	}
 
+	int MAsyncServer::readJsonPackage(NetAsyncIOAdapt adapt)
+	{
 		return 0;
 	}
 

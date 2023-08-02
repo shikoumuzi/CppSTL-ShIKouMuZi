@@ -3,18 +3,21 @@
 #define __MUZI_MSYNCSOCKET_MSESSION_H__
 #include<memory>
 #include"MNet/MNetBase.h"
-#include"MMsgNode.h"
+#include"../MMsgNode/MMsgNode.h"
 #include<boost/uuid/uuid_generators.hpp>
 #include<boost/uuid/uuid_io.hpp>
 #include<boost/lockfree/spsc_queue.hpp>
 #include<queue>
 #include"MSTL/h/MSyncAnnularQueue.h"
 #include<mutex>
-#include"MSendMsgNode.h"
-#include"MRecvMsgNode.h"
+#include"../MMsgNode/MSendMsgNode.h"
+#include"../MMsgNode/MRecvMsgNode.h"
 #define __MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ 2048
 namespace MUZI::net::async
 {
+
+	class MAsyncSocket;
+
 
 	// std::enable_shared_from_this<MSession> 用以同步引用计数
 	class MSession
@@ -23,6 +26,7 @@ namespace MUZI::net::async
 		friend class MAsyncSocket;
 		friend class MAsyncServer;
 		friend class MAsyncClient;
+
 	private:
 		static String createUUID();
 		//static MsgPackage null;
