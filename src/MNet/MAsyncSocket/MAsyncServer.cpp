@@ -1,4 +1,7 @@
 #include "MAsyncServer.h"
+#include<thread>
+#include<mutex>
+#include<atomic>
 
 namespace MUZI::net::async
 {
@@ -22,8 +25,32 @@ namespace MUZI::net::async
 			: parent(parent), acceptor(io_context, *endpoint.getEndPoint()),
 			notified_fun(notified_fun),
 			recv_json_func(analyzedJsonHeader),
-			recv_raw_func(analyzedRawHeader)
-		{}
+			recv_raw_func(analyzedRawHeader),
+			notified_thread_flag(true)
+		{
+			this->notified_thread =
+				std::move(std::thread(
+					[this]()
+					{
+						std::unique_lock<std::mutex> notified_lock(this->notified_mutex);
+						NetAsyncIOAdapt* adapt;
+						while (this->notified_thread_flag)
+						{
+							this->notified_cond.wait(notified_lock);
+							while (!session_notified_queue.empty() && this->notified_thread_flag)
+							{
+								adapt = session_notified_queue.front();
+								if (adapt == nullptr)
+								{
+									break;
+								}
+								this->notified_fun(*this->parent, *adapt);
+							}
+							
+						}
+					}));
+			this->notified_thread.detach();
+		}
 	public:
 		int accpetCallback(NetAsyncIOAdapt adapt, const EC& ec)
 		{
@@ -138,7 +165,7 @@ namespace MUZI::net::async
 
 					// 通知接收到一个包
 					this->session_notified_queue.push(adapt);
-					this->notified_fun(*this->parent, adapt);
+					this->notified_cond.notify_all();
 
 					// 获取结束，重新初始化内容
 					adapt->head_parse = false;
@@ -202,7 +229,7 @@ namespace MUZI::net::async
 
 				// 通知接收到一个包
 				this->session_notified_queue.push(adapt);
-				this->notified_fun(*this->parent, adapt);
+				this->notified_cond.notify_all();
 
 				// 重新构造节点
 				adapt->recv_tmp_package = std::make_shared<RawMRecvMsgNode>();
@@ -232,6 +259,11 @@ namespace MUZI::net::async
 		NotifiedFunction notified_fun;
 		AnalyzedHeader recv_raw_func;
 		AnalyzedHeader recv_json_func;
+		
+		std::atomic<bool> notified_thread_flag;
+		std::thread notified_thread;
+		std::mutex notified_mutex;
+		std::condition_variable notified_cond;
 
 	};
 
@@ -327,7 +359,6 @@ namespace MUZI::net::async
 				this->m_data->handleRread(ec, adapt, size, this->m_data->recv_json_func);
 			});
 
-		return 0;
 		return 0;
 	}
 
