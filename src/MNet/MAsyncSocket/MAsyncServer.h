@@ -14,13 +14,16 @@ namespace MUZI::net::async
 	class MAsyncServer: public MAsyncSocket
 	{
 	public:
+		static void defalutNotifyFunction(MAsyncServer&, NetAsyncIOAdapt){}
+	public:
 		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;
+		using NotifiedFunction = void(*)(MAsyncServer&, NetAsyncIOAdapt);
 	public:
 		class MAsyncServerData;
 	public:
 		friend class MAsyncServerData;
 	public:
-		MAsyncServer(int& error_code, const MServerEndPoint& endpoint);
+		MAsyncServer(int& error_code, const MServerEndPoint& endpoint, NotifiedFunction&& notified_fun = defalutNotifyFunction);
 		~MAsyncServer();
 	public:
 		int listen(int back_log);
