@@ -32,19 +32,19 @@ namespace MUZI::net::async
 				std::move(std::thread(
 					[this]()
 					{
+						bool notified_pending = false;
 						std::unique_lock<std::mutex> notified_lock(this->notified_mutex);
 						NetAsyncIOAdapt* adapt;
 						while (this->notified_thread_flag)
 						{
 							this->notified_cond.wait(notified_lock);
-							while (!session_notified_queue.empty() && this->notified_thread_flag)
+
+							// 队列是否为空 和 是否仍然有处于通知中的内容
+							if (!this->session_notified_queue.empty() && !notified_pending)
 							{
-								adapt = session_notified_queue.front();
-								if (adapt == nullptr)
-								{
-									break;
-								}
-								this->notified_fun(*this->parent, *adapt);
+								notified_pending = true;
+								this->notified_fun(*this->parent);
+								notified_pending = false;
 							}
 							
 						}
@@ -274,6 +274,7 @@ namespace MUZI::net::async
 
 	MAsyncServer::~MAsyncServer()
 	{
+		this->m_data->notified_thread_flag = false;
 		if (this->m_data != nullptr)
 		{
 			delete this->m_data;

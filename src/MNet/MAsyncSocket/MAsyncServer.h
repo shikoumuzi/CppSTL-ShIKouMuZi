@@ -14,10 +14,10 @@ namespace MUZI::net::async
 	class MAsyncServer: public MAsyncSocket
 	{
 	public:
-		static void defalutNotifyFunction(MAsyncServer&, NetAsyncIOAdapt){}
+		static void defalutNotifyFunction(MAsyncServer&){}
 	public:
 		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;
-		using NotifiedFunction = void(*)(MAsyncServer&, NetAsyncIOAdapt);
+		using NotifiedFunction = std::function<void(MAsyncServer&)>;
 	public:
 		class MAsyncServerData;
 	public:
