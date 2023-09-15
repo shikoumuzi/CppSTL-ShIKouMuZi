@@ -8,11 +8,20 @@
 #include<map>
 #include<string>
 #include<functional>
+#include<mutex>
+#include<condition_variable>
 
 namespace MUZI::net::async
 {
+
 	class MAsyncServer: public MAsyncSocket
 	{
+	public:
+		struct NotifiedLock
+		{
+			std::mutex& notified_mutex;  // 通知锁
+			std::condition_variable& notified_cond;  // 通知条件变量
+		};
 	public:
 		static void defalutNotifyFunction(MAsyncServer&){}
 	public:
@@ -32,6 +41,8 @@ namespace MUZI::net::async
 	public:
 		int readRawPackage(NetAsyncIOAdapt adapt);
 		int readJsonPackage(NetAsyncIOAdapt adapt);
+	public:
+		NotifiedLock getNotifiedLock();
 	public:
 		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);
 		iterator begin();

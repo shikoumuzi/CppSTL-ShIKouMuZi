@@ -11,6 +11,13 @@ namespace MUZI
 	class MAVLTree
 	{
 	public:
+		template<__Tree_Node_Inline_Ele_Type__ T>
+		struct __AVL_Tree_Node__:public __MTreeNode__<T>
+		{
+
+		};
+
+	public:
 		void insert(const T&) override
 		{
 

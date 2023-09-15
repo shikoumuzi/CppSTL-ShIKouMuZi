@@ -227,7 +227,7 @@ namespace MUZI::net::async
 				// 加入完成队列
 				adapt->recv_completed_queue.push(adapt->recv_tmp_package);
 
-				// 通知接收到一个包
+				// 通知接收到一个包，并将session传给通知队列
 				this->session_notified_queue.push(adapt);
 				this->notified_cond.notify_all();
 
@@ -254,16 +254,16 @@ namespace MUZI::net::async
 	public:
 		MAsyncServer* parent;
 		TCPAcceptor acceptor;
-		std::map<std::string, NetAsyncIOAdapt> sessions;
-		MSyncAnnularQueue<NetAsyncIOAdapt> session_notified_queue;
-		NotifiedFunction notified_fun;
-		AnalyzedHeader recv_raw_func;
-		AnalyzedHeader recv_json_func;
+		std::map<std::string, NetAsyncIOAdapt> sessions;  // 会话map
+		MSyncAnnularQueue<NetAsyncIOAdapt> session_notified_queue;  // 通知队列
+		NotifiedFunction notified_fun;  // 通知函数
+		AnalyzedHeader recv_raw_func;  // 接收裸数据的函数
+		AnalyzedHeader recv_json_func;  // 接收json数据的函数
 		
-		std::atomic<bool> notified_thread_flag;
-		std::thread notified_thread;
-		std::mutex notified_mutex;
-		std::condition_variable notified_cond;
+		std::atomic<bool> notified_thread_flag; // 通知逻辑层的原子锁
+		std::thread notified_thread;  // 通知线程
+		std::mutex notified_mutex;  // 通知锁
+		std::condition_variable notified_cond;  // 通知条件变量
 
 	};
 
@@ -361,6 +361,11 @@ namespace MUZI::net::async
 			});
 
 		return 0;
+	}
+
+	MAsyncServer::NotifiedLock MAsyncServer::getNotifiedLock()
+	{
+		return NotifiedLock(this->m_data->notified_mutex, this->m_data->notified_cond);
 	}
 
 	MAsyncServer::iterator MAsyncServer::begin()
