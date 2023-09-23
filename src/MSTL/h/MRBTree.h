@@ -440,7 +440,7 @@ namespace MUZI
 
 
 	public:
-		MRBTree() :root(nullptr), node_size(0) {}
+		MRBTree() :root(nullptr), node_count(0) {}
 		MRBTree(const MRBTree<T>&) = delete;
 		MRBTree(MRBTree<T>&& that) noexcept
 		{
@@ -449,9 +449,9 @@ namespace MUZI
 				this->__delete__();
 			}
 			this->root = that.root;
-			this->node_size = that.node_size;
+			this->node_count = that.node_count;
 			that.root = nullptr;
-			that.node_size = 0;
+			that.node_count = 0;
 		}
 		~MRBTree()
 		{
@@ -506,7 +506,7 @@ namespace MUZI
 			{
 				this->__insertNode__(ele);
 			}
-			this->node_size += 1;
+			this->node_count += 1;
 		}
 		iterator<T> erase(iterator<T>& it)
 		{
@@ -531,7 +531,7 @@ namespace MUZI
 				return;
 			}
 
-			this->node_size -= 1;
+			this->node_count -= 1;
 		}
 		T* find(const T& ele) const
 		{
@@ -552,13 +552,13 @@ namespace MUZI
 		}
 		uint64_t size()
 		{
-			return this->node_size;
+			return this->node_count;
 		}
 	public:
 		void operator=(MRBTree<T>&& that)
 		{
 			this->__delete__();
-			this->node_size = that.node_size;
+			this->node_count = that.node_count;
 			this->root = that.root;
 			that.__delete__();
 		}
@@ -1004,7 +1004,7 @@ namespace MUZI
 		}
 	private:
 		__MRBTreeNode__<T>* root;
-		uint64_t node_size;    
+		uint64_t node_count;    
 		const static iterator<T> final_it;
 		const static reverse_iterator<T> final_rit;
 	};
