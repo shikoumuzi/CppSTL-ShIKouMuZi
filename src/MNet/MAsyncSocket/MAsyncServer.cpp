@@ -251,6 +251,10 @@ namespace MUZI::net::async
 				continue;
 			}
 		}
+		void handleWrite(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transafered)
+		{
+
+		}
 	public:
 		MAsyncServer* parent;
 		TCPAcceptor acceptor;
@@ -365,11 +369,39 @@ namespace MUZI::net::async
 
 	int MAsyncServer::writeRawPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size)
 	{
+		adapt->send_queue.push(std::make_shared<MSendMsgNode<__MUZI_MMSGNODE_PACKAGE_JSONFORMAT_OFF__>>(data, size));
+		if (adapt->send_pending)
+		{
+			return MERROR::WRITE_PENDING_NOW;
+		}
+
+		adapt->send_tmp_buff = *adapt->send_queue.front();
+		adapt->send_queue.pop();
+		adapt->socket.async_write_some(boost::asio::buffer(adapt->send_tmp_buff->getData(), adapt->send_tmp_buff->getTotalSize()),
+			[this, adapt](const EC& ec, size_t size)->void
+			{
+				this->m_data->handleWrite(ec, adapt, size);
+			});
+
 		return 0;
 	}
 
 	int MAsyncServer::writeJsonPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size)
 	{
+		adapt->send_queue.push(std::make_shared<MSendMsgNode<__MUZI_MMSGNODE_PACKAGE_JSONFORMAT_ON__>>(data, size));
+		if (adapt->send_pending)
+		{
+			return MERROR::WRITE_PENDING_NOW;
+		}
+
+		adapt->send_tmp_buff = *adapt->send_queue.front();
+		adapt->send_queue.pop();
+		adapt->socket.async_write_some(boost::asio::buffer(adapt->send_tmp_buff->getData(), adapt->send_tmp_buff->getTotalSize()),
+			[this, adapt](const EC& ec, size_t size)->void
+			{
+				this->m_data->handleWrite(ec, adapt, size);
+			});
+
 		return 0;
 	}
 

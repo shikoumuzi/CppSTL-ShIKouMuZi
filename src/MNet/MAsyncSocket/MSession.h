@@ -49,6 +49,7 @@ namespace MUZI::net::async
 		//std::queue<MsgPackage> recv_queue;
 
 		MSyncAnnularQueue<SendMsgPackage> send_queue;
+		SendMsgPackage send_tmp_buff;
 		MSyncAnnularQueue<RecvMsgPackage> recv_completed_queue;
 		RecvMsgPackage recv_tmp_buff;
 		RecvMsgPackage recv_tmp_package;
