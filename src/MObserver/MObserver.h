@@ -11,13 +11,15 @@ namespace MUZI::observer
 	class __declspec(novtable) MObserver
 	{
 	public:
+		friend class MSubject<T>;
+	public:
 		virtual ~MObserver() = default;
 
 		MObserver(const std::weak_ptr<MSubject> pSubject, const std::string& name = "unknown")
 			: m_pSubject(pSubject), m_strName(name) {}
 
 		virtual void update() = 0;
-		virtual void update(T ele) = 0;
+		virtual void update(const T& ele) = 0;
 
 		virtual const std::string& name() { return m_strName; }
 

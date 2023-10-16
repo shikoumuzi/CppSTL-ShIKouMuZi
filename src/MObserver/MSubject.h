@@ -25,14 +25,21 @@ namespace MUZI::observer
 
 		void detach(const std::shared_ptr<MObserver<T>> pObserver)
 		{
-			this->detach(pObserver->name());
+			for (auto it = this->m_pObserver_list.begin(); it != this->m_pObserver_list.end(); ++it)
+			{
+				if ((*it)->m_pSubject == pObserver->m_pSubject)
+				{
+					this->m_pObserver_list.erase(it);
+					break;
+				}
+			}
 		}
 
 		void detach(const std::string& name)
 		{
 			for (auto it = this->m_pObserver_list.begin(); it != this->m_pObserver_list.end(); ++it)
 			{
-				if ((*it)->name() == name)
+				if ((*it)->m_strName == name)
 				{
 					this->m_pObserver_list.erase(it);
 					break;

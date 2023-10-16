@@ -363,6 +363,16 @@ namespace MUZI::net::async
 		return 0;
 	}
 
+	int MAsyncServer::writeRawPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size)
+	{
+		return 0;
+	}
+
+	int MAsyncServer::writeJsonPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size)
+	{
+		return 0;
+	}
+
 	MAsyncServer::NotifiedLock MAsyncServer::getNotifiedLock()
 	{
 		return NotifiedLock(this->m_data->notified_mutex, this->m_data->notified_cond);

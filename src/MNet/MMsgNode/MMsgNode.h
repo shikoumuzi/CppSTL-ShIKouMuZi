@@ -45,23 +45,9 @@ namespace MUZI::net
 				cur_size(0), 
 				id(0),
 				capacity(0),
-				header_size(0)
+				header_size(0),
+				data(nullptr)
 			{
-
-				// 写信息包
-				if(false)
-				{
-					this->capacity = this->total_size;
-					this->data = static_cast<void*>(new char[this->capacity] {'\0'});
-					memcpy(static_cast<char*>(this->data) + sizeof(MMsgNodeDataBaseMsg), data, this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1);
-
-					// 取消息头部内容直接转换指针进行设置
-					// 写包需要本地序转网络序
-					MMsgNodeDataBaseMsg* id_ptr = static_cast<MMsgNodeDataBaseMsg*>(this->data);
-					id_ptr->msg_id = 0;
-					id_ptr->msg_size = boost::asio::detail::socket_ops::host_to_network_long(this->total_size - sizeof(MMsgNodeDataBaseMsg) - 1);
-					id_ptr->total_size = boost::asio::detail::socket_ops::host_to_network_long(this->total_size);
-				}
 
 			}
 			~MMsgNodeData()
@@ -106,7 +92,7 @@ namespace MUZI::net
 		};
 		inline void* getMsg()
 		{
-			return static_cast<char*>(this->m_data->data) + __MUZI_MMSGNODE_MSGNODE_HEAD_SIZE_IN_BYTES__;
+			return static_cast<char*>(this->m_data->data) + this->m_data->header_size;
 		}
 		inline uint32_t& getTotalSize()
 		{

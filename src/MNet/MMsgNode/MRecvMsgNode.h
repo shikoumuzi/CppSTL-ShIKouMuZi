@@ -24,7 +24,8 @@ namespace MUZI::net
 	public:
 		MRecvMsgNode(void* data = nullptr, uint64_t size = __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__)
 			:MMsgNode(data, size),
-			head_analyzed(false)
+			head_analyzed(false),
+			json_header_size(0)
 		{
 			// ¶Á»º³åÄ¬ÈÏ»º³å´óÐ¡ÉèÖÃ
 			this->m_data->data = static_cast<void*>(new char[__MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__] {'\0'});
@@ -75,6 +76,7 @@ namespace MUZI::net
 				{
 					this->m_data->total_size = document["total_size"].GetInt();
 				}
+				this->json_header_size = 0;
 				return {.msg_id = this->m_data->id,
 						.msg_size = this->m_data->msg_size,
 						.total_size = this->m_data->total_size };
@@ -82,6 +84,7 @@ namespace MUZI::net
 			}
 			else
 			{
+				this->json_header_size = 0;
 				return { .msg_id = static_cast<uint32_t>(-1),
 						.msg_size = 0,
 						.total_size = 0 };
@@ -101,6 +104,7 @@ namespace MUZI::net
 		}
 	protected:
 		bool head_analyzed;
+		uint32_t json_header_size;
 	};
 
 }
