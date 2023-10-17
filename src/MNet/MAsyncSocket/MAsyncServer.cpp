@@ -253,6 +253,40 @@ namespace MUZI::net::async
 		}
 		void handleWrite(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transafered)
 		{
+			if (ec.value() != 0)
+			{
+				MLog::w("MAsyncServer::MAsyncServerData::handleWrite", "Error Code is %d, Error Message is %s", MERROR::SEND_ERROR, ec.message().c_str());
+				this->parent->earse(adapt->getUUID());
+				return;
+			}
+			// 表示还没写完当前的buff，需要继续发送
+			if (bytes_transafered + adapt->send_tmp_buff->getCurSize() < adapt->send_tmp_buff->getTotalSize())
+			{
+				adapt->send_tmp_buff->getCurSize() += bytes_transafered;
+				adapt->socket.async_write_some(boost::asio::buffer(static_cast<char*>(adapt->send_tmp_buff->getData()) + adapt->send_tmp_buff->getCurSize(),
+					adapt->send_tmp_buff->getTotalSize() - adapt->send_tmp_buff->getCurSize()),
+					[this, adapt](const EC& ec, size_t size)
+					{
+						this->handleWrite(ec, adapt, size);
+					});
+			}
+			else// 表示写完当前的buff，读取queue进行发送
+			{
+				if (adapt->send_queue.empty())
+				{
+					adapt->send_pending = false;
+					return;
+				}
+				adapt->send_pending = true;
+
+				adapt->send_tmp_buff = *adapt->send_queue.front();
+				adapt->send_queue.pop();
+				adapt->socket.async_write_some(boost::asio::buffer(adapt->send_tmp_buff->getData(), adapt->send_tmp_buff->getTotalSize()),
+					[this, adapt](const EC& ec, size_t size)->void
+					{
+						this->handleWrite(ec, adapt, size);
+					});
+			}
 
 		}
 	public:
