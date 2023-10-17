@@ -44,7 +44,7 @@ namespace MUZI::net
 			/// @param data nullptr if msgnode is read buffer
 			/// @param size data size in bytes
 			/// @param isBuffer true if need data hosting
-			MMsgNodeData(void* data, uint64_t size)
+			MMsgNodeData(const void* data, uint64_t size)
 				: total_size(0), 
 				msg_size(0), 
 				cur_size(0), 
@@ -78,7 +78,7 @@ namespace MUZI::net
 		/// @param data nullptr if msgnode is read buffer
 		/// @param size data size in bytes
 		/// @param isBuffer true if need data hosting
-		MMsgNode(void* data, uint64_t size = __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__)
+		MMsgNode(const void* data, uint64_t size = __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__)
 			:m_data(new MMsgNodeData(data, size)) {}
 		MMsgNode(const MMsgNode& msg)
 		{

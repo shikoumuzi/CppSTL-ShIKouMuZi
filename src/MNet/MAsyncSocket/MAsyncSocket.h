@@ -14,6 +14,8 @@
 #include"../MMsgNode/MSendMsgNode.h"
 #include"MSession.h"
 #include<functional>
+#include<map>
+#include"../MError.h"
 
 namespace MUZI::net::async
 {
@@ -25,6 +27,14 @@ namespace MUZI::net::async
 	public:
 		using RawMRecvMsgNode = MRecvMsgNode;
 		using JsonMRecvMsgNode = MRecvMsgNode;
+		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;
+		using NotifiedFunction = std::function<void(MAsyncSocket&)>;
+	public:
+		struct NotifiedLock
+		{
+			std::mutex& notified_mutex;  // 通知锁
+			std::condition_variable& notified_cond;  // 通知条件变量
+		};
 	public:
 		MAsyncSocket();
 		~MAsyncSocket();
@@ -37,7 +47,23 @@ namespace MUZI::net::async
 
 		int readFromSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__);
 		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__);
-
+	public:
+		int readRawPackage(NetAsyncIOAdapt adapt);
+		int readJsonPackage(NetAsyncIOAdapt adapt);
+	public:
+		int writeRawPackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
+		int writeJsonPackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
+		int writeRawPackage(NetAsyncIOAdapt adapt, String& data);
+		int writeJsonPackage(NetAsyncIOAdapt adapt, String& data);
+	public:
+		NotifiedLock getNotifiedLock();
+	public:
+		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);
+		Map<String, NetAsyncIOAdapt>& getSessions();
+		iterator begin();
+		iterator end();
+		void erase(String UUID);
+		iterator erase(iterator& it);
 	public:
 		int splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size, uint32_t id);
 	public:

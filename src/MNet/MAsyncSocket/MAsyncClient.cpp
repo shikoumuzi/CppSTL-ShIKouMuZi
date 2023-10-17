@@ -3,8 +3,6 @@
 
 namespace MUZI::net::async
 {
-	
-
 
 	MAsyncClient::MAsyncClient(MClientEndPoint& endpoint)
 	{
@@ -17,6 +15,11 @@ namespace MUZI::net::async
 		//adapt->socket.async_connect(endpoint.getEndPoint(error_code), ec);
 
 		return 0;
+	}
+
+	void MAsyncClient::connect()
+	{
+
 	}
 
 }

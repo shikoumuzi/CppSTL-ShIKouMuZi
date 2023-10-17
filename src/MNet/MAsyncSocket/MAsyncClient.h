@@ -5,6 +5,7 @@
 #include"MNet/MNetBase.h"
 #include"MNet/MEndPoint/MClientEndPoint.h"
 #include"MNet/MAsyncSocket/MAsyncSocket.h"
+#include<memory>
 
 namespace MUZI::net::async
 {
@@ -16,6 +17,12 @@ namespace MUZI::net::async
 	public:
 		NetAsyncIOAdapt connect(int& error_code, const MClientEndPoint& endpoint);
 		void connect();
+	public:
+		class MAsyncClientData;
+	public:
+		friend class MAsyncClientData;
+	public:
+		class MAsyncClientData *m_data;
 	};
 
 

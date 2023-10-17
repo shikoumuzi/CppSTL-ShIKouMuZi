@@ -33,27 +33,13 @@ namespace MUZI::net::async
 		friend class MAsyncServerData;
 	public:
 		MAsyncServer(int& error_code, const MServerEndPoint& endpoint, NotifiedFunction notified_fun = defalutNotifyFunction);
+		MAsyncServer() = delete;
 		~MAsyncServer();
 	public:
 		int listen(int back_log);
 		int accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output = [](MAsyncServer&, NetAsyncIOAdapt)->void {});
 		NetAsyncIOAdapt accept(int& error_code);
-	public:
-		int readRawPackage(NetAsyncIOAdapt adapt);
-		int readJsonPackage(NetAsyncIOAdapt adapt);
-	public:
-		int writeRawPackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
-		int writeJsonPackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
-		int writeRawPackage(NetAsyncIOAdapt adapt, String& data);
-		int writeJsonPackage(NetAsyncIOAdapt adapt, String& data);
-	public:
-		NotifiedLock getNotifiedLock();
-	public:
-		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);
-		iterator begin();
-		iterator end();
-		void earse(String UUID);
-		iterator earse(iterator& it);
+
 	private:
 		class MAsyncServerData* m_data;
 		

@@ -10,6 +10,7 @@
 #include<iostream>
 #include<boost/lockfree/queue.hpp>
 #include<boost/lockfree/spsc_queue.hpp>
+#include<map>
 namespace MUZI::net
 {
 	using String = std::string;
@@ -29,6 +30,8 @@ namespace MUZI::net
 	using ReadBuffs = boost::asio::const_buffers_1;
 	using WriteBuffs = boost::asio::mutable_buffers_1;
 
+	template<typename K, typename V>
+	using Map = std::map<K, V>;
 	template<typename T, typename U>
 	using LockfreeQueue = boost::lockfree::queue<T, U>;
 	template<typename T, typename U>
