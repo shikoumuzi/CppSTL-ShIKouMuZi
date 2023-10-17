@@ -252,17 +252,17 @@ namespace MUZI::net::async
 
 	int MAsyncSocket::splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size, uint32_t id)
 	{
-		uint32_t capacity = (size / __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__) + 1;
+		uint32_t capacity = (size / __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__) + 1;
 		uint32_t i = 0;
 		for (; i < capacity - 1; ++i)
 		{
 			SendMsgPackage tmp_package(
-				new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__));
+				new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__));
 			tmp_package->setId(id + 0);
 			adapt->send_queue.push(tmp_package);
 		}
 		SendMsgPackage tmp_package(
-			new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__));
+			new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__));
 		tmp_package->setId(id + 0);
 		adapt->send_queue.push(tmp_package);
 

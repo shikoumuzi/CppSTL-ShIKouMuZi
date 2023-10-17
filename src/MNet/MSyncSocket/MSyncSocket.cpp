@@ -201,7 +201,7 @@ namespace MUZI::net::sync
 
 	int MSyncSocket::write(const NetSyncIOAdapt& adapt, void* data, uint64_t data_size)
 	{
-		int64_t total_bytes = 0;
+		uint32_t total_bytes = 0;
 		EC ec;
 		if (this->m_data->isServer)
 		{

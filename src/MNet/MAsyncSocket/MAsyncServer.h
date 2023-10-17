@@ -42,8 +42,10 @@ namespace MUZI::net::async
 		int readRawPackage(NetAsyncIOAdapt adapt);
 		int readJsonPackage(NetAsyncIOAdapt adapt);
 	public:
-		int writeRawPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size);
-		int writeJsonPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size);
+		int writeRawPackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
+		int writeJsonPackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
+		int writeRawPackage(NetAsyncIOAdapt adapt, String& data);
+		int writeJsonPackage(NetAsyncIOAdapt adapt, String& data);
 	public:
 		NotifiedLock getNotifiedLock();
 	public:

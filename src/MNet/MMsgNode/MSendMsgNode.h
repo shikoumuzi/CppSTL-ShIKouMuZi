@@ -23,7 +23,7 @@ namespace MUZI::net
 			return std::make_shared<MSendMsgNode>(data, size);
 		}
 	public:
-		MSendMsgNode(void* data, uint32_t size):MMsgNode(data, size)
+		MSendMsgNode(const void* data, uint32_t size):MMsgNode(data, size)
 		{
 
 			this->m_data->msg_size = size;

@@ -2,6 +2,7 @@
 #ifndef __MUZI_MNETBASE_H__
 #define __MUZI_MNETBASE_H__
 #include<string>
+#include<cstring>
 #include<boost/asio.hpp>
 #include<boost/asio/io_context.hpp>
 #include<vector>
