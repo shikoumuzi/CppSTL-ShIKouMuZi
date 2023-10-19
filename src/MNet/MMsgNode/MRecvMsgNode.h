@@ -27,13 +27,13 @@ namespace MUZI::net
 			head_analyzed(false)
 		{
 			// ¶Á»º³åÄ¬ÈÏ»º³å´óÐ¡ÉèÖÃ
-			this->m_data->data = static_cast<void*>(new char[__MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__] {'\0'});
-			this->m_data->capacity = __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__;
+			this->m_data->data = static_cast<void*>(new char[__MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__] {'\0'});
+			this->m_data->capacity = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__;
 		}
 		MRecvMsgNode(MRecvMsgNode& node):MMsgNode(node), head_analyzed(node.head_analyzed)
 		{}
 	public:
-		MMsgNodeDataBaseMsg analyzeRawHeader()
+		MMsgNodeDataBaseMsg analyzeHeader()
 		{
 			if (!this->head_analyzed)
 			{
@@ -53,43 +53,6 @@ namespace MUZI::net
 			return {.msg_id = this->m_data->id,
 					.msg_size = this->m_data->msg_size,
 					.total_size = this->m_data->total_size};
-		}
-
-		MMsgNodeDataBaseMsg analyzeJsonHeader(uint32_t& json_string_size)
-		{
-			rapidjson::Document document;
-
-			if (!document.Parse(static_cast<char*>(this->getData())).HasParseError())
-			{
-				if (document.HasMember("msg_id") && document["msg_id"].IsInt())
-				{
-					this->m_data->id = document["msg_id"].GetInt();
-				}
-
-				if (document.HasMember("msg_size") && document["msg_size"].IsInt())
-				{
-					this->m_data->msg_size = document["msg_size"].GetInt();
-				}
-
-				if (document.HasMember("total_size") && document["total_size"].IsInt())
-				{
-					this->m_data->total_size = document["total_size"].GetInt();
-				}
-				this->m_data->header_size = document.GetStringLength() + 2;
-
-				json_string_size = document.GetStringLength();
-
-				return {.msg_id = this->m_data->id,
-						.msg_size = this->m_data->msg_size,
-						.total_size = this->m_data->total_size };
-
-			}
-			else
-			{
-				return { .msg_id = static_cast<uint32_t>(-1),
-						.msg_size = static_cast<uint32_t>(-1),
-						.total_size = static_cast<uint32_t>(-1) };
-			}
 		}
 
 	public:

@@ -131,6 +131,12 @@ set(HEADERS
 	"src/MNet/MAsyncSocket/MSession.h"
 	"src/MSTL/h/MSyncAnnularQueue.h" 
 	"src/MSTL/h/MAtomicLock.h"
+	"src/MObserver/MObserver.h"
+	"src/MObserver/MSubject.h" 
+	"src/MNet/MMsgNode/MSendMsgNode.h" 
+	"src/MNet/MMsgNode/MRecvMsgNode.h" 
+	"src/MSingleton/MSingleton.h"
+	"src/MNet/MLogicSystem/MLogicSystem.h"
 )
 
 set(SOURCES
@@ -152,6 +158,8 @@ set(SOURCES
 	"src/MNet/MAsyncSocket/MAsyncServer.cpp"
 	"src/MNet/MAsyncSocket/MAsyncClient.cpp"
 	"src/MNet/MAsyncSocket/MSession.cpp"
+	"src/MNet/MLogicSystem/MLogicSystem.cpp"
+
 )
 
 
@@ -163,7 +171,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-             "src/MObserver/MObserver.h" "src/MObserver/MSubject.h" "src/MNet/MMsgNode/MSendMsgNode.h" "src/MNet/MMsgNode/MRecvMsgNode.h")
+                "src/MNet/MLogicSystem/MLogicNode.h")
 
 
 

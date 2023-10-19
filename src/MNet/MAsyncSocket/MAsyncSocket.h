@@ -45,16 +45,14 @@ namespace MUZI::net::async
 		int wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size);
 		int wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size);
 
-		int readFromSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__);
-		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_RAW_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__);
+		int readFromSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
+		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
 	public:
-		int readRawPackage(NetAsyncIOAdapt adapt);
-		int readJsonPackage(NetAsyncIOAdapt adapt);
+		int readPackage(NetAsyncIOAdapt adapt);
 	public:
-		int writeRawPackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
-		int writeJsonPackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
-		int writeRawPackage(NetAsyncIOAdapt adapt, String& data);
-		int writeJsonPackage(NetAsyncIOAdapt adapt, String& data);
+		int writePackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
+		int writePackage(NetAsyncIOAdapt adapt, String& data);
+
 	public:
 		NotifiedLock getNotifiedLock();
 	public:

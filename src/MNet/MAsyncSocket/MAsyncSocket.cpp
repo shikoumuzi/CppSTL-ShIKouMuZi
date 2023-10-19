@@ -389,7 +389,7 @@ namespace MUZI::net::async
 				if (!adapt->head_parse)
 				{
 					// 头部数据没有接收完全,即数据小于头部规定长度， 先复制一部分，然后继续监听
-					if (bytes_transafered + adapt->recv_tmp_buff->getCurSize() < __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES_AT_LEAST__)
+					if (bytes_transafered + adapt->recv_tmp_buff->getCurSize() < __MUZI_MMSGNODE_MSGNODE_JSON_HEADER_SIZE_IN_BYTES__)
 					{
 						memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + adapt->recv_tmp_package->getCurSize(),
 							adapt->recv_tmp_buff->getData(), bytes_transafered);
@@ -397,7 +397,7 @@ namespace MUZI::net::async
 						adapt->recv_tmp_package->getCurSize() += bytes_transafered;
 						adapt->recv_tmp_buff->clear();
 
-						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES_AT_MOST__),
+						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
 								this->handleJsonHeaderRead(ec, adapt, size);
@@ -408,7 +408,7 @@ namespace MUZI::net::async
 
 					// 如果收到的数据比头部多,但头部又没处理完（!adapt->recv_tmp_buff->getHeadParse()）
 					// 头部可能剩余没有复制的长度
-					int head_remain = __MUZI_MMSGNODE_MSGNODE_JSON_HEADER_SIZE_IN_BYTES_AT_LEAST__ - adapt->recv_tmp_buff->getCurSize();
+					int head_remain = __MUZI_MMSGNODE_MSGNODE_JSON_HEADER_SIZE_IN_BYTES__ - adapt->recv_tmp_buff->getCurSize();
 
 					// 将头部剩余数据先缓存到recv_tmp_package当中
 					memcpy(adapt->recv_tmp_package->getData(), adapt->recv_tmp_buff->getData(), head_remain);
@@ -428,7 +428,7 @@ namespace MUZI::net::async
 						// 重新部署监听任务, 此时数据结构不需要再解析头部，由adapt->head_parse记录已解析，recv_tmp_package记录之前接收的头部数据
 						adapt->socket.async_read_some(
 							boost::asio::buffer(static_cast<char*>(adapt->recv_tmp_buff->getData()),
-								__MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES_AT_MOST__ - adapt->recv_tmp_package->getCurSize()),
+								__MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__ - adapt->recv_tmp_package->getCurSize()),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
 								this->handleJsonHeaderRead(ec, adapt, size);
@@ -437,7 +437,7 @@ namespace MUZI::net::async
 					}
 
 					// 表示头部长度非法
-					if (header.total_size > __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES_AT_MOST__)
+					if (header.total_size > __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__)
 					{
 						// 删除链接
 						this->sessions.erase(adapt->getUUID());
@@ -457,7 +457,7 @@ namespace MUZI::net::async
 
 						// 重新部署监听任务, 此时数据结构不需要再解析头部，由adapt->head_parse记录已解析，recv_tmp_package记录之前接收的头部数据
 						adapt->socket.async_read_some(
-							boost::asio::buffer(static_cast<char*>(adapt->recv_tmp_buff->getData()), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES_AT_MOST__),
+							boost::asio::buffer(static_cast<char*>(adapt->recv_tmp_buff->getData()), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
 								this->handleJsonHeaderRead(ec, adapt, size);
@@ -470,7 +470,7 @@ namespace MUZI::net::async
 					}
 
 					// 如果接收到的数据大于总长度，发生了粘包现像, 此时包中假定存在完整数据
-					memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + __MUZI_MMSGNODE_MSGNODE_JSON_HEADER_SIZE_IN_BYTES_AT_LEAST__,
+					memcpy(static_cast<char*>(adapt->recv_tmp_package->getData()) + __MUZI_MMSGNODE_MSGNODE_JSON_HEADER_SIZE_IN_BYTES__,
 						adapt->recv_tmp_buff->getData(), header.msg_size);
 
 					adapt->recv_tmp_package->getCurSize() += header.msg_size + 1;
@@ -497,7 +497,7 @@ namespace MUZI::net::async
 					// 如果读完，则重新布置监听任务
 					if (bytes_transafered <= 0)
 					{
-						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES_AT_LEAST__),
+						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
 								this->handleJsonHeaderRead(ec, adapt, size);
@@ -525,7 +525,7 @@ namespace MUZI::net::async
 					adapt->recv_tmp_buff->clear();
 
 					// 重新布置监听任务
-					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES_AT_LEAST__),
+					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__),
 						[this, adapt](const EC& ec, std::size_t size)->void
 						{
 							this->handleJsonHeaderRead(ec, adapt, size);
@@ -561,7 +561,7 @@ namespace MUZI::net::async
 				if (bytes_transafered <= 0)
 				{
 					// 重新布置监听任务
-					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES_AT_MOST__),
+					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_JSON_HEADER_PACKAGE_MAX_SIZE_IN_BYTES__),
 						[this, adapt](const EC& ec, size_t size)->void
 						{
 							this->handleJsonHeaderRead(ec, adapt, size);
