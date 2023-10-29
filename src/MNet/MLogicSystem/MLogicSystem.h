@@ -22,7 +22,7 @@ namespace MUZI::net
 	{
 		using MsgCtrlCallBack = std::function<void(async::NetAsyncIOAdapt, const int msg_id, const std::string& msg_data)>;
 	private:
-		LogicSystem();
+		LogicSystem(async::MAsyncServer& server);
 	public:
 		~LogicSystem();
 	private:
@@ -36,6 +36,8 @@ namespace MUZI::net
 		std::thread m_work_thread;
 		bool m_work_flag;
 		std::map<int, MsgCtrlCallBack> m_fun_callback;
+
+		async::MAsyncServer& m_server;
 	};
 }
 

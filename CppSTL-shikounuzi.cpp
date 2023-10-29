@@ -144,6 +144,10 @@ void shared_ptr_test()
 	}
 }
 
+template<typename... Arg>
+void emit(...Arg arg)
+
+
 int main(int arg, char* argv[])
 {
 	//std::cout << MUZI::__muzi_span_stl_type__<std::string> << std::endl;
@@ -174,7 +178,7 @@ int main(int arg, char* argv[])
 	//fprintf(stdout, "fprintf Text: :error message is %s\n", s);
 	//fprintf(stdout, "fprintf Text: :error message is %s\n", r);
 
-	async_server();
+	//async_server();
 
 	//SyncAnnularQueueTest();
 

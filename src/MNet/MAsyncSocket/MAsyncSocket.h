@@ -51,7 +51,7 @@ namespace MUZI::net::async
 		int readPackage(NetAsyncIOAdapt adapt);
 	public:
 		int writePackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
-		int writePackage(NetAsyncIOAdapt adapt, String& data);
+		int writePackage(NetAsyncIOAdapt adapt, const String& data);
 
 	public:
 		NotifiedLock getNotifiedLock();

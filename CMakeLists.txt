@@ -137,6 +137,11 @@ set(HEADERS
 	"src/MNet/MMsgNode/MRecvMsgNode.h" 
 	"src/MSingleton/MSingleton.h"
 	"src/MNet/MLogicSystem/MLogicSystem.h"
+	"src/MNet/MLogicSystem/MLogicNode.h" 
+	"src/MEventLoop/MEvent.h" 
+	"src/MEventLoop/MEventLoop.h" 
+	"src/MEventLoop/MSlot/MSlot.h"
+
 )
 
 set(SOURCES
@@ -171,7 +176,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-                "src/MNet/MLogicSystem/MLogicNode.h")
+                 "src/MEventLoop/MSlot/MSignal.h" "src/MEventLoop/MSlot/MConnect.h")
 
 
 

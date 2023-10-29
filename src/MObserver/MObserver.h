@@ -15,7 +15,7 @@ namespace MUZI::observer
 	public:
 		virtual ~MObserver() = default;
 
-		MObserver(const std::weak_ptr<MSubject> pSubject, const std::string& name = "unknown")
+		MObserver(const std::weak_ptr<MSubject<T>> pSubject, const std::string& name = "unknown")
 			: m_pSubject(pSubject), m_strName(name) {}
 
 		virtual void update() = 0;
@@ -24,7 +24,7 @@ namespace MUZI::observer
 		virtual const std::string& name() { return m_strName; }
 
 	protected:
-		std::weak_ptr<MSubject> m_pSubject;
+		std::weak_ptr<MSubject<T>> m_pSubject;
 		std::string m_strName;
 	};
 
