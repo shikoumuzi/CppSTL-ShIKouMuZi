@@ -15,16 +15,22 @@ namespace MUZI::_event
 			NULL_EVENT = 10001,
 
 			// 鼠标事件
-			CLICK, // 单击
-			DOUBLE_CLICK, // 双击
-			DROP, // 拖拽
-			RELEASE,  // 释放
+			MOUSE,
 
 			// 键盘事件
 			KEY_BOARD, 
 
 			// 信号触发事件
 			SIGNAL_TRIGGER,
+		};
+		enum MOUSE_TYPE
+		{
+			// 鼠标事件
+			CLICK = 1001, // 单击
+			DOUBLE_CLICK, // 双击
+			DROP, // 拖拽
+			HOLD, // 按下不放开
+			RELEASE,  // 释放
 		};
 		enum KEY_BOARD_TYPE
 		{
@@ -92,6 +98,20 @@ namespace MUZI::_event
 
 		};
 	public:
+		struct MouseEventMsg
+		{
+			int event_type;
+			short x, y;
+		};
+		struct KeyBoardEventMsg
+		{
+			int event_type;
+		};
+		struct SignalTriggerMsg
+		{
+
+		};
+	public:
 		MEvent();
 	public:
 		bool operator()(const MEvent& event);
@@ -99,7 +119,7 @@ namespace MUZI::_event
 
 	public:
 		int m_event_type;
-		std::shared_ptr<void*> m_msg;
+		std::shared_ptr<void*> m_event_msg;// 事件的具体信息，例如键盘事件的key_0 等等
 		int m_priority;
 	};
 

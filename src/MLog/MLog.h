@@ -11,10 +11,10 @@ namespace MUZI
 	public:
 		using String = std::string;
 	public:
-		static void v(String tag, String m_msg, ...);
-		static void d(String tag, String m_msg, ...);
-		static void w(String tag, String m_msg, ...);
-		static void s(String tag, String m_msg, ...);
+		static void v(String tag, String m_event_msg, ...);
+		static void d(String tag, String m_event_msg, ...);
+		static void w(String tag, String m_event_msg, ...);
+		static void s(String tag, String m_event_msg, ...);
 	};
 
 }

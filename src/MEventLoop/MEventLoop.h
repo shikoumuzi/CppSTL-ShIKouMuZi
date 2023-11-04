@@ -25,6 +25,7 @@ namespace MUZI::_event
 		MThreadId m_thread_id;
 		MEventQueue m_event_queue;
 		MRMutex m_rmutex;
+		bool m_work_flag;
 
 	};
 }
