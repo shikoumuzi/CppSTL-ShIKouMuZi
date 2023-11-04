@@ -164,6 +164,7 @@ set(SOURCES
 	"src/MNet/MAsyncSocket/MAsyncClient.cpp"
 	"src/MNet/MAsyncSocket/MSession.cpp"
 	"src/MNet/MLogicSystem/MLogicSystem.cpp"
+	"src/MEventLoop/MEventLoop.cpp"
 
 )
 
@@ -176,7 +177,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-                 "src/MEventLoop/MSlot/MSignal.h" "src/MEventLoop/MSlot/MConnect.h")
+                 "src/MEventLoop/MSlot/MSignal.h" "src/MEventLoop/MSlot/MConnect.h" "src/MEventLoop/MEvent.cpp")
 
 
 

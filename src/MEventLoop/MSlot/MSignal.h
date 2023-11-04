@@ -23,7 +23,7 @@ namespace MUZI::_event
 		{
 		public:
 			SignalTriggerEvent(struct MSignal<T, SlotCallBack, Args>::SlotMsg* _msg)
-				:msg(std::make_shared<void*>(static_cast<void*>(_msg), [](void*) {}))
+				:m_msg(std::make_shared<void*>(static_cast<void*>(_msg), [](void*) {}))
 			{
 
 			}
@@ -57,7 +57,7 @@ namespace MUZI::_event
 		{
 			for (auto& slot : this->slots)
 			{
-				this->loop.push_back(std::make_shared<MEvent>(new MSignalTriggerEvent<Slot, SlotCallBack, Args>(&slot)));
+				this->loop.push_back(MSignalTriggerEvent<Slot, SlotCallBack, Args>(&slot));
 			}
 		}
 	private:

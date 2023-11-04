@@ -11,8 +11,11 @@ namespace MUZI::_event
 	public:
 		enum EVENT_TYPE
 		{
+			// 空事件
+			NULL_EVENT = 10001,
+
 			// 鼠标事件
-			CLICK = 1, // 单击
+			CLICK, // 单击
 			DOUBLE_CLICK, // 双击
 			DROP, // 拖拽
 			RELEASE,  // 释放
@@ -88,11 +91,16 @@ namespace MUZI::_event
 
 
 		};
+	public:
+		MEvent();
+	public:
+		bool operator()(const MEvent& event);
+
 
 	public:
-		int event_type;
-		std::shared_ptr<void*> msg;
-
+		int m_event_type;
+		std::shared_ptr<void*> m_msg;
+		int m_priority;
 	};
 
 

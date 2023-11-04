@@ -77,11 +77,11 @@ namespace MUZI::net
 		/// @param isBuffer true if need data hosting
 		MMsgNode(const void* data, uint64_t size = __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__)
 			:m_data(new MMsgNodeData(data, size)) {}
-		MMsgNode(const MMsgNode& msg)
+		MMsgNode(const MMsgNode& m_msg)
 		{
-			this->m_data = msg.m_data;
+			this->m_data = m_msg.m_data;
 		}
-		MMsgNode(MMsgNode&& msg):m_data(std::move(msg.m_data))
+		MMsgNode(MMsgNode&& m_msg):m_data(std::move(m_msg.m_data))
 		{}
 		~MMsgNode()
 		{
