@@ -12,8 +12,18 @@ namespace MUZI::_event
 
 	void MEventLoop::push_back(const MEvent& event)
 	{
-		std::lock_guard glock(this->m_rmutex);
-		this->m_event_queue.push(event);
+		if(this->m_atomic_mode)
+		{ 
+			this->m_amutex.lock();
+			this->m_event_queue.push(event);
+			this->m_amutex.unlock();
+		}
+		else
+		{
+			this->m_rmutex.lock();
+			this->m_event_queue.push(event);
+			this->m_rmutex.unlock();
+		}
 
 	}
 
@@ -36,7 +46,6 @@ namespace MUZI::_event
 					this->ctrlEvent(top_event);
 					this->m_event_queue.pop();
 					this->m_amutex.unlock();
-
 				}
 				else
 				{
@@ -45,8 +54,9 @@ namespace MUZI::_event
 					this->ctrlEvent(top_event);
 					this->m_event_queue.pop();
 					this->m_rmutex.unlock();
-
 				}
+				// 该函数用以自动分析事件调用频率，并切换
+				this->analyizeCtrlMode();
 				
 			}
 
@@ -61,31 +71,7 @@ namespace MUZI::_event
 		case MEvent::EVENT_TYPE::MOUSE:
 		{
 			MEvent::MouseEventMsg* event_msg = static_cast<MEvent::MouseEventMsg*>(*event.m_event_msg.get());
-			switch (event_msg->event_type)
-			{
-			case MEvent::MOUSE_TYPE::CLICK:
-			{
-				break;
-			}
-			case MEvent::MOUSE_TYPE::DOUBLE_CLICK:
-			{
-				break;
-			}
-			case MEvent::MOUSE_TYPE::DROP:
-			{
-				break;
-			}
-			case MEvent::MOUSE_TYPE::HOLD:
-			{
-				break;
-			}
-			case MEvent::MOUSE_TYPE::RELEASE:
-			{
-				break;
-			}
-			default:
-				break;
-			}
+			
 			break;
 		}
 		case MEvent::EVENT_TYPE::KEY_BOARD:
@@ -103,6 +89,10 @@ namespace MUZI::_event
 		default:
 			break;
 		}
+	}
+	void MEventLoop::analyizeCtrlMode()
+	{
+
 	}
 }
 

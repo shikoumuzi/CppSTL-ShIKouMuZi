@@ -24,6 +24,7 @@ namespace MUZI::_event
 		void run();
 	private:
 		void ctrlEvent(const MEvent& event);
+		void analyizeCtrlMode();
 	private:
 		MThreadId m_thread_id;
 		MEventQueue m_event_queue;
