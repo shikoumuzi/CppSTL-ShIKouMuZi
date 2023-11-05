@@ -13,11 +13,6 @@ namespace MUZI::_event
 		return this->m_priority < event.m_priority;
 	}
 
-	bool MEvent::operator==(const MEvent& event)
-	{
-		return this->m_priority == event.m_priority;
-	}
-
 	std::weak_ordering MEvent::operator<=>(const MEvent& event)
 	{
 		if (this->m_priority < event.m_priority)
@@ -34,7 +29,31 @@ namespace MUZI::_event
 		}
 	}
 
+	bool MEvent::operator==(const MEvent& event)
+	{
+		return this->m_priority == event.m_priority;
+	}
+
+	std::weak_ordering MEvent::operator<=>(const MEvent& event) const
+	{
+		if (this->m_priority < event.m_priority)
+		{
+			return std::weak_ordering::less;
+		}
+		else if (this->m_priority > event.m_priority)
+		{
+			return std::weak_ordering::greater;
+		}
+		else
+		{
+			return std::weak_ordering::equivalent;
+		}
+	}
+
+	bool MEvent::operator==(const MEvent& event) const
+	{
+		return this->m_priority == event.m_priority;
+	}
 
 
-	
 }

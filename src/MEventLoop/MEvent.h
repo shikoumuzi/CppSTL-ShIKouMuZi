@@ -123,6 +123,9 @@ namespace MUZI::_event
 		std::weak_ordering operator<=>(const MEvent& event);
 		bool operator==(const MEvent& event);
 
+		std::weak_ordering operator<=>(const MEvent& event) const;
+		bool operator==(const MEvent& event) const;
+
 	public:
 		int m_event_type;
 		std::shared_ptr<void*> m_event_msg;// 事件的具体信息，例如键盘事件的key_0 等等
