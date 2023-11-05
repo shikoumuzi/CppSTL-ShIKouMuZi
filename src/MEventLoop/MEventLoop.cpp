@@ -64,6 +64,7 @@ namespace MUZI::_event
 			
 		}
 	}
+
 	void MEventLoop::ctrlEvent(const MEvent& event)
 	{
 		switch (event.m_event_type)
@@ -84,12 +85,15 @@ namespace MUZI::_event
 		{
 			MEvent::SignalTriggerMsg* event_msg = static_cast<MEvent::SignalTriggerMsg*>(*event.m_event_msg.get());
 
+
+
 			break;
 		}
 		default:
 			break;
 		}
 	}
+
 	void MEventLoop::analyizeCtrlMode()
 	{
 

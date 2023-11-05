@@ -3,6 +3,7 @@
 #define __MUZI_MEVENT_H__
 #include<memory>
 #include<functional>
+#include<compare>
 
 namespace MUZI::_event
 {
@@ -101,21 +102,26 @@ namespace MUZI::_event
 		struct MouseEventMsg
 		{
 			int event_type;
-			short x, y;
+			short abs_x, abs_y;
+			short relative_x, relative_y;
 		};
 		struct KeyBoardEventMsg
 		{
 			int event_type;
+		
 		};
 		struct SignalTriggerMsg
 		{
-
+			using SlotObj = void*;
+			using SignalObj = void*;
+			
 		};
 	public:
 		MEvent();
 	public:
 		bool operator()(const MEvent& event);
-
+		std::weak_ordering operator<=>(const MEvent& event);
+		bool operator==(const MEvent& event);
 
 	public:
 		int m_event_type;
