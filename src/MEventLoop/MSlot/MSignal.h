@@ -13,20 +13,25 @@ namespace MUZI::_event
 	class MSignal
 	{
 	public:
+		template<typename SlotCallBack, typename... Args>
 		struct SlotMsg
 		{
-			void* slot;
-			SlotCallBack callback;
+			std::function<void(Args)> callback;
 		};
-		template<typename Slot, typename SlotCallBack, typename... Args>
+
+		
 		class MSignalTriggerEvent: public MEvent
 		{
 		public:
-			SignalTriggerEvent(struct MSignal<T, SlotCallBack, Args>::SlotMsg* _msg)
-				:m_event_msg(std::make_shared<void*>(static_cast<void*>(_msg), [](void*) {}))
+			template<typename T, typename SlotCallBack, typename... Args>
+			SignalTriggerEvent(MSignal<T, SlotCallBack, Args>::SlotMsg* _msg, Args... args)
 			{
-
+				this->callback = [_msg, args]() {
+					_msg.callback(args...);
+				}
 			}
+		private:
+			std::function<void()> callback;
 		};
 	public:
 		MSignal(MEventLoop& loop): loop(loop)
@@ -39,8 +44,7 @@ namespace MUZI::_event
 		void connect(Slot* slot, SlotCallBack callback)
 		{
 			this->slots.push_back({
-				.slot = slot,
-				.callback = callback
+				.callback = std::bind(callback, std::placeholders::_1, slot);
 				});
 		}
 
@@ -49,12 +53,12 @@ namespace MUZI::_event
 		{
 			for (auto& slot : this->slots)
 			{
-				this->loop.push_back(MSignalTriggerEvent<Slot, SlotCallBack, Args>(&slot));
+				this->loop.push_back(MSignalTriggerEvent<void*, SlotCallBack, Args>(&slot, args...));
 			}
 		}
 	private:
 		MEventLoop& loop;
-		std::vector<struct MSignal<T, SlotCallBack, Args>::SlotMsg> slots;
+		std::vector<MSignal<T, SlotCallBack, Args>::SlotMsg> slots;
 		
 	};
 }

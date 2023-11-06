@@ -7,6 +7,8 @@
 #include<queue>
 #include<mutex>
 #include"MSTL/h/MAtomicLock.h"
+#include<atomic>
+
 namespace MUZI::_event
 {
 	class MEventLoop
@@ -16,9 +18,9 @@ namespace MUZI::_event
 		using MThreadId = std::thread::id;
 		using MRMutex = std::recursive_mutex;
 		using MTime = std::chrono::system_clock::time_point;
-
+		using EventCtrlCallBack = void(*)(const MEvent* event);
 	public:
-		MEventLoop();
+		MEventLoop(EventCtrlCallBack&& event_ctrl_callback);
 	public:
 		void push_back(const MEvent& event);
 		void run();
@@ -30,8 +32,9 @@ namespace MUZI::_event
 		MEventQueue m_event_queue;
 		MRMutex m_rmutex;
 		MAtomicLock m_amutex;
-		bool m_atomic_mode;
-		bool m_work_flag;
+		std::atomic<bool> m_atomic_mode;
+		std::atomic<bool> m_work_flag;
+		EventCtrlCallBack m_event_ctrl_callback;
 
 	};
 }

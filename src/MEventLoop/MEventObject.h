@@ -8,8 +8,9 @@ namespace MUZI::_event
 	class MEventObject
 	{
 	public:
-		virtual void event(const MEvent& event) = 0;
+		virtual void event(const MEvent& event)
+		{}
 	};
 }
 
-#endif
+#endif 

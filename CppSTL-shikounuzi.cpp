@@ -163,19 +163,36 @@ void emit(T t)
 	std::cout << t << " "; 
 }
 
-template<typename T, typename... Arg>
-void emit(T t, Arg... arg)
+//template<typename T, typename... Arg>
+//void emit(T t, Arg... arg)
+//{
+//	if (sizeof...(arg) > 0)
+//	{
+//		std::cout << t << " ";
+//		emit(arg...);
+//	}
+//	else
+//	{
+//		std::cout << t << " ";
+//		emit(arg...);
+//	}
+//}
+
+template<typename... Arg>
+void emit(Arg... arg)
 {
-	if (sizeof...(arg) > 0)
-	{
-		std::cout << t << " ";
-		emit(arg...);
-	}
-	else
-	{
-		std::cout << t << " ";
-		emit(arg...);
-	}
+	myprint(arg...);
+	//printf("just extend arg");
+	//if (sizeof...(arg) > 0)
+	//{
+	//	std::cout << arg << " ";
+	//	emit(arg...);
+	//}
+	//else
+	//{
+	//	std::cout << arg << " ";
+	//	emit(arg...);
+	//}
 }
 
 

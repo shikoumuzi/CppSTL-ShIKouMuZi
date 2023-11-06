@@ -2,10 +2,11 @@
 
 namespace MUZI::_event
 {
-	MEventLoop::MEventLoop():
+	MEventLoop::MEventLoop(EventCtrlCallBack&& event_ctrl_callback):
 		m_thread_id(std::this_thread::get_id()),
 		m_work_flag(false),
-		m_atomic_mode(false)
+		m_atomic_mode(false),
+		m_event_ctrl_callback(event_ctrl_callback)
 	{
 
 	}
@@ -72,20 +73,20 @@ namespace MUZI::_event
 		case MEvent::EVENT_TYPE::MOUSE:
 		{
 			MEvent::MouseEventMsg* event_msg = static_cast<MEvent::MouseEventMsg*>(*event.m_event_msg.get());
-			
+			this->m_event_ctrl_callback(&event);
 			break;
 		}
 		case MEvent::EVENT_TYPE::KEY_BOARD:
 		{
 			MEvent::KeyBoardEventMsg* event_msg = static_cast<MEvent::KeyBoardEventMsg*>(*event.m_event_msg.get());
-
+			this->m_event_ctrl_callback(&event);
 			break;
 		}
 		case MEvent::EVENT_TYPE::SIGNAL_TRIGGER:
 		{
 			MEvent::SignalTriggerMsg* event_msg = static_cast<MEvent::SignalTriggerMsg*>(*event.m_event_msg.get());
 
-
+			 
 
 			break;
 		}
