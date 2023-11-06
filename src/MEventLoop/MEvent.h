@@ -117,10 +117,7 @@ namespace MUZI::_event
 		};
 		struct SignalTriggerMsg
 		{
-			using SlotObj = void*;
-			using SignalObj = void*;
-			
-			
+			std::function<void()>* callback;
 		};
 	public:
 		MEvent();

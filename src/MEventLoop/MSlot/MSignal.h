@@ -7,6 +7,7 @@
 #include<vector>
 #include<map>
 #include<memory>
+
 namespace MUZI::_event
 {
 	template<typename T, typename SlotCallBack, typename... Args>
@@ -19,16 +20,21 @@ namespace MUZI::_event
 			std::function<void(Args)> callback;
 		};
 
-		
+		template<typename T, typename SlotCallBack, typename... Args>
 		class MSignalTriggerEvent: public MEvent
 		{
 		public:
-			template<typename T, typename SlotCallBack, typename... Args>
 			SignalTriggerEvent(MSignal<T, SlotCallBack, Args>::SlotMsg* _msg, Args... args)
 			{
 				this->callback = [_msg, args]() {
 					_msg.callback(args...);
-				}
+				};
+				this->m_event_msg = 
+					std::shared_ptr<void*>
+					(new MEvent::SignalTriggerMsg({
+						.callback = &this->callback
+					}));
+
 			}
 		private:
 			std::function<void()> callback;
@@ -58,7 +64,7 @@ namespace MUZI::_event
 		}
 	private:
 		MEventLoop& loop;
-		std::vector<MSignal<T, SlotCallBack, Args>::SlotMsg> slots;
+		std::vector<MSignal<T, SlotCallBack, Args>::SlotMsg<SlotCallBack, Args>> slots;
 		
 	};
 }

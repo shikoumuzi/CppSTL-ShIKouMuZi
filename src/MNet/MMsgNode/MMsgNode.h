@@ -14,7 +14,7 @@
 #define __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__ 1400		/*最大消息体长度*/
 #define __MUZI_MMSGNODE_MSGNODE_DEFAULT_MAX_MAG_ID__ 16384 /* 最大消息id*/
 #define __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__ __MUZI_MMSGNODE_MSGNODE_DEFAULT_ARG_SIZE__ + __MUZI_MMSGNODE_MSGNODE_HEADER_SIZE_IN_BYTES__ + 1
-
+#define __MUZI_MASYNCSOCKET_SPECIFICAL_PACKAGE_HEADER_ID__ 145678
 
 
 namespace MUZI::net
@@ -112,11 +112,11 @@ namespace MUZI::net
 		{
 			return static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id;
 		}
-		inline void setId(uint32_t id)
-		{
-			static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id = id;
-			this->m_data->id = id;
-		}
+		//inline void setId(uint32_t id)
+		//{
+		//	static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id = id;
+		//	this->m_data->id = id;
+		//}
 
 		//bool set(void* data, uint64_t size)
 		//{

@@ -2,6 +2,9 @@
 
 namespace MUZI::_event
 {
+	class MSignal;
+	class MSignalTriggerEvent;
+
 	MEventLoop::MEventLoop(EventCtrlCallBack&& event_ctrl_callback):
 		m_thread_id(std::this_thread::get_id()),
 		m_work_flag(false),
@@ -85,9 +88,8 @@ namespace MUZI::_event
 		case MEvent::EVENT_TYPE::SIGNAL_TRIGGER:
 		{
 			MEvent::SignalTriggerMsg* event_msg = static_cast<MEvent::SignalTriggerMsg*>(*event.m_event_msg.get());
-
-			 
-
+			// 调用槽函数返回
+			(*(event_msg->callback))();
 			break;
 		}
 		default:

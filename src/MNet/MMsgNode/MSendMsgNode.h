@@ -19,10 +19,10 @@ namespace MUZI::net
 	class MSendMsgNode : public MMsgNode
 	{
 	public:
-		static inline SendMsgPackage getSendMsgPackage(void* data, uint32_t size)
-		{
-			return std::make_shared<MSendMsgNode>(data, size);
-		}
+		//static inline SendMsgPackage getSendMsgPackage(void* data, uint32_t size)
+		//{
+		//	return std::make_shared<MSendMsgNode>(data, size);
+		//}
 
 	public:
 		MSendMsgNode(const void* data, uint32_t size, int msg_id = 0):MMsgNode(data, size)
@@ -36,7 +36,7 @@ namespace MUZI::net
 			this->m_data->data = static_cast<void*>(new char[this->m_data->capacity] {'\0'});
 
 			MMsgNodeDataBaseMsg* id_ptr = static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data);
-			id_ptr->msg_id = msg_id;
+			id_ptr->msg_id = __MUZI_MASYNCSOCKET_SPECIFICAL_PACKAGE_HEADER_ID__;
 			id_ptr->msg_size = boost::asio::detail::socket_ops::host_to_network_long(this->m_data->msg_size);
 			id_ptr->total_size = boost::asio::detail::socket_ops::host_to_network_long(this->m_data->total_size);
 			this->m_data->header_size = sizeof(MMsgNodeDataBaseMsg);
@@ -47,7 +47,7 @@ namespace MUZI::net
 
 			writer.StartObject();
 			writer.Key("id");
-			writer.Int(this->m_data->id);
+			writer.Int(msg_id);
 			writer.Key("data");
 			writer.String(static_cast<const char*>(data), size);
 			writer.EndObject();
