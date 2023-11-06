@@ -602,13 +602,12 @@ namespace MUZI::net::async
 		for (; i < capacity - 1; ++i)
 		{
 			SendMsgPackage tmp_package(
-				new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__));
-			tmp_package->setId(id + 0);
+				new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, id + 0));
+
 			adapt->send_queue.push(tmp_package);
 		}
 		SendMsgPackage tmp_package(
-			new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__));
-		tmp_package->setId(id + 0);
+			new MSendMsgNode(static_cast<char*>(data) + i * __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__, id + 0));
 		adapt->send_queue.push(tmp_package);
 
 		return 0;

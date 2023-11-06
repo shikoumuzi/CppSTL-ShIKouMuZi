@@ -19,10 +19,10 @@ namespace MUZI::net
 	class MSendMsgNode : public MMsgNode
 	{
 	public:
-		//static inline SendMsgPackage getSendMsgPackage(void* data, uint32_t size)
-		//{
-		//	return std::make_shared<MSendMsgNode>(data, size);
-		//}
+		static inline SendMsgPackage getSendMsgPackage(void* data, uint32_t size)
+		{
+			return std::make_shared<MSendMsgNode>(data, size);
+		}
 
 	public:
 		MSendMsgNode(const void* data, uint32_t size, int msg_id = 0):MMsgNode(data, size)
