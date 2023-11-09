@@ -22,8 +22,6 @@
 namespace MUZI::net::async
 {
 
-
-
 	class MAsyncSocket
 	{
 	public:

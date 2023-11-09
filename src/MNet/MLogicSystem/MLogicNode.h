@@ -13,7 +13,8 @@ namespace MUZI::net
 	public:
 		friend class LogicSystem;
 	public:
-		MLogicNode(async::NetAsyncIOAdapt adapt, RecvMsgPackage package);
+		MLogicNode(async::NetAsyncIOAdapt adapt, RecvMsgPackage package)
+		{}
 	private:
 		async::NetAsyncIOAdapt adapt;
 		RecvMsgPackage package;

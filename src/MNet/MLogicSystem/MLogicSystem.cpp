@@ -9,7 +9,7 @@ namespace MUZI::net
 		this->m_work_thread = std::thread(
 			[this]()
 			{
-				ctrlMsg();
+				this->ctrlMsg();
 			});
 	}
 	LogicSystem::~LogicSystem()
