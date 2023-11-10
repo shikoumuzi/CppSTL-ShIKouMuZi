@@ -16,6 +16,7 @@
 #include<functional>
 #include<map>
 #include"../MError.h"
+#include"MSTL/h/MSyncAnnularQueue.h"
 
 
 
@@ -38,7 +39,9 @@ namespace MUZI::net::async
 			std::condition_variable& notified_cond;  // 通知条件变量
 		};
 	public:
-		MAsyncSocket();
+		static void defalutNotifyFunction(MAsyncSocket&) {}
+	public:
+		MAsyncSocket(NotifiedFunction notified_function);
 		~MAsyncSocket();
 	public:
 		IOContext& getIOContext();
@@ -57,9 +60,12 @@ namespace MUZI::net::async
 
 	public:
 		NotifiedLock getNotifiedLock();
-	public:
 		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);
-		Map<String, NetAsyncIOAdapt>& getSessions();
+		inline Map<String, NetAsyncIOAdapt>& getSessions();
+		inline MSyncAnnularQueue<NetAsyncIOAdapt>& getSessionNotifiedQueue();
+
+	public:
+
 		iterator begin();
 		iterator end();
 		void erase(String UUID);

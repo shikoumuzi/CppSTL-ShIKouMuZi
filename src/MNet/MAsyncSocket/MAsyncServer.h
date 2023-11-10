@@ -23,10 +23,10 @@ namespace MUZI::net::async
 			std::condition_variable& notified_cond;  // 通知条件变量
 		};
 	public:
-		static void defalutNotifyFunction(MAsyncServer&){}
+		static void defalutNotifyFunction(MAsyncSocket&){}
 	public:
 		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;
-		using NotifiedFunction = std::function<void(MAsyncServer&)>;
+		//using NotifiedFunction = std::function<void(MAsyncServer&)>;
 	public:
 		class MAsyncServerData;
 	public:

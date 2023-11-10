@@ -9,6 +9,7 @@
 #include"MSTL/h/MAtomicLock.h"
 #include<atomic>
 
+#define __MUZI_MEVENTLOOP_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__ std::this_thread::sleep_for(std::chrono::milliseconds(10))
 namespace MUZI::_event
 {
 	class MEventLoop

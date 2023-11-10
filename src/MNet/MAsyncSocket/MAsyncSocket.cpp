@@ -9,9 +9,9 @@ namespace MUZI::net::async
 	class MAsyncSocket::MAsyncSocketData
 	{
 	public:
-		MAsyncSocketData(MAsyncSocket* parent) 
+		MAsyncSocketData(MAsyncSocket* parent, NotifiedFunction notified_function)
 			:parent(parent),
-			notified_fun(notified_fun),
+			notified_fun(notified_function),
 			notified_thread_flag(true)
 		{
 			this->notified_thread =
@@ -32,7 +32,7 @@ namespace MUZI::net::async
 								this->notified_fun(*this->parent);
 								notified_pending = false;
 							}
-
+							__MUZI_MNET_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__;
 						}
 					}));
 			this->notified_thread.detach();
@@ -181,7 +181,7 @@ namespace MUZI::net::async
 		}
 		
 	public:
-		void handleRawHeaderRead(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transafered)
+		void handleRead(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transafered)
 		{
 			if (ec.value() != 0)
 			{
@@ -210,7 +210,7 @@ namespace MUZI::net::async
 						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
-								this->handleRawHeaderRead(ec, adapt, size);
+								this->handleRead(ec, adapt, size);
 							});
 
 						return;
@@ -230,7 +230,9 @@ namespace MUZI::net::async
 					// 获取头部数据,并更新缓存包
 					MMsgNodeDataBaseMsg header = adapt->recv_tmp_package->analyzeHeader();
 					adapt->recv_tmp_package->getCurSize() += head_remain;
-					if (header.msg_id > __MUZI_MMSGNODE_MSGNODE_DEFAULT_MAX_MAG_ID__)
+					//if (header.msg_id > __MUZI_MMSGNODE_MSGNODE_DEFAULT_MAX_MAG_ID__)
+					// 如果不符合特定的包头id，则直接删除
+					if(header.msg_id != __MUZI_MASYNCSOCKET_SPECIFICAL_PACKAGE_HEADER_ID__)
 					{
 						this->sessions.erase(adapt->getUUID());
 						return;
@@ -260,7 +262,7 @@ namespace MUZI::net::async
 							boost::asio::buffer(static_cast<char*>(adapt->recv_tmp_buff->getData()), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
-								this->handleRawHeaderRead(ec, adapt, size);
+								this->handleRead(ec, adapt, size);
 							});
 						adapt->head_parse = true;
 
@@ -300,7 +302,7 @@ namespace MUZI::net::async
 						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
-								this->handleRawHeaderRead(ec, adapt, size);
+								this->handleRead(ec, adapt, size);
 							});
 						return;
 					}
@@ -327,7 +329,7 @@ namespace MUZI::net::async
 					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 						[this, adapt](const EC& ec, std::size_t size)->void
 						{
-							this->handleRawHeaderRead(ec, adapt, size);
+							this->handleRead(ec, adapt, size);
 						});
 					return;
 				}
@@ -363,7 +365,7 @@ namespace MUZI::net::async
 					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 						[this, adapt](const EC& ec, size_t size)->void
 						{
-							this->handleRawHeaderRead(ec, adapt, size);
+							this->handleRead(ec, adapt, size);
 						});
 					return;
 				}
@@ -427,7 +429,7 @@ namespace MUZI::net::async
 
 
 
-	MAsyncSocket::MAsyncSocket():m_data(new MAsyncSocketData(this))
+	MAsyncSocket::MAsyncSocket(NotifiedFunction notified_function):m_data(new MAsyncSocketData(this, notified_function))
 	{}
 
 	MAsyncSocket::~MAsyncSocket()
@@ -529,7 +531,7 @@ namespace MUZI::net::async
 		adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 			[this, adapt](const EC& ec, size_t size)->void
 			{
-				this->m_data->handleRawHeaderRead(ec, adapt, size);
+				this->m_data->handleRead(ec, adapt, size);
 			});
 
 		return 0;
@@ -562,6 +564,7 @@ namespace MUZI::net::async
 
 	MAsyncSocket::NotifiedLock MAsyncSocket::getNotifiedLock()
 	{
+		// 该函数用于给逻辑层进行获取通知锁和通知条件变量
 		return NotifiedLock(this->m_data->notified_mutex, this->m_data->notified_cond);
 	}
 
@@ -583,6 +586,11 @@ namespace MUZI::net::async
 	Map<String, NetAsyncIOAdapt>& MAsyncSocket::getSessions()
 	{
 		return this->m_data->sessions;
+	}
+
+	MSyncAnnularQueue<NetAsyncIOAdapt>& MAsyncSocket::getSessionNotifiedQueue()
+	{
+		return this->m_data->session_notified_queue;
 	}
 
 	void MAsyncSocket::erase(String UUID)

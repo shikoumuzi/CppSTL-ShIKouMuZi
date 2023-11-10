@@ -64,7 +64,7 @@ namespace MUZI::_event
 				
 			}
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			__MUZI_MEVENTLOOP_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__;
 			
 		}
 	}

@@ -12,7 +12,7 @@ namespace MUZI::net::async
 		using AnalyzedHeader = MMsgNodeDataBaseMsg(*)(MRecvMsgNode&);
 
 	public:
-		MAsyncServerData(MAsyncServer* parent, IOContext& io_context, const MServerEndPoint& endpoint, NotifiedFunction notified_fun)
+		MAsyncServerData(MAsyncServer* parent, IOContext& io_context, const MServerEndPoint& endpoint)
 			:parent(parent), acceptor(io_context, *endpoint.getEndPoint())
 		{}
 	public:
@@ -36,7 +36,7 @@ namespace MUZI::net::async
 
 
 	MAsyncServer::MAsyncServer(int& error_code, const MServerEndPoint& endpoint, NotifiedFunction notified_fun)
-		:m_data(new MAsyncServerData(this, this->getIOContext(), endpoint, notified_fun))
+		:MAsyncSocket(notified_fun), m_data(new MAsyncServerData(this, this->getIOContext(), endpoint))
 	{}
 
 	MAsyncServer::~MAsyncServer()
