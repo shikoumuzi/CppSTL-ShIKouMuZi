@@ -17,20 +17,23 @@
 #include<string>
 #include<atomic>
 #include"MLogicNode.h"
+#include<signal.h>
 
 namespace MUZI::net
 {
 	class LogicSystem: public  singleton::MSingleton<LogicSystem>
 	{
+	public:
 		using MsgCtrlCallBack = std::function<void(async::NetAsyncIOAdapt, const int msg_id, const std::string& msg_data)>;
 	private:
 		LogicSystem(async::MAsyncServer& server);
 	public:
 		~LogicSystem();
 	private:
-		void registerCallBacks();
+		void registerCallBacks(int msg_id, MsgCtrlCallBack&& callback);
 		void HelloWordCallBack(async::NetAsyncIOAdapt, const int msg_id, const std::string& msg_data);
-		void ctrlMsg();
+		void ctrlRecvMsg();
+		void ctrlSendMsg();
 	public:
 		void pushToMsgQueue(const MLogicPackage& msg);
 
@@ -48,6 +51,8 @@ namespace MUZI::net
 
 		async::MAsyncServer& m_server;
 	};
+
+	std::atomic<bool> LogicSystem::m_bstop = false;
 }
 
 

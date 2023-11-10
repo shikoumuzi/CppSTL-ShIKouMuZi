@@ -9,15 +9,22 @@ namespace MUZI::singleton
 	template<typename T>
 	class MSingleton
 	{
+	private:
+		static std::once_flag _flag;
 	public:
-		static std::shared_ptr<T> getInstance()
+		template<typename... Args>
+		static std::shared_ptr<T> initInstance(Args args)
 		{
-			static std::once_flag _flag;
-			std::call_once(_flag, [this]() {
-				MSingleton::_instance = std::make_shared<T>();
+			std::call_once(MSingleton::_flag, [this]() {
+				MSingleton::_instance = std::make_shared<T>(args...);
 				});
 			return MSingleton::_instance;
 		}
+		static std::shared_ptr<T> getInstance()
+		{
+			return MSingleton::_instance;
+		}
+
 	protected:
 		MSingleton() = default;
 		MSingleton(const MSingleton<T>&) = delete;

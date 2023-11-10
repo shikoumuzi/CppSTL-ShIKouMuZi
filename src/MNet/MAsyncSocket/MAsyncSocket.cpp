@@ -32,10 +32,14 @@ namespace MUZI::net::async
 								this->notified_fun(*this->parent);
 								notified_pending = false;
 							}
-							__MUZI_MNET_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__;
+							//__MUZI_MNET_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__;
 						}
 					}));
 			this->notified_thread.detach();
+		}
+		~MAsyncSocketData()
+		{
+			this->io_context.stop();
 		}
 
 	public:

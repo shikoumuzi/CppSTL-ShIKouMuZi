@@ -7,7 +7,7 @@ namespace MUZI::net
 {
 	LogicSystem::LogicSystem(async::MAsyncServer& server): m_work_flag(true), m_server(server)
 	{
-		this->registerCallBacks();
+		this->registerCallBacks(MSG_IDS::MSG_HELLO_WORD, [](async::NetAsyncIOAdapt, const int msg_id, const std::string& msg_data) {});
 
 		this->m_work_thread = std::thread(
 			[this]()
@@ -24,12 +24,9 @@ namespace MUZI::net
 		
 	}
 
-	void LogicSystem::registerCallBacks()
+	void LogicSystem::registerCallBacks(int msg_id, MsgCtrlCallBack&& callback)
 	{
-		this->m_fun_callback[MSG_IDS::MSG_HELLO_WORD] = \
-			[](async::NetAsyncIOAdapt, const int msg_id, const std::string& msg_data) {
-
-			};
+		this->m_fun_callback[msg_id] = callback;
 	}
 
 	void LogicSystem::HelloWordCallBack(async::NetAsyncIOAdapt adapt, const int msg_id, const std::string& msg_data)

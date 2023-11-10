@@ -177,7 +177,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-                 "src/MEventLoop/MSlot/MSignal.h" "src/MEventLoop/MSlot/MConnect.h" "src/MEventLoop/MEvent.cpp"  "src/MEventLoop/MEventObject.h")
+                 "src/MEventLoop/MSlot/MSignal.h" "src/MEventLoop/MSlot/MConnect.h" "src/MEventLoop/MEvent.cpp"  "src/MEventLoop/MEventObject.h" "src/MSignal/MSignalUtils.h")
 
 
 
