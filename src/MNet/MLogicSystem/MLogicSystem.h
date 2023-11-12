@@ -52,7 +52,6 @@ namespace MUZI::net
 		async::MAsyncServer& m_server;
 	};
 
-	std::atomic<bool> LogicSystem::m_bstop = false;
 }
 
 

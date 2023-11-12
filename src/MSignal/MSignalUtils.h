@@ -16,16 +16,63 @@ namespace MUZI::signal
 		
 		static void signal_handler(int sig_id)
 		{
-			if (sig_id == SIGINT || sig_id == SIGTERM)
+			for (auto x : MSignalUtils::m_signals)
 			{
-				MSignalUtils::m_bstop = true;
+				if (sig_id == x)
+				{
+					MSignalUtils::m_bstop = true;
 
+					for (auto& x : MSignalUtils::m_funs_when_signal_tigger)
+					{
+						x(sig_id);
+					}
+
+					MSignalUtils::m_sig_cond_var.notify_all();
+				}
 			}
 		}
 	public:
-		MSignalUtils()
+		void start()
 		{
-			
+			std::call_once(MSignalUtils::m_once_init_flag,
+				[]() {			
+					MSignalUtils::m_signal_thread = \
+						std::move(
+							std::thread(
+								[]()
+								{
+									while (true)
+									{
+										std::unique_lock<std::mutex> unique_lk(MSignalUtils::m_sig_mutex);
+
+										auto iter = MSignalUtils::m_funs_before_signal_tigger.begin();
+										for (; iter != MSignalUtils::m_funs_before_signal_tigger.end();)
+										{
+											(*iter)();
+											iter = MSignalUtils::m_funs_before_signal_tigger.erase(iter);
+										}
+
+										while (!MSignalUtils::m_bstop)
+										{
+											MSignalUtils::m_sig_cond_var.wait(unique_lk);
+										}
+
+										for (auto& x : MSignalUtils::m_funs_after_signal_tigger)
+										{
+											x();
+										}
+										 
+									}
+
+
+						}));
+					MSignalUtils::m_signal_thread.detach();
+
+					for (auto x : MSignalUtils::m_signals)
+					{
+						::signal(x, MSignalUtils::signal_handler);
+					}});
+
 		}
 	public:
 		static void addFunBeforeSignalTrigger(std::function<void()>&& fun)
@@ -36,7 +83,7 @@ namespace MUZI::signal
 		{
 			MSignalUtils::m_funs_when_signal_tigger.emplace_back(fun);
 		}
-		static void addFunAfterSignalTrigger(std::function<void(int)>&& fun)
+		static void addFunAfterSignalTrigger(std::function<void()>&& fun)
 		{
 			MSignalUtils::m_funs_after_signal_tigger.emplace_back(fun);
 		}
@@ -60,15 +107,19 @@ namespace MUZI::signal
 		}
 	public:
 		static std::vector<std::function<void()>> m_funs_before_signal_tigger;
-		static std::vector<std::function<void()>> m_funs_when_signal_tigger;
+		static std::vector<std::function<void(int)>> m_funs_when_signal_tigger;
 		static std::vector<std::function<void()>> m_funs_after_signal_tigger;
 		static std::vector<int> m_signals;
 		static std::atomic<bool> m_bstop;
+		static std::atomic<int> m_sig_id;
 		static std::thread m_signal_thread;
 		static std::mutex m_sig_mutex;
+		static std::once_flag m_once_init_flag;
 		static std::condition_variable m_sig_cond_var;
-
 	};
+
+	std::atomic<bool> MSignalUtils::m_bstop = false;
+
 }
 
 #endif // !__MUZI_MSIGNALUTILS_H__

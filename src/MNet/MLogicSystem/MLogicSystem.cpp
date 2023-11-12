@@ -12,7 +12,7 @@ namespace MUZI::net
 		this->m_work_thread = std::thread(
 			[this]()
 			{
-				this->ctrlMsg();
+				this->ctrlRecvMsg();
 			});
 		this->m_work_thread.detach();
 	}
@@ -20,8 +20,6 @@ namespace MUZI::net
 	{
 		this->m_work_flag = false;
 		this->m_cond.notify_all();
-
-		
 	}
 
 	void LogicSystem::registerCallBacks(int msg_id, MsgCtrlCallBack&& callback)
@@ -48,7 +46,7 @@ namespace MUZI::net
 
 	}
 
-	void LogicSystem::ctrlMsg()
+	void LogicSystem::ctrlRecvMsg()
 	{
 		while (this->m_work_flag)
 		{
@@ -99,11 +97,15 @@ namespace MUZI::net
 		}
 	}
 
+	void LogicSystem::ctrlSendMsg()
+	{
+	}
+
 	void LogicSystem::pushToMsgQueue(const MLogicPackage& msg)
 	{
 		std::unique_lock<std::mutex> unique_lk(this->m_lock);
 		this->m_recv_msg_que.push(msg);
-		if (this->m_recv_msg_que.size() > 0)
+		if (this->m_recv_msg_que.size() == 1)
 		{
 			this->m_cond.notify_all();
 		}

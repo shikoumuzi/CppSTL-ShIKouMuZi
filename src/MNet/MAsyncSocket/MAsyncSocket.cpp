@@ -2,6 +2,7 @@
 #include<functional>
 #include"MLog/MLog.h"
 #include<map>
+#include"MSignal/MSignalUtils.h"
 
 namespace MUZI::net::async
 {
@@ -434,7 +435,10 @@ namespace MUZI::net::async
 
 
 	MAsyncSocket::MAsyncSocket(NotifiedFunction notified_function):m_data(new MAsyncSocketData(this, notified_function))
-	{}
+	{
+		signal::MSignalUtils::addFunBeforeSignalTrigger(
+			[]() {});
+	}
 
 	MAsyncSocket::~MAsyncSocket()
 	{
