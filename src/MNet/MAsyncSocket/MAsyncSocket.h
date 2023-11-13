@@ -74,6 +74,7 @@ namespace MUZI::net::async
 		int splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size, uint32_t id);
 	public:
 		void run();
+		void join();
 	public:
 		class MAsyncSocketData* m_data;
 

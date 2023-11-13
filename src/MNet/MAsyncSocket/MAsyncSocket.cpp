@@ -36,7 +36,7 @@ namespace MUZI::net::async
 							//__MUZI_MNET_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__;
 						}
 					}));
-			this->notified_thread.detach();
+			//this->notified_thread.detach();
 		}
 		~MAsyncSocketData()
 		{
@@ -436,16 +436,28 @@ namespace MUZI::net::async
 
 	MAsyncSocket::MAsyncSocket(NotifiedFunction notified_function):m_data(new MAsyncSocketData(this, notified_function))
 	{
-		signal::MSignalUtils::addFunBeforeSignalTrigger(
-			[]() {});
+		//signal::MSignalUtils::addFunBeforeSignalTrigger(
+		//	[this]() 
+		//	{
+		//	
+		//	});
+		signal::MSignalUtils::addFunWhenSignalTrigger(
+			[this]()
+			{
+				this->~MAsyncSocket();
+			},
+			{SIGINT, SIGTERM});
+		signal::MSignalUtils::start();
 	}
 
 	MAsyncSocket::~MAsyncSocket()
 	{
 		this->m_data->notified_thread_flag = false;
+		this->m_data->io_context.stop();
 		if (this->m_data != nullptr)
 		{
 			delete this->m_data;
+			this->m_data = nullptr;
 		}
 	}
 

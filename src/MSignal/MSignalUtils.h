@@ -8,6 +8,10 @@
 #include<thread>
 #include<mutex>
 #include<atomic>
+#include<map>
+#include<algorithm>
+#include<queue>
+
 namespace MUZI::signal
 {
 
@@ -25,26 +29,40 @@ namespace MUZI::signal
 			{
 				MSignalUtils::m_thread_loop_work_flag = false;
 				MSignalUtils::m_stop_wait_flag = true;
+				MSignalUtils::m_sig_cond_var.notify_all(); 
+
 			}
 		};
 	public:
 		
 		static void signal_handler(int sig_id)
 		{
+			// 如果没有目标信号就直接退出
+			if (MSignalUtils::m_signals.size() <= 0)
+			{
+				return;
+			}
+			// 先检查有无注册信号
+			bool element_found_flag = false;
+
 			for (auto x : MSignalUtils::m_signals)
 			{
 				if (sig_id == x)
 				{
-					MSignalUtils::m_stop_wait_flag = true;
-
-					for (auto& x : MSignalUtils::m_funs_when_signal_tigger)
-					{
-						x(sig_id);
-					}
-
-					MSignalUtils::m_sig_cond_var.notify_all();
+					element_found_flag = true;
+					break;
 				}
 			}
+
+			if (element_found_flag == false)
+			{
+				return;
+			}
+
+			MSignalUtils::m_signal_id_queue.push(sig_id);
+			MSignalUtils::m_stop_wait_flag = true;
+			MSignalUtils::m_sig_cond_var.notify_all();
+
 		}
 	public:
 		static void start()
@@ -56,28 +74,39 @@ namespace MUZI::signal
 							std::thread(
 								[]()
 								{
-									while (MSignalUtils::m_thread_loop_work_flag)
+								MSIGNALUTILS_THREAD_LOOP:
 									{
 										std::unique_lock<std::mutex> unique_lk(MSignalUtils::m_sig_mutex);
 
-										
-										for (auto iter = MSignalUtils::m_funs_before_signal_tigger.begin(); 
+
+										for (auto iter = MSignalUtils::m_funs_before_signal_tigger.begin();
 											iter != MSignalUtils::m_funs_before_signal_tigger.end();)
 										{
 											(*iter)();
 											iter = MSignalUtils::m_funs_before_signal_tigger.erase(iter);
 										}
 
-										while (!MSignalUtils::m_stop_wait_flag)
+										while (!MSignalUtils::m_stop_wait_flag && MSignalUtils::m_signal_id_queue.size() == 0)
 										{
 											MSignalUtils::m_sig_cond_var.wait(unique_lk);
 										}
+										MSignalUtils::m_stop_wait_flag = false;
 
-										for (auto& x : MSignalUtils::m_funs_after_signal_tigger)
+										// 调用信号函数
+										auto callback_iter = MSignalUtils::m_funs_when_signal_tigger.find(MSignalUtils::m_signal_id_queue.front());
+										if (callback_iter != MSignalUtils::m_funs_when_signal_tigger.end())
 										{
-											x();
+											for (auto& x : callback_iter->second)
+											{
+												x();
+											}
 										}
-										 
+										MSignalUtils::m_signal_id_queue.pop();
+
+										if (MSignalUtils::m_thread_loop_work_flag)
+										{
+											goto MSIGNALUTILS_THREAD_LOOP;
+										}
 									}
 
 
@@ -94,15 +123,25 @@ namespace MUZI::signal
 	public:
 		static void addFunBeforeSignalTrigger(std::function<void()>&& fun)
 		{
+			std::unique_lock<std::mutex> unique_lk(MSignalUtils::m_sig_mutex);
 			MSignalUtils::m_funs_before_signal_tigger.emplace_back(fun);
 		}
-		static void addFunWhenSignalTrigger(std::function<void(int)>&& fun)
+		static void addFunWhenSignalTrigger(std::function<void()>&& fun, int target_sig_id)
 		{
-			MSignalUtils::m_funs_when_signal_tigger.emplace_back(fun);
+			std::unique_lock<std::mutex> unique_lk(MSignalUtils::m_sig_mutex);
+			MSignalUtils::m_funs_when_signal_tigger[target_sig_id].emplace_back(fun);
+			MSignalUtils::addSignal(target_sig_id);
 		}
-		static void addFunAfterSignalTrigger(std::function<void()>&& fun)
+		static void addFunWhenSignalTrigger(std::function<void()>&& fun, std::initializer_list<int> target_sig_ids)
 		{
-			MSignalUtils::m_funs_after_signal_tigger.emplace_back(fun);
+			std::unique_lock<std::mutex> unique_lk(MSignalUtils::m_sig_mutex);
+			for (auto x : target_sig_ids)
+			{
+				MSignalUtils::m_funs_when_signal_tigger[x].emplace_back(fun);
+
+			}
+			MSignalUtils::addSignals(target_sig_ids);
+
 		}
 		static void addSignal(int sig_id)
 		{
@@ -114,18 +153,21 @@ namespace MUZI::signal
 			MSignalUtils::m_signals.reserve(MSignalUtils::m_signals.size() + signals.size());
 			for (auto x : signals)
 			{
+				::signal(x, MSignalUtils::signal_handler);
 				MSignalUtils::m_signals.emplace_back(x);
 			}
 		}
 
-	private:
+	public:
 		static std::vector<std::function<void()>> m_funs_before_signal_tigger;
-		static std::vector<std::function<void(int)>> m_funs_when_signal_tigger;
-		static std::vector<std::function<void()>> m_funs_after_signal_tigger;
-		static std::vector<int> m_signals;
+		static std::map<int, std::vector<std::function<void()>>> m_funs_when_signal_tigger;
+		// 信号集合
+		static std::queue<int> m_signal_id_queue; // 已经触发的信号队列
+		static std::vector<int> m_signals; // 已经注册的信号集合
+		// 工作标志
 		static std::atomic<bool> m_stop_wait_flag;
 		static std::atomic<bool> m_thread_loop_work_flag;
-		static std::atomic<int> m_sig_id;
+		// 线程
 		static std::thread m_signal_thread;
 		static std::mutex m_sig_mutex;
 		static std::once_flag m_once_init_flag;

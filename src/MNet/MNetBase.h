@@ -24,6 +24,8 @@ namespace MUZI::net
 	using Protocol = boost::asio::ip::tcp;
 	using TCPSocket = boost::asio::ip::tcp::socket;
 	using IOContext = boost::asio::io_context;
+	using IOContextWork = boost::asio::io_context::work; // 用以防止没有注册事件，但run就直接返回了
+	using IOContextWorkPackage = std::unique_ptr<IOContextWork>;
 	using TCPAcceptor = boost::asio::ip::tcp::acceptor;
 	using Port = uint16_t;
 	using HostQuery = boost::asio::ip::tcp::resolver::query;
