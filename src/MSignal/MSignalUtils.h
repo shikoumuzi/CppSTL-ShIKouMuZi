@@ -10,8 +10,23 @@
 #include<atomic>
 namespace MUZI::signal
 {
+
 	class MSignalUtils: public singleton::MSingleton<MSignalUtils>
 	{
+	public:
+		friend class MSignalUtilsCleanUp;
+	private:
+		class MSignalUtilsCleanUp
+		{
+		public:
+			MSignalUtilsCleanUp()
+			{}
+			~MSignalUtilsCleanUp()
+			{
+				MSignalUtils::m_thread_loop_work_flag = false;
+				MSignalUtils::m_stop_wait_flag = true;
+			}
+		};
 	public:
 		
 		static void signal_handler(int sig_id)
@@ -20,7 +35,7 @@ namespace MUZI::signal
 			{
 				if (sig_id == x)
 				{
-					MSignalUtils::m_bstop = true;
+					MSignalUtils::m_stop_wait_flag = true;
 
 					for (auto& x : MSignalUtils::m_funs_when_signal_tigger)
 					{
@@ -32,7 +47,7 @@ namespace MUZI::signal
 			}
 		}
 	public:
-		void start()
+		static void start()
 		{
 			std::call_once(MSignalUtils::m_once_init_flag,
 				[]() {			
@@ -41,18 +56,19 @@ namespace MUZI::signal
 							std::thread(
 								[]()
 								{
-									while (true)
+									while (MSignalUtils::m_thread_loop_work_flag)
 									{
 										std::unique_lock<std::mutex> unique_lk(MSignalUtils::m_sig_mutex);
 
-										auto iter = MSignalUtils::m_funs_before_signal_tigger.begin();
-										for (; iter != MSignalUtils::m_funs_before_signal_tigger.end();)
+										
+										for (auto iter = MSignalUtils::m_funs_before_signal_tigger.begin(); 
+											iter != MSignalUtils::m_funs_before_signal_tigger.end();)
 										{
 											(*iter)();
 											iter = MSignalUtils::m_funs_before_signal_tigger.erase(iter);
 										}
 
-										while (!MSignalUtils::m_bstop)
+										while (!MSignalUtils::m_stop_wait_flag)
 										{
 											MSignalUtils::m_sig_cond_var.wait(unique_lk);
 										}
@@ -68,10 +84,11 @@ namespace MUZI::signal
 						}));
 					MSignalUtils::m_signal_thread.detach();
 
-					for (auto x : MSignalUtils::m_signals)
-					{
-						::signal(x, MSignalUtils::signal_handler);
-					}});
+					//for (auto x : MSignalUtils::m_signals)
+					//{
+					//	::signal(x, MSignalUtils::signal_handler);
+					//}
+				});
 
 		}
 	public:
@@ -89,6 +106,7 @@ namespace MUZI::signal
 		}
 		static void addSignal(int sig_id)
 		{
+			::signal(sig_id, MSignalUtils::signal_handler);
 			MSignalUtils::m_signals.emplace_back(sig_id);
 		}
 		static void addSignals(std::initializer_list<int> signals)
@@ -100,25 +118,23 @@ namespace MUZI::signal
 			}
 		}
 
-	public:
-		static void start()
-		{
-
-		}
-	public:
+	private:
 		static std::vector<std::function<void()>> m_funs_before_signal_tigger;
 		static std::vector<std::function<void(int)>> m_funs_when_signal_tigger;
 		static std::vector<std::function<void()>> m_funs_after_signal_tigger;
 		static std::vector<int> m_signals;
-		static std::atomic<bool> m_bstop;
+		static std::atomic<bool> m_stop_wait_flag;
+		static std::atomic<bool> m_thread_loop_work_flag;
 		static std::atomic<int> m_sig_id;
 		static std::thread m_signal_thread;
 		static std::mutex m_sig_mutex;
 		static std::once_flag m_once_init_flag;
 		static std::condition_variable m_sig_cond_var;
+		static MSignalUtilsCleanUp m_clean_up;
 	};
 
-	std::atomic<bool> MSignalUtils::m_bstop = false;
+	std::atomic<bool> MSignalUtils::m_stop_wait_flag = false;
+	std::atomic<bool> MSignalUtils::m_thread_loop_work_flag = true;
 
 }
 
