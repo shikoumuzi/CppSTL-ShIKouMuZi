@@ -13,7 +13,8 @@ namespace MUZI::net::async
 		MAsyncSocketData(MAsyncSocket* parent, NotifiedFunction notified_function)
 			:parent(parent),
 			notified_fun(notified_function),
-			notified_thread_flag(true)
+			notified_thread_flag(true),
+			io_context(new IOContext())
 		{
 			this->notified_thread =
 				std::move(std::thread(
@@ -38,9 +39,39 @@ namespace MUZI::net::async
 					}));
 			//this->notified_thread.detach();
 		}
+		MAsyncSocketData(MAsyncSocket* parent, IOContext& iocontext, NotifiedFunction notified_function)
+			:parent(parent),
+			notified_fun(notified_function),
+			notified_thread_flag(true),
+			io_context(std::shared_ptr<IOContext>(&iocontext, [](IOContext* p) {}))
+		{
+			this->notified_thread =
+				std::move(std::thread(
+					[this]()
+					{
+						bool notified_pending = false;
+						std::unique_lock<std::mutex> notified_lock(this->notified_mutex);
+						NetAsyncIOAdapt* adapt;
+						while (this->notified_thread_flag)
+						{
+							this->notified_cond.wait(notified_lock);
+
+							// 队列是否为空 和 是否仍然有处于通知中的内容
+							if (!this->session_notified_queue.empty() && !notified_pending)
+							{
+								notified_pending = true;
+								this->notified_fun(*this->parent);
+								notified_pending = false;
+							}
+							//__MUZI_MNET_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__;
+						}
+					}));
+			//this->notified_thread.detach();
+		}
+
 		~MAsyncSocketData()
 		{
-			this->io_context.stop();
+			this->io_context->stop();
 		}
 
 	public:
@@ -428,7 +459,7 @@ namespace MUZI::net::async
 		std::condition_variable notified_cond;  // 通知条件变量
 
 		MAsyncSocket* parent;
-		IOContext io_context;
+		std::shared_ptr<IOContext> io_context;
 
 	};
 
@@ -450,10 +481,22 @@ namespace MUZI::net::async
 		signal::MSignalUtils::start();
 	}
 
+	MAsyncSocket::MAsyncSocket(NotifiedFunction notified_function, IOContext& io_context)
+		:m_data(new MAsyncSocketData(this, io_context, notified_function))
+	{
+		signal::MSignalUtils::addFunWhenSignalTrigger(
+			[this]()
+			{
+				this->~MAsyncSocket();
+			},
+			{ SIGINT, SIGTERM });
+		signal::MSignalUtils::start();
+	}
+
 	MAsyncSocket::~MAsyncSocket()
 	{
 		this->m_data->notified_thread_flag = false;
-		this->m_data->io_context.stop();
+		this->m_data->io_context->stop();
 		if (this->m_data != nullptr)
 		{
 			delete this->m_data;
@@ -463,7 +506,7 @@ namespace MUZI::net::async
 
 	IOContext& MAsyncSocket::getIOContext()
 	{
-		return this->m_data->io_context;
+		return *this->m_data->io_context.get();
 	}
 
 
@@ -643,7 +686,7 @@ namespace MUZI::net::async
 
 	void MAsyncSocket::run()
 	{
-		this->m_data->io_context.run();
+		this->m_data->io_context->run();
 	}
 
 
