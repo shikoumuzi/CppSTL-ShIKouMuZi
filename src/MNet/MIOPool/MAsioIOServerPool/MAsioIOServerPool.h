@@ -24,9 +24,9 @@ namespace MUZI::net::io_pool
 		void stop();
 	public:
 		~MAsioIOServerPool();
+	
 
-
-		public:
+	private:
 		std::vector<IOContext> m_iocontextes;
 		std::vector<IOContextWorkPackage> m_works;
 		std::vector<std::thread> m_threads;

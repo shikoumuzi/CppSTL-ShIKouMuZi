@@ -481,7 +481,7 @@ namespace MUZI::net::async
 		signal::MSignalUtils::start();
 	}
 
-	MAsyncSocket::MAsyncSocket(NotifiedFunction notified_function, IOContext& io_context)
+	MAsyncSocket::MAsyncSocket(IOContext& io_context, NotifiedFunction notified_function)
 		:m_data(new MAsyncSocketData(this, io_context, notified_function))
 	{
 		signal::MSignalUtils::addFunWhenSignalTrigger(

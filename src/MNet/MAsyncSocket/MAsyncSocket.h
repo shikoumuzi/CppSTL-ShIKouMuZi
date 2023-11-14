@@ -42,7 +42,7 @@ namespace MUZI::net::async
 		static void defalutNotifyFunction(MAsyncSocket&) {}
 	public:
 		MAsyncSocket(NotifiedFunction notified_function);
-		MAsyncSocket(NotifiedFunction notified_function, IOContext io_context);
+		MAsyncSocket(IOContext& io_context, NotifiedFunction notified_function);
 		~MAsyncSocket();
 	public:
 		IOContext& getIOContext();
@@ -62,8 +62,8 @@ namespace MUZI::net::async
 	public:
 		NotifiedLock getNotifiedLock();
 		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);
-		inline Map<String, NetAsyncIOAdapt>& getSessions();
-		inline MSyncAnnularQueue<NetAsyncIOAdapt>& getSessionNotifiedQueue();
+		Map<String, NetAsyncIOAdapt>& getSessions();
+		MSyncAnnularQueue<NetAsyncIOAdapt>& getSessionNotifiedQueue();
 
 	public:
 

@@ -196,6 +196,11 @@ void emit(Arg... arg)
 }
 
 
+void address(const int& a)
+{
+	std::cout << "fun a:" << &a << std::endl;
+}
+
 int main(int arg, char* argv[])
 {
 	//std::cout << MUZI::__muzi_span_stl_type__<std::string> << std::endl;
@@ -232,7 +237,9 @@ int main(int arg, char* argv[])
 
 	//shared_ptr_test();
 
-	emit(1, 2, 2);
+	//emit(1, 2, 2);
+	int a = 0;
+	std::cout << "main a:" << &a << std::endl;
 
 	return 0;
 

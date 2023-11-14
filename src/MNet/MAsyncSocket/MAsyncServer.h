@@ -33,6 +33,7 @@ namespace MUZI::net::async
 		friend class MAsyncServerData;
 	public:
 		MAsyncServer(int& error_code, const MServerEndPoint& endpoint, NotifiedFunction notified_fun = defalutNotifyFunction);
+		MAsyncServer(int& error_code, IOContext& context ,const MServerEndPoint& endpoint, NotifiedFunction notified_fun = defalutNotifyFunction);
 		MAsyncServer() = delete;
 		~MAsyncServer();
 	public:

@@ -12,7 +12,7 @@ namespace MUZI::net::async
 	class MAsyncClient: public MAsyncSocket
 	{
 	public:
-		MAsyncClient(MClientEndPoint& endpoint);
+		MAsyncClient(MClientEndPoint& endpoint, NotifiedFunction notified_function);
 
 	public:
 		NetAsyncIOAdapt connect(int& error_code, const MClientEndPoint& endpoint);

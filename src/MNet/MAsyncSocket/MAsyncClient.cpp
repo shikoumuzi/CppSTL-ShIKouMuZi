@@ -4,7 +4,14 @@
 namespace MUZI::net::async
 {
 
-	MAsyncClient::MAsyncClient(MClientEndPoint& endpoint)
+	class MAsyncClient::MAsyncClientData
+	{
+
+	};
+
+	MAsyncClient::MAsyncClient(MClientEndPoint& endpoint, NotifiedFunction notified_function)
+		:MAsyncSocket(notified_function),
+		m_data(new MAsyncClientData())
 	{
 	}
 
