@@ -17,7 +17,7 @@ namespace MUZI::net::async
 
 	NetAsyncIOAdapt MAsyncClient::connect(int& error_code, const MClientEndPoint& endpoint)
 	{
-		NetAsyncIOAdapt adapt(new MSession(TCPSocket(this->getIOContext())));
+		NetAsyncIOAdapt adapt(new MSession(this->getIOContext()));
 		EC ec;
 		//adapt->socket.async_connect(endpoint.getEndPoint(error_code), ec);
 

@@ -52,13 +52,17 @@ namespace MUZI::net::async
 		int wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size);
 
 		int readFromSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
-		int readAllFromeSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
+		int readAllFromSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
 	public:
 		int readPackage(NetAsyncIOAdapt adapt);
 	public:
 		int writePackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
 		int writePackage(NetAsyncIOAdapt adapt, const String& data);
 
+	public:
+		int readPackageWithStrand(NetAsyncIOAdapt adapt);
+		int writePackageWithStrand(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
+		int writePackageWithStrand(NetAsyncIOAdapt adapt, const String& data);
 	public:
 		NotifiedLock getNotifiedLock();
 		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);

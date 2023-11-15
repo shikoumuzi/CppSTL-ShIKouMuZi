@@ -31,7 +31,7 @@ namespace MUZI::net::async
 		static String createUUID();
 		//static MsgPackage null;
 	public:
-		MSession(TCPSocket socket);
+		MSession(IOContext& io_context);
 		~MSession();
 	public:
 		inline bool isWriteCompleted();
@@ -61,6 +61,8 @@ namespace MUZI::net::async
 		uint64_t recv_id;
 		uint64_t send_id;
 		bool head_parse;
+		Strand m_strand;
+
 	};
 
 	using NetAsyncIOAdapt = std::shared_ptr<MSession>;

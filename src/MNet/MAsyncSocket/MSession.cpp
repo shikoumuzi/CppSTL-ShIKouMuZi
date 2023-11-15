@@ -7,14 +7,15 @@ namespace MUZI::net::async
 		return boost::uuids::to_string(rgen());
 	}
 
-	MSession::MSession(TCPSocket socket)
-		:socket(std::move(socket)),
+	MSession::MSession(IOContext& io_context)
+		:socket(io_context),
 		send_pending(false),
 		recv_pending(false),
 		uuid(MSession::createUUID()),
 		recv_tmp_package(new MRecvMsgNode()),
 		recv_tmp_buff(new MRecvMsgNode()),
-		head_parse(false)
+		head_parse(false),
+		m_strand(io_context.get_executor())
 	{}
 
 	MSession::~MSession()

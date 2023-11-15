@@ -34,6 +34,7 @@ namespace MUZI::net
 	using WriteBuff = boost::asio::mutable_buffer;
 	using ReadBuffs = boost::asio::const_buffers_1;
 	using WriteBuffs = boost::asio::mutable_buffers_1;
+	using Strand = boost::asio::strand<IOContext::executor_type>;
 	
 
 	template<typename K, typename V>

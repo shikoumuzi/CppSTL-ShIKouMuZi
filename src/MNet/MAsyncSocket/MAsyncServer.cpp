@@ -70,7 +70,7 @@ namespace MUZI::net::async
 	int MAsyncServer::accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output)
 	{
 		EC ec;
-		NetAsyncIOAdapt adapt(new MSession(TCPSocket(this->getIOContext())));
+		NetAsyncIOAdapt adapt(new MSession(this->getIOContext()));
 		
 		this->m_data->acceptor.async_accept(adapt->socket, 
 			[this, adapt, adapt_output](const EC& ec)->void
@@ -91,7 +91,7 @@ namespace MUZI::net::async
 	NetAsyncIOAdapt MAsyncServer::accept(int& error_code)
 	{
 		EC ec;
-		NetAsyncIOAdapt adapt(new MSession(TCPSocket(this->getIOContext())));
+		NetAsyncIOAdapt adapt(new MSession(this->getIOContext()));
 		/*std::make_shared<TCPSocket>(std::move(TCPSocket(this->m_data->io_context, this->m_data->protocol)));*/
 		this->m_data->acceptor.accept(adapt->getSocket(), ec);
 		if (ec.value() != 0)
