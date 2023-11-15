@@ -1,5 +1,5 @@
 #include "MAsioIOServerPool.h"
-
+#include"MSignal/MSignalUtils.h"
 namespace MUZI::net::io_pool
 {
 	MAsioIOServerPool::MAsioIOServerPool(size_t size)
@@ -15,6 +15,14 @@ namespace MUZI::net::io_pool
 					this->m_iocontextes[i].run();
 				});
 		}
+		signal::MSignalUtils::addFunWhenSignalTrigger(
+			[this]()
+			{
+				this->stop();
+			},
+			{ SIGINT, SIGTERM }
+		);
+
 	}
 	IOContext& MAsioIOServerPool::getIOContext()
 	{

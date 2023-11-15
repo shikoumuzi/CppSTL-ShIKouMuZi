@@ -3,7 +3,7 @@
 #include"MLog/MLog.h"
 #include<map>
 #include"MSignal/MSignalUtils.h"
-
+#include<boost/asio/signal_set.hpp>
 namespace MUZI::net::async
 {
 
@@ -15,7 +15,8 @@ namespace MUZI::net::async
 			notified_fun(notified_function),
 			notified_thread_flag(true),
 			io_context(new IOContext()),
-			m_new_io_context_flag(true)
+			m_new_io_context_flag(true),
+			m_signal(*this->io_context, SIGINT, SIGTERM)
 		{
 			this->notified_thread =
 				std::move(std::thread(
@@ -38,6 +39,12 @@ namespace MUZI::net::async
 							//__MUZI_MNET_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__;
 						}
 					}));
+			m_signal.async_wait(
+				[](const EC& error_code, int signal)
+				{
+					signal::MSignalUtils::signal_handler(signal);
+				}
+			)
 			//this->notified_thread.detach();
 		}
 		MAsyncSocketData(MAsyncSocket* parent, IOContext& iocontext, NotifiedFunction notified_function)
@@ -45,7 +52,8 @@ namespace MUZI::net::async
 			notified_fun(notified_function),
 			notified_thread_flag(true),
 			io_context(&iocontext),
-			m_new_io_context_flag(false)
+			m_new_io_context_flag(false),
+			m_signal(*this->io_context, SIGINT, SIGTERM)
 		{
 			this->notified_thread =
 				std::move(std::thread(
@@ -708,6 +716,9 @@ namespace MUZI::net::async
 		MAsyncSocket* parent;
 		IOContext* io_context;
 		bool m_new_io_context_flag;
+		boost::asio::signal_set m_signal;
+
+
 
 	};
 
@@ -912,8 +923,6 @@ namespace MUZI::net::async
 				{
 					this->m_data->handleWriteWithStrand(ec, adapt, size);
 				}));
-
-		return 0;
 		return 0;
 	}
 
