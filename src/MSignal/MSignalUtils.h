@@ -1,7 +1,7 @@
 #pragma once
 #ifndef __MUZI_MSIGNALUTILS_H__
 #define __MUZI_MSIGNALUTILS_H__
-#include"MSingleton/MSingleton.h"
+#include"MDesignModel/MSingleton/MSingleton.h"
 #include<signal.h>
 #include<functional>
 #include<vector>

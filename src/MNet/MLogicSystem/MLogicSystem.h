@@ -2,7 +2,7 @@
 #ifndef __MUZI_MLOGSYSTEM_H__
 #define __MUZI_MLOGSYSTEM_H__
 #include<map>
-#include"../../MSingleton/MSingleton.h"
+#include"MDesignModel/MSingleton/MSingleton.h"
 #include<queue>
 #include"../MAsyncSocket/MAsyncServer.h"
 #include"../MAsyncSocket/MAsyncSocket.h"
