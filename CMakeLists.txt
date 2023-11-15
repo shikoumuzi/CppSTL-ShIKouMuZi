@@ -6,7 +6,8 @@ cmake_minimum_required (VERSION 3.0)
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT 
+  "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
 project (CppSTL-shikounuzi)
@@ -114,7 +115,7 @@ set(HEADERS
 	"src/MFileSystem/MFileOutput.h"  
 	"src/MFileSystem/FileIOQueue.h"  
 	"src/MFileSystem/MFileBase/MFileInWin.h" 
-	"src/MSQLite/MSQLiite.h"
+	"src/MDataBase/MSQLite/MSQLiite.h"
 	"src/MAllocator/MPoolAllocator.h" 
 	"src/MAllocator/MLOKIAllocator.h" 
 	"src/MAllocator/MArrayAllocaor.h"
@@ -150,7 +151,7 @@ set(HEADERS
 
 set(SOURCES
 	${CPP_FILE_PATH}
-	"src/MSQLite/MSQLite.cpp"
+	"src/MDataBase/MSQLite/MSQLite.cpp"
 	"src/MFileSystem/FileIOQueue.cpp"
 	"src/MFileSystem/MFileInput.cpp" 
 	"src/MFileSystem/MFile.cpp" 
@@ -182,7 +183,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-                     "src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.h" "src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.cpp")
+                     "src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.h" "src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.cpp" "src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.h" "src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.cpp")
 
 
 

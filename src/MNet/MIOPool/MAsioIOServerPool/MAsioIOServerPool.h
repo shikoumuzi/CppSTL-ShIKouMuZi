@@ -4,7 +4,7 @@
 
 #include<stdint.h>
 #include<thread>
-#include"MSingleton/MSingleton.h"
+#include"MDesignModel/MSingleton/MSingleton.h"
 #include<boost/asio.hpp>
 #include<vector>
 #include"MNet/MNetBase.h"

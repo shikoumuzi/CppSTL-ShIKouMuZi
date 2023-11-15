@@ -39,6 +39,12 @@ namespace MUZI::net::async
 		:MAsyncSocket(notified_fun), m_data(new MAsyncServerData(this, this->getIOContext(), endpoint))
 	{}
 
+	MAsyncServer::MAsyncServer(int& error_code, IOContext & context, const MServerEndPoint & endpoint, NotifiedFunction notified_fun)
+		:MAsyncSocket(context, notified_fun), m_data(new MAsyncServerData(this, this->getIOContext(), endpoint))
+	{
+
+	}
+
 	MAsyncServer::~MAsyncServer()
 	{
 		

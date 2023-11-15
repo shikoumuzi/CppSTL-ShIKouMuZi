@@ -14,7 +14,8 @@ namespace MUZI::net::async
 			:parent(parent),
 			notified_fun(notified_function),
 			notified_thread_flag(true),
-			io_context(new IOContext())
+			io_context(new IOContext()),
+			m_new_io_context_flag(true)
 		{
 			this->notified_thread =
 				std::move(std::thread(
@@ -43,7 +44,8 @@ namespace MUZI::net::async
 			:parent(parent),
 			notified_fun(notified_function),
 			notified_thread_flag(true),
-			io_context(std::shared_ptr<IOContext>(&iocontext, [](IOContext* p) {}))
+			io_context(&iocontext),
+			m_new_io_context_flag(false)
 		{
 			this->notified_thread =
 				std::move(std::thread(
@@ -72,6 +74,12 @@ namespace MUZI::net::async
 		~MAsyncSocketData()
 		{
 			this->io_context->stop();
+			if (this->m_new_io_context_flag == true)
+			{
+				delete this->io_context;
+			}
+			this->io_context = nullptr;
+			this->parent = nullptr;
 		}
 
 	public:
@@ -459,7 +467,8 @@ namespace MUZI::net::async
 		std::condition_variable notified_cond;  // 通知条件变量
 
 		MAsyncSocket* parent;
-		std::shared_ptr<IOContext> io_context;
+		IOContext* io_context;
+		bool m_new_io_context_flag;
 
 	};
 
@@ -506,7 +515,7 @@ namespace MUZI::net::async
 
 	IOContext& MAsyncSocket::getIOContext()
 	{
-		return *this->m_data->io_context.get();
+		return *(this->m_data->io_context);
 	}
 
 

@@ -240,6 +240,7 @@ int main(int arg, char* argv[])
 	//emit(1, 2, 2);
 	int a = 0;
 	std::cout << "main a:" << &a << std::endl;
+	address(a);
 
 	return 0;
 
