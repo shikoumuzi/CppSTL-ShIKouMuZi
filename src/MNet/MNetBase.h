@@ -12,6 +12,7 @@
 #include<boost/lockfree/spsc_queue.hpp>
 #include<map>
 #include<chrono>
+#include"MBase/MObjectBase.h"
 
 #define __MUZI_MNET_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__ std::this_thread::sleep_for(std::chrono::milliseconds(10))
 namespace MUZI::net

@@ -2,14 +2,23 @@
 #ifndef __MUZI_MVECTOR_H__
 #define __MUZI_MVECTOR_H__
 #include<compare>
+#include<iso646.h>
+
 namespace MUZI
 {
 	template<typename T>
 	class MVector
 	{
 	public:
-		template<typename T>
+		using vaule = T;
+		using iterator = MVector<T>::Iterator;
+	public:
 		class MVectorView
+		{
+
+		};
+	public:
+		class Iterator
 		{
 
 		};
@@ -37,8 +46,8 @@ namespace MUZI
 			return std::weak_ordering();
 		}
 	public:
-		void pop_back() {}
-		void push_back()
+		void pop_back(const T&) {}
+		void push_back(const T&)
 		{}
 		void emplace_back()
 		{}
@@ -75,8 +84,14 @@ namespace MUZI
 		{
 			return this->m_capacity;
 		}
-		void front(){}
-		void back(){}
+		T& front()
+		{
+			return *this->m_data;
+		}
+		T& back()
+		{
+			return *(this->m_data + this->m_size);
+		}
 		void begin(){}
 		void end(){}
 		void cbegin(){}
@@ -85,7 +100,48 @@ namespace MUZI
 		void rend(){}
 		void crbegin(){}
 		void crend(){}
-		bool empty(){}
+		bool empty()
+		{
+			return this->m_data == nullptr or this->size == 0;
+		}
+
+	public:
+		T* data() const 
+		{
+			return this->m_data;
+		}
+		size_t length() const
+		{
+			return this->size;
+		}
+		size_t size() const
+		{
+			return this->m_size;
+		}
+		size_t capacity() const
+		{
+			return this->m_capacity;
+		}
+		T& front() const
+		{
+			return *this->m_data;
+		}
+		T& back() const
+		{
+			return *(this->m_data + this->m_size);
+		}
+		void begin() const {}
+		void end() const {}
+		void cbegin() const {}
+		void cend() const {}
+		void rbegin() const {}
+		void rend() const {}
+		void crbegin() const {}
+		void crend() const {}
+		bool empty() const
+		{
+			return this->m_data == nullptr or this->size == 0;
+		}
 		
 	private:
 		size_t m_size;
