@@ -175,7 +175,7 @@ namespace MUZI::signal
 		static MSignalUtilsCleanUp m_clean_up;
 	};
 
-	std::vector<std::function<void()>> MSignalUtils::m_funs_before_signal_tigger;
+	std::vector<std::function<void()>> MSignalUtils::m_funs_before_signal_tigger = std::vector<std::function<void()>>();
 	std::map<int, std::vector<std::function<void()>>> MSignalUtils::m_funs_when_signal_tigger;
 
 	std::queue<int> MSignalUtils::m_signal_id_queue; // 已经触发的信号队列

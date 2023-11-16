@@ -44,7 +44,7 @@ namespace MUZI::net::async
 				{
 					signal::MSignalUtils::signal_handler(signal);
 				}
-			)
+			);
 			//this->notified_thread.detach();
 		}
 		MAsyncSocketData(MAsyncSocket* parent, IOContext& iocontext, NotifiedFunction notified_function)

@@ -8,6 +8,7 @@
 #include<boost/asio.hpp>
 #include<vector>
 #include"MNet/MNetBase.h"
+#include"MSignal/MSignalUtils.h"
 
 namespace MUZI::net::io_pool
 {
