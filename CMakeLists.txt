@@ -146,6 +146,9 @@ set(HEADERS
 	"src/MEventLoop/MSlot/MConnect.h"
 	"src/MEventLoop/MEventObject.h" 
 	"src/MSignal/MSignalUtils.h"
+	"src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.h"
+	"src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.h"
+	"src/MNet/MCoroutineSocket/MCoroutineSocket.h"
 
 )
 
@@ -171,6 +174,10 @@ set(SOURCES
 	"src/MNet/MLogicSystem/MLogicSystem.cpp"
 	"src/MEventLoop/MEventLoop.cpp"
 	"src/MEventLoop/MEvent.cpp"
+	"src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.cpp"  
+	"src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.cpp"
+	"src/MSTL/h/MVector.h" "src/MSignal/MSignalUtils.cpp"
+	 "src/MNet/MCoroutineSocket/MCoroutineSocket.cpp"
 
 )
 
@@ -183,7 +190,7 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-    "src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.h" "src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.cpp" "src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.h" "src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.cpp" "src/MSTL/h/MVector.h" "src/MSignal/MSignalUtils.cpp")
+       "src/MNet/MCoroutineSocket/MSession.h" "src/MNet/MCoroutineSocket/MSession.cpp" "src/MNet/MCoroutineSocket/MCoroutineServer.h" "src/MNet/MCoroutineSocket/MCoroutineServer.cpp" "src/MNet/MCoroutineSocket/MCoroutineClient.h" "src/MNet/MCoroutineSocket/MCoroutineClient.cpp")
 
 
 

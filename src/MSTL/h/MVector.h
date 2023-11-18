@@ -45,6 +45,7 @@ namespace MUZI
 		{
 			return std::weak_ordering();
 		}
+
 	public:
 		void pop_back(const T&) {}
 		void push_back(const T&)
@@ -105,6 +106,15 @@ namespace MUZI
 			return this->m_data == nullptr or this->size == 0;
 		}
 
+	public:
+		bool operator==() const
+		{
+			return false;
+		}
+		std::weak_ordering operator<=>() const
+		{
+			return std::weak_ordering();
+		}
 	public:
 		T* data() const 
 		{

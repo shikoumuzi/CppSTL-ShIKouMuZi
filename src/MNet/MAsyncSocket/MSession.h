@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __MUZI_MSYNCSOCKET_MSESSION_H__
-#define __MUZI_MSYNCSOCKET_MSESSION_H__
+#ifndef __MUZI_MASYNCSOCKET_MSESSION_H__
+#define __MUZI_MASYNCSOCKET_MSESSION_H__
 #include<memory>
 #include"MNet/MNetBase.h"
 #include"../MMsgNode/MMsgNode.h"
