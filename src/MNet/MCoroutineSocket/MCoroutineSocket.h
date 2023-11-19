@@ -4,6 +4,7 @@
 #include<boost/asio.hpp>
 #include"MNet/MNetBase.h"
 #include<coroutine>
+#include"MSession.h"
 
 namespace MUZI::net::coroutine
 {
@@ -11,15 +12,27 @@ namespace MUZI::net::coroutine
 	{
 	public:
 		template<typename T>
-		using Await = boost::asio::awaitable<T>;
+		using Awaitable = boost::asio::awaitable<T>;
+		using iterator = std::map<String, MCoroSessionPack>::iterator;
 	public:
 		MCoroutineSocket();
-		MCoroutineSocket(const IOContext& io_context);
+		MCoroutineSocket(IOContext& io_context);
 	public:
-		Await<void> listener();
+		IOContext& getIOContext();
+	public:
+		MCoroSessionPack& getSession(const String& uuid);
+		Map<String, MCoroSessionPack>& getSessions();
+	public:
+		void run();
+	public:
+		iterator begin();
+		iterator end();
+		void erase(String UUID);
+		iterator erase(iterator& it);
 	public:
 		class MCoroutineSocketData* m_data;
 	};
 }
 
 #endif // !__MUZI_MCOROUTINESOCKET_H__
+ 

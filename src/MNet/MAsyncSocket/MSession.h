@@ -27,7 +27,7 @@ namespace MUZI::net::async
 		friend class MAsyncServer;
 		friend class MAsyncClient;
 
-	private:
+	public:
 		static String createUUID();
 		//static MsgPackage null;
 	public:
