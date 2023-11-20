@@ -41,20 +41,19 @@ namespace MUZI::net::coroutine
 			this->m_data = nullptr;
 		}
 	}
-	MCoroutineServer::Awaitable<int> MCoroutineServer::listen(int back_log)
+	int MCoroutineServer::listen(int back_log)
 	{
-		
-		co_return 0;
+		this->m_data->m_acceptor.listen(back_log);
+		return 0;
 	}
 
-	int MCoroutineServer::accept(MCoroSessionPack& session)
+	int MCoroutineServer::accept(MCoroSessionPack& session, AcceptCallBack& callback)
 	{
 		this->m_data->m_acceptor.\
 			async_accept(session->getSocket(),
-				[this, &session](const EC& ec) {
-
-
-					this->accept(session);
+				[this, &session, &callback](const EC& ec) {
+					callback(*this, session);
+					this->accept(session, callback);
 				});
 
 		return 0;
@@ -65,9 +64,9 @@ namespace MUZI::net::coroutine
 		boost::asio::co_spawn(this->getIOContext(),
 			[this, session]()->MCoroutineServer::Awaitable<void>
 			{
-				while (1)
+				while (!session->isClose())
 				{
-
+					
 				}
 			},
 			boost::asio::detached);

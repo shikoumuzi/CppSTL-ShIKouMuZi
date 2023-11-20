@@ -9,13 +9,15 @@ namespace MUZI::net::coroutine
 	class MCoroutineServer : public MCoroutineSocket
 	{
 	public:
+		using AcceptCallBack = std::function<void(MCoroutineServer&, MCoroSessionPack)>;
+	public:
 		MCoroutineServer(int& error_code, const MServerEndPoint& endpoint);
 		MCoroutineServer(int& error_code, IOContext& context, const MServerEndPoint& endpoint);
 		MCoroutineServer() = delete;
 		~MCoroutineServer();
 	public:
-		Awaitable<int> listen(int back_log);
-		int accept(MCoroSessionPack& session);
+		int listen(int back_log);
+		int accept(MCoroSessionPack& session, AcceptCallBack& callback);
 		
 	public:
 		void startSession(MCoroSessionPack& session);

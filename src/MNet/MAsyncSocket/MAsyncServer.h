@@ -26,6 +26,7 @@ namespace MUZI::net::async
 		static void defalutNotifyFunction(MAsyncSocket&){}
 	public:
 		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;
+		using AcceptCallBack = std::function<void(MAsyncServer&, NetAsyncIOAdapt)>;
 		//using NotifiedFunction = std::function<void(MAsyncServer&)>;
 	public:
 		class MAsyncServerData;
@@ -38,7 +39,7 @@ namespace MUZI::net::async
 		~MAsyncServer();
 	public:
 		int listen(int back_log);
-		int accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output = [](MAsyncServer&, NetAsyncIOAdapt)->void {});
+		int accept(const AcceptCallBack& adapt_output = [](MAsyncServer&, NetAsyncIOAdapt)->void {});
 		NetAsyncIOAdapt accept(int& error_code);
 
 	private:

@@ -12,11 +12,15 @@ namespace MUZI::net::coroutine
 
 	bool MSession::isWriteCompleted()
 	{
-
+		return this->send_pending;
 	}
 	bool MSession::isReadCompleted()
 	{
-
+		return this->recv_pending;
+	}
+	bool MSession::isClose()
+	{
+		return this->close_flag;
 	}
 
 	const String& MSession::getUUID()
@@ -32,7 +36,7 @@ namespace MUZI::net::coroutine
 		recv_tmp_package(new MRecvMsgNode()),
 		recv_tmp_buff(new MRecvMsgNode()),
 		head_parse(false),
-		close_flag(flase)
+		close_flag(false)
 	{
 
 	}
@@ -43,7 +47,7 @@ namespace MUZI::net::coroutine
 
 	TCPSocket& MSession::getSocket()
 	{
-
+		return this->socket;
 	}
 	RecvMsgPackage MSession::getPopFrontRecvMsg()
 	{

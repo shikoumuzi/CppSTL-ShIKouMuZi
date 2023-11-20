@@ -67,7 +67,7 @@ namespace MUZI::net::async
 		return 0;
 	}
 
-	int MAsyncServer::accept(const std::function<void(MAsyncServer&, NetAsyncIOAdapt)>& adapt_output)
+	int MAsyncServer::accept(const AcceptCallBack& adapt_output)
 	{
 		EC ec;
 		NetAsyncIOAdapt adapt(new MSession(this->getIOContext()));

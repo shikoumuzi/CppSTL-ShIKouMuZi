@@ -21,6 +21,7 @@ namespace MUZI::net::coroutine
 	public:
 		inline bool isWriteCompleted();
 		inline bool isReadCompleted();
+		inline bool isClose();
 	public:
 		const String& getUUID();
 	public:
