@@ -42,7 +42,7 @@ namespace MUZI::net::coroutine
 	}
 	MSession::~MSession()
 	{
-
+		this->socket.close();
 	}
 
 	TCPSocket& MSession::getSocket()
@@ -51,6 +51,12 @@ namespace MUZI::net::coroutine
 	}
 	RecvMsgPackage MSession::getPopFrontRecvMsg()
 	{
+		while (this->recv_completed_queue.empty())
+		{
 
+		}
+		auto ret_msg = this->recv_completed_queue.front();
+		this->recv_completed_queue.pop();
+		return *ret_msg;
 	}
 }

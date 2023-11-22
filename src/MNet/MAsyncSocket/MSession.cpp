@@ -19,7 +19,9 @@ namespace MUZI::net::async
 	{}
 
 	MSession::~MSession()
-	{}
+	{
+		this->socket.close();
+	}
 
 	inline bool MSession::isWriteCompleted()
 	{

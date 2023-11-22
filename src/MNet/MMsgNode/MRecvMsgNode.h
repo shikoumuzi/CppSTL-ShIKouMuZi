@@ -43,7 +43,7 @@ namespace MUZI::net
 				// 取消息头部内容直接转换指针进行设置
 				// 读包需要网络序转本地序
 				this->m_data->total_size = boost::asio::detail::socket_ops::network_to_host_long(static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->total_size);
-				this->m_data->cur_size = 0;
+				//this->m_data->cur_size = 0;
 				this->m_data->id = boost::asio::detail::socket_ops::network_to_host_long(static_cast<MMsgNodeDataBaseMsg*>(this->m_data->data)->msg_id);
 				this->m_data->msg_size = this->getTotalSize() - sizeof(MMsgNodeDataBaseMsg) - 1;
 

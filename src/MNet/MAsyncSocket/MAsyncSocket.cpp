@@ -332,7 +332,7 @@ namespace MUZI::net::async
 					bytes_transafered -= header.msg_size;
 
 					// 添加终止符
-					static_cast<char*>(adapt->recv_tmp_package->getData())[(adapt->recv_tmp_package->getTotalSize() - 1)] = '\0';
+					static_cast<char*>(adapt->recv_tmp_package->getData())[(adapt->recv_tmp_package->getTotalSize())] = '\0';
 
 					//将接收结果推送到队列当中
 					adapt->recv_completed_queue.push(adapt->recv_tmp_package);

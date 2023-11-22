@@ -22,6 +22,7 @@ namespace MUZI::net::coroutine
 		inline bool isWriteCompleted();
 		inline bool isReadCompleted();
 		inline bool isClose();
+		
 	public:
 		const String& getUUID();
 	public:
@@ -30,7 +31,8 @@ namespace MUZI::net::coroutine
 	public:
 		TCPSocket& getSocket();
 		RecvMsgPackage getPopFrontRecvMsg();
-	private:
+
+	public:
 		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__>> send_queue;
 		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
 		//SpecQueue<MsgPackage, boost::lockfree::capacity<__MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ / 2>> recv_queue;
