@@ -18,11 +18,8 @@
 #include"../MError.h"
 #include"MSTL/h/MSyncAnnularQueue.h"
 
-
-
 namespace MUZI::net::async
 {
-
 	class MAsyncSocket
 	{
 	public:
@@ -47,22 +44,22 @@ namespace MUZI::net::async
 	public:
 		IOContext& getIOContext();
 	public:
-		int writeToSocket(NetAsyncIOAdapt adapt, String& data);
-		int wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size);
-		int wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size);
+		int writeToSocket(NetAsyncIOAdapt adapt, String& data, int msg_id = 0);
+		int wtiteToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size, int msg_id = 0);
+		int wtiteAllToSocket(NetAsyncIOAdapt adapt, void* data, uint32_t size, int msg_id = 0);
 
 		int readFromSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
 		int readAllFromSocket(NetAsyncIOAdapt adapt, uint32_t size = __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__);
 	public:
 		int readPackage(NetAsyncIOAdapt adapt);
 	public:
-		int writePackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
-		int writePackage(NetAsyncIOAdapt adapt, const String& data);
+		int writePackage(NetAsyncIOAdapt adapt, const void* data, uint32_t size, int msg_id = 0);
+		int writePackage(NetAsyncIOAdapt adapt, const String& data, int msg_id = 0);
 
 	public:
 		int readPackageWithStrand(NetAsyncIOAdapt adapt);
-		int writePackageWithStrand(NetAsyncIOAdapt adapt, const void* data, uint32_t size);
-		int writePackageWithStrand(NetAsyncIOAdapt adapt, const String& data);
+		int writePackageWithStrand(NetAsyncIOAdapt adapt, const void* data, uint32_t size, int msg_id = 0);
+		int writePackageWithStrand(NetAsyncIOAdapt adapt, const String& data, int msg_id = 0);
 	public:
 		NotifiedLock getNotifiedLock();
 		NetAsyncIOAdapt& getNetAsyncIOAdapt(String UUID);
@@ -81,11 +78,7 @@ namespace MUZI::net::async
 		void run();
 	public:
 		class MAsyncSocketData* m_data;
-
 	};
-
-
 }
-
 
 #endif // !__MUZI_MASYNCSOCKET_H__

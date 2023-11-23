@@ -60,7 +60,7 @@ namespace MUZI::net
 			{
 				return;
 			}
-			(*var_ptr)->writeToSocket(std::get<1>(session_pack), msg_data, msg_id);
+			(*var_ptr)->writeToSocket, 0(std::get<1>(session_pack), msg_data, msg_id);
 		}
 	}
 

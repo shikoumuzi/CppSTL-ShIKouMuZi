@@ -32,8 +32,8 @@ namespace MUZI::net::coroutine
 		Map<String, MCoroSessionPack>& getSessions();
 	public:
 		Awaitable<int> readFromSocket(MCoroSessionPack& session);
-		Awaitable<int> writeToSocket(MCoroSessionPack& session, const void* data, size_t data_sze, int msg_id = 0);
-		Awaitable<int> writeToSocket(MCoroSessionPack& session, const std::string& data, int msg_id = 0);
+		Awaitable<int> writeToSocket, 0(MCoroSessionPack & session, const void* data, size_t data_sze, int msg_id = 0);
+		Awaitable<int> writeToSocket, 0(MCoroSessionPack & session, const std::string & data, int msg_id = 0);
 	public:
 		void run();
 	public:
