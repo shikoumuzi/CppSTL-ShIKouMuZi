@@ -8,8 +8,14 @@ namespace MUZI::net::http
 	class MHttpClient
 	{
 	public:
+		MHttpClient(const String& server, const String path);
 		MHttpClient(IOContext& io_context, const String& server, const String path);
-
+		MHttpClient(const MHttpClient&) = delete;
+		MHttpClient(MHttpClient&& client);
+		~MHttpClient();
+	public:
+		void operator=(const MHttpClient&) = delete;
+		void operator=(MHttpClient&& client);
 	public:
 		void handleResolver(const EC& ec, const TCPResolver::results_type& endpoints);
 		void handleConnect(const EC& ec, boost::asio::ip::tcp::endpoint endpoint);
@@ -26,6 +32,7 @@ namespace MUZI::net::http
 		TCPSocket m_socket;
 		Request m_request;
 		Reponse m_reponse;
+		bool m_new_io_context_flag;
 	};
 }
 

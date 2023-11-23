@@ -1,10 +1,18 @@
 #include"MHttpClient.h"
 namespace MUZI::net::http
 {
+	MHttpClient::MHttpClient(const String& server, const String path) :
+		m_io_context(new IOContext()),
+		m_resolver(*this->m_io_context),
+		m_socket(*this->m_io_context),
+		m_new_io_context_flag(true)
+	{
+	}
 	MHttpClient::MHttpClient(IOContext& io_context, const String& server, const String path) :
 		m_resolver(io_context),
 		m_io_context(&io_context),
-		m_socket(io_context)
+		m_socket(io_context),
+		m_new_io_context_flag(false)
 	{
 		std::ostream request_stream(&this->m_request);
 		request_stream << "GET " << path << "HTTP/1.0\r\n";
@@ -22,6 +30,34 @@ namespace MUZI::net::http
 			{
 				this->handleResolver(ec, endpoints);
 			});
+	}
+	MHttpClient::MHttpClient(MHttpClient&& client) :
+		m_resolver(std::move(client.m_resolver)),
+		m_socket(std::move(client.m_socket)),
+		m_io_context(std::move(client.m_io_context))
+	{
+		client.m_io_context = nullptr;
+	}
+	MHttpClient::~MHttpClient()
+	{
+		if (this->m_new_io_context_flag)
+		{
+			delete this->m_io_context;
+		}
+		this->m_io_context = nullptr;
+	}
+	void MHttpClient::operator=(MHttpClient&& client)
+	{
+		this->m_socket.close();
+		this->m_socket = std::move(client.m_socket);
+		this->m_resolver.cancel();
+		this->m_resolver = std::move(client.m_resolver);
+		if (this->m_new_io_context_flag)
+		{
+			delete this->m_io_context;
+		}
+		this->m_io_context = std::move(client.m_io_context);
+		client.m_io_context = nullptr;
 	}
 	void MHttpClient::handleResolver(const EC& ec, const TCPResolver::results_type& endpoints)
 	{
