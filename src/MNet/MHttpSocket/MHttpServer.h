@@ -9,6 +9,13 @@
 
 namespace MUZI::net::http
 {
+	class MHttpServer
+	{
+	public:
+		MHttpServer();
+	public:
+		class HttpServerData* m_data;
+	};
 }
 
 #endif // !__MUZI_M_HTTPSERVER_H__

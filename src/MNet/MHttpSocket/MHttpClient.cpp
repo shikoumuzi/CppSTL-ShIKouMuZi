@@ -20,10 +20,10 @@ namespace MUZI::net::http
 		this->m_resolver.async_resolve(ip, port,
 			[this](const EC& ec, const TCPResolver::results_type& endpoints)
 			{
-				this->handle_resolver(ec, endpoints);
+				this->handleResolver(ec, endpoints);
 			});
 	}
-	void MHttpClient::handle_resolver(const EC& ec, const TCPResolver::results_type& endpoints)
+	void MHttpClient::handleResolver(const EC& ec, const TCPResolver::results_type& endpoints)
 	{
 		if (!ec)
 		{
@@ -33,23 +33,28 @@ namespace MUZI::net::http
 				endpoints,
 				[this](const EC& ec, boost::asio::ip::tcp::endpoint endpoint)
 				{
-					this->handle_connect(ec, endpoint);
+					this->handleConnect(ec, endpoint);
 				});
 		}
+		MLog::w("MHttpClient::handleResolver", "error");
 	}
-	void MHttpClient::handle_connect(const EC& ec, boost::asio::ip::tcp::endpoint endpoint)
+	void MHttpClient::handleConnect(const EC& ec, boost::asio::ip::tcp::endpoint endpoint)
 	{
-		// 发送request请求
-		boost::asio::async_write(
-			this->getSocket(),
-			this->getRequest(),
-			[this](const EC& ec, size_t byte)
-			{
-				this->handle_write_request(ec, byte);
-			}
-		);
+		if (!ec)
+		{
+			// 发送request请求
+			boost::asio::async_write(
+				this->getSocket(),
+				this->getRequest(),
+				[this](const EC& ec, size_t byte)
+				{
+					this->handleWriteRequest(ec, byte);
+				}
+			);
+		}
+		MLog::w("MHttpClient::handleConnect", "error");
 	}
-	void MHttpClient::handle_write_request(const EC& ec, size_t byte)
+	void MHttpClient::handleWriteRequest(const EC& ec, size_t byte)
 	{
 		if (!ec)
 		{
@@ -59,12 +64,13 @@ namespace MUZI::net::http
 				this->getReponse(),
 				[this](const EC& ec, size_t byte)
 				{
-					this->handle_read(ec, byte);
+					this->handleRead(ec, byte);
 				}
 			);
 		}
+		MLog::w("MHttpClient::handleWriteRequest", "error");
 	}
-	void MHttpClient::handle_read(const EC& ec, size_t byte)
+	void MHttpClient::handleRead(const EC& ec, size_t byte)
 	{
 	}
 	TCPSocket& MHttpClient::getSocket()
@@ -78,5 +84,9 @@ namespace MUZI::net::http
 	Reponse& MHttpClient::getReponse()
 	{
 		return this->m_reponse;
+	}
+	IOContext& MHttpClient::getIOContext()
+	{
+		return *this->m_io_context;
 	}
 }

@@ -11,14 +11,15 @@ namespace MUZI::net::http
 		MHttpClient(IOContext& io_context, const String& server, const String path);
 
 	public:
-		void handle_resolver(const EC& ec, const TCPResolver::results_type& endpoints);
-		void handle_connect(const EC& ec, boost::asio::ip::tcp::endpoint endpoint);
-		void handle_write_request(const EC& ec, size_t byte);
-		void handle_read(const EC& ec, size_t byte);
+		void handleResolver(const EC& ec, const TCPResolver::results_type& endpoints);
+		void handleConnect(const EC& ec, boost::asio::ip::tcp::endpoint endpoint);
+		void handleWriteRequest(const EC& ec, size_t byte);
+		void handleRead(const EC& ec, size_t byte);
 	public:
 		TCPSocket& getSocket();
 		Request& getRequest();
 		Reponse& getReponse();
+		IOContext& getIOContext();
 	private:
 		TCPResolver m_resolver;
 		IOContext* m_io_context;
