@@ -5,9 +5,12 @@
 
 namespace MUZI::net
 {
-	LogicSystem::LogicSystem(async::MAsyncServer& server): m_work_flag(true), m_server(server)
+	LogicSystem::LogicSystem(async::MAsyncServer& server) :
+		m_work_flag(true),
+		m_server(&server)
 	{
-		this->registerCallBacks(MSG_IDS::MSG_HELLO_WORD, [](async::NetAsyncIOAdapt, const int msg_id, const std::string& msg_data) {});
+		this->registerCallBacks(MSG_IDS::MSG_HELLO_WORD,
+			[](std::variant<async::NetAsyncIOAdapt, coroutine::MCoroSessionPack>, const int msg_id, const std::string& msg_data) {});
 
 		this->m_work_thread = std::thread(
 			[this]()
@@ -27,12 +30,12 @@ namespace MUZI::net
 		this->m_fun_callback[msg_id] = callback;
 	}
 
-	void LogicSystem::HelloWordCallBack(async::NetAsyncIOAdapt adapt, const int msg_id, const std::string& msg_data)
+	void LogicSystem::HelloWordCallBack(std::variant<async::NetAsyncIOAdapt, coroutine::MCoroSessionPack> session_pack, const int msg_id, const std::string& msg_data)
 	{
 		rapidjson::Document doc;
 		if (!doc.Parse(msg_data.c_str()).HasParseError())
 		{
-			if (doc.HasMember("id") && doc.IsInt()) 
+			if (doc.HasMember("id") && doc.IsInt())
 			{
 				printf("msg_id is %d,", doc["id"].GetInt());
 			}
@@ -41,9 +44,24 @@ namespace MUZI::net
 				printf("data is %s.", doc["data"].GetString());
 			}
 		}
-		
-		this->m_server.writePackage(adapt, msg_data);
-
+		if (this->m_server.index() == 0 and session_pack.index() == 0)
+		{
+			auto var_ptr = std::get_if<0>(&this->m_server);
+			if (var_ptr == nullptr)
+			{
+				return;
+			}
+			(*var_ptr)->writePackage(std::get<0>(session_pack), msg_data);
+		}
+		else if (this->m_server.index() == 1 and this->m_server.index() == 1)
+		{
+			auto var_ptr = std::get_if<1>(&this->m_server);
+			if (var_ptr == nullptr)
+			{
+				return;
+			}
+			(*var_ptr)->writeToSocket(std::get<1>(session_pack), msg_data, msg_id);
+		}
 	}
 
 	void LogicSystem::ctrlRecvMsg()
@@ -51,7 +69,7 @@ namespace MUZI::net
 		while (this->m_work_flag)
 		{
 			std::unique_lock<std::mutex> unique_lk(this->m_lock);
-			
+
 			// 直到队列不为空才会跳过条件变量
 			while (this->m_recv_msg_que.empty() && this->m_work_flag)
 			{
@@ -69,7 +87,7 @@ namespace MUZI::net
 					// 如果没找到则直接越过该消息包
 					if (call_back_iter == this->m_fun_callback.end())
 					{
-						this->m_recv_msg_que.pop(); 
+						this->m_recv_msg_que.pop();
 						continue;
 					}
 					// 调用对应回调函数
@@ -87,7 +105,7 @@ namespace MUZI::net
 			// 如果没找到则直接越过该消息包
 			if (call_back_iter == this->m_fun_callback.end())
 			{
-				this->m_recv_msg_que.pop(); 
+				this->m_recv_msg_que.pop();
 				continue;
 			}
 			// 调用对应回调函数
@@ -114,15 +132,18 @@ namespace MUZI::net
 	bool LogicSystem::isWorking()
 	{
 		return this->m_work_flag;
-	}  
+	}
 
 	void LogicSystem::notifiedFun(async::MAsyncSocket& socket)
 	{
 		MSyncAnnularQueue<async::NetAsyncIOAdapt>& sessions_notified_queue = socket.getSessionNotifiedQueue();
-		
+
 		std::lock_guard<std::mutex> guard_lock(socket.getNotifiedLock().notified_mutex);
 		async::NetAsyncIOAdapt* adapt = sessions_notified_queue.front();
 		this->pushToMsgQueue(std::make_shared<MLogicNode>(*adapt, adapt->get()->getPopFrontRecvMsg()));
 		sessions_notified_queue.pop();
+	}
+	void LogicSystem::notifiedFun(coroutine::MCoroutineSocket&)
+	{
 	}
 }

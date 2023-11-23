@@ -18,20 +18,23 @@
 #include<atomic>
 #include"MLogicNode.h"
 #include<signal.h>
+#include<variant>
+#include"MNet/MCoroutineSocket/MSession.h"
+#include"MNet/MCoroutineSocket/MCoroutineSocket.h"
 
 namespace MUZI::net
 {
-	class LogicSystem: public  singleton::MSingleton<LogicSystem>
+	class LogicSystem : public  singleton::MSingleton<LogicSystem>
 	{
 	public:
-		using MsgCtrlCallBack = std::function<void(async::NetAsyncIOAdapt, const int msg_id, const std::string& msg_data)>;
+		using MsgCtrlCallBack = std::function<void(std::variant<async::NetAsyncIOAdapt, coroutine::MCoroSessionPack>, const int msg_id, const std::string& msg_data)>;
 	private:
 		LogicSystem(async::MAsyncServer& server);
 	public:
 		~LogicSystem();
 	private:
 		void registerCallBacks(int msg_id, MsgCtrlCallBack&& callback);
-		void HelloWordCallBack(async::NetAsyncIOAdapt, const int msg_id, const std::string& msg_data);
+		void HelloWordCallBack(std::variant<async::NetAsyncIOAdapt, coroutine::MCoroSessionPack>, const int msg_id, const std::string& msg_data);
 		void ctrlRecvMsg();
 		void ctrlSendMsg();
 	public:
@@ -41,6 +44,7 @@ namespace MUZI::net
 		bool isWorking();
 	public:
 		void notifiedFun(async::MAsyncSocket&);
+		void notifiedFun(coroutine::MCoroutineSocket&);
 	private:
 		std::queue<std::shared_ptr<MLogicNode>> m_recv_msg_que;
 		std::mutex m_lock;
@@ -48,12 +52,8 @@ namespace MUZI::net
 		std::thread m_work_thread;
 		std::atomic<bool> m_work_flag;
 		std::map<int, MsgCtrlCallBack> m_fun_callback;
-
-		async::MAsyncServer& m_server;
+		std::variant<async::MAsyncSocket*, coroutine::MCoroutineSocket*> m_server;
 	};
-
 }
-
-
 
 #endif // !__MUZI_MLOGSYSTEM_H__

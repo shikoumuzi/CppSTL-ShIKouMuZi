@@ -33,6 +33,7 @@ namespace MUZI::net::coroutine
 	public:
 		Awaitable<int> readFromSocket(MCoroSessionPack& session);
 		Awaitable<int> writeToSocket(MCoroSessionPack& session, void* data, size_t data_sze, int msg_id = 0);
+		Awaitable<int> writeToSocket(MCoroSessionPack& session, const std::string& data, int msg_id = 0);
 	public:
 		void run();
 	public:
@@ -47,4 +48,3 @@ namespace MUZI::net::coroutine
 }
 
 #endif // !__MUZI_MCOROUTINESOCKET_H__
- 

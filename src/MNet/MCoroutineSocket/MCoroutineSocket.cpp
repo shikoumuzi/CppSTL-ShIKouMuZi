@@ -5,19 +5,17 @@ namespace MUZI::net::coroutine
 	class MCoroutineSocketData
 	{
 	public:
-		MCoroutineSocketData(MCoroutineSocket::NotifiedFunction notified_function):
+		MCoroutineSocketData(MCoroutineSocket::NotifiedFunction notified_function) :
 			m_io_context(new IOContext()),
 			m_new_io_context_flag(false),
 			notified_fun(notified_function)
 		{
-
 		}
-		MCoroutineSocketData(MCoroutineSocket::NotifiedFunction notified_function, IOContext& io_context):
+		MCoroutineSocketData(MCoroutineSocket::NotifiedFunction notified_function, IOContext& io_context) :
 			m_io_context(&io_context),
 			m_new_io_context_flag(true),
 			notified_fun(notified_function)
 		{
-
 		}
 		~MCoroutineSocketData()
 		{
@@ -28,7 +26,7 @@ namespace MUZI::net::coroutine
 			}
 		}
 	public:
-		void handleAccept(MCoroSessionPack& session, const EC &error)
+		void handleAccept(MCoroSessionPack& session, const EC& error)
 		{
 			if (!error)
 			{
@@ -49,11 +47,11 @@ namespace MUZI::net::coroutine
 		std::condition_variable notified_cond;  // 通知条件变量
 	};
 
-	MCoroutineSocket::MCoroutineSocket(MCoroutineSocket::NotifiedFunction notified_function):
+	MCoroutineSocket::MCoroutineSocket(MCoroutineSocket::NotifiedFunction notified_function) :
 		m_data(new MCoroutineSocketData(notified_function))
 	{
 	}
-	MCoroutineSocket::MCoroutineSocket(MCoroutineSocket::NotifiedFunction notified_function, IOContext& io_context):
+	MCoroutineSocket::MCoroutineSocket(MCoroutineSocket::NotifiedFunction notified_function, IOContext& io_context) :
 		m_data(new MCoroutineSocketData(notified_function, io_context))
 	{
 	}
@@ -102,7 +100,6 @@ namespace MUZI::net::coroutine
 						co_return;
 					}
 
-
 					memcpy(session->recv_tmp_package->getData(), session->recv_tmp_buff->getData(), recv_byte);
 					session->recv_tmp_package->getCurSize() += recv_byte;
 
@@ -127,7 +124,6 @@ namespace MUZI::net::coroutine
 							boost::asio::use_awaitable);
 
 					session->recv_tmp_package->getCurSize() += recv_byte;
-
 
 					if (recv_byte == 0)
 					{
@@ -156,19 +152,17 @@ namespace MUZI::net::coroutine
 						memcpy(static_cast<char*>(session->recv_tmp_package->getData()) + session->recv_tmp_package->getCurSize(),
 							static_cast<char*>(session->recv_tmp_buff->getData()) + session->recv_tmp_package->getCurSize(), recv_byte);
 						session->recv_tmp_package->getCurSize() += recv_byte;
-
-
 					}
 
 					static_cast<char*>(session->recv_tmp_package->getData())[session->recv_tmp_package->getTotalSize()] = '\0';
 					session->recv_completed_queue.push(session->recv_tmp_package);
-					
+
 					session->recv_tmp_package->clear();
 					session->recv_tmp_buff->clear();
 					session->recv_pending = false;
 					this->m_data->session_notified_queue.push(session_tmp);
 					this->m_data->notified_cond.notify_all();
-					
+
 					co_return;
 				}
 			},
@@ -183,7 +177,6 @@ namespace MUZI::net::coroutine
 		{
 			return Awaitable<int>();
 		}
-
 
 		boost::asio::co_spawn(this->getIOContext(),
 			[this, session]()->MCoroutineSocket::Awaitable<void>
@@ -205,7 +198,6 @@ namespace MUZI::net::coroutine
 								boost::asio::buffer(static_cast<char*>(session->send_tmp_buff->getData()) + send_byte, session->send_tmp_buff->getTotalSize() - send_byte),
 								boost::asio::use_awaitable);
 					}
-
 				}
 			},
 			boost::asio::use_awaitable);
@@ -213,6 +205,10 @@ namespace MUZI::net::coroutine
 		return Awaitable<int>();
 	}
 
+	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket(MCoroSessionPack& session, std::string& data, int msg_id)
+	{
+		return this->writeToSocket(session, data.data(), msg_id);
+	}
 
 	void MCoroutineSocket::run()
 	{
@@ -221,11 +217,9 @@ namespace MUZI::net::coroutine
 
 	void MCoroutineSocket::closeSession(MCoroSessionPack& session)
 	{
-		
 		session->socket.close();
 		session->close_flag = true;
 		this->erase(session->uuid);
-		
 	}
 
 	MCoroutineSocket::iterator MCoroutineSocket::begin()
@@ -247,7 +241,4 @@ namespace MUZI::net::coroutine
 	{
 		return this->m_data->m_sessions.erase(it);
 	}
-
 }
-
-
