@@ -4,7 +4,10 @@
 
 namespace MUZI::net::coroutine
 {
+	class MCoroutineClient
+	{
 
+	};
 }
 
 #endif // !__MUZI_MCOROUTINECLIENT_H__

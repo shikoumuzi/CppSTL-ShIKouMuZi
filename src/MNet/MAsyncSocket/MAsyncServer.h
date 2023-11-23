@@ -17,12 +17,6 @@ namespace MUZI::net::async
 	class MAsyncServer: public MAsyncSocket
 	{
 	public:
-		struct NotifiedLock
-		{
-			std::mutex& notified_mutex;  // 通知锁
-			std::condition_variable& notified_cond;  // 通知条件变量
-		};
-	public:
 		static void defalutNotifyFunction(MAsyncSocket&){}
 	public:
 		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;

@@ -18,12 +18,6 @@ namespace MUZI::net::coroutine
 	public:
 		int listen(int back_log);
 		int accept(MCoroSessionPack& session, AcceptCallBack& callback);
-
-	public:
-		void startSession(MCoroSessionPack& session);
-		void closeSession(MCoroSessionPack& session);
-	public:
-
 	public:
 		class MCoroutineServerData* m_data;
 	};

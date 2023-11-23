@@ -717,9 +717,6 @@ namespace MUZI::net::async
 		IOContext* io_context;
 		bool m_new_io_context_flag;
 		boost::asio::signal_set m_signal;
-
-
-
 	};
 
 
