@@ -18,13 +18,13 @@ namespace MUZI::net::coroutine
 		TCPAcceptor m_acceptor;
 	};
 
-	MCoroutineServer::MCoroutineServer(int& error_code, const MServerEndPoint& endpoint) :
-		MCoroutineSocket(),
+	MCoroutineServer::MCoroutineServer(int& error_code, const MServerEndPoint& endpoint, NotifiedFunction notified_function) :
+		MCoroutineSocket(notified_function),
 		m_data(new MCoroutineServerData(endpoint, this->getIOContext()))
 	{
 	}
-	MCoroutineServer::MCoroutineServer(int& error_code, IOContext& context, const MServerEndPoint& endpoint) :
-		MCoroutineSocket(context),
+	MCoroutineServer::MCoroutineServer(int& error_code, IOContext& context, const MServerEndPoint& endpoint, NotifiedFunction notified_function) :
+		MCoroutineSocket(notified_function, context),
 		m_data(new MCoroutineServerData(endpoint, context))
 	{
 	}
@@ -55,5 +55,4 @@ namespace MUZI::net::coroutine
 
 		return 0;
 	}
-
 }

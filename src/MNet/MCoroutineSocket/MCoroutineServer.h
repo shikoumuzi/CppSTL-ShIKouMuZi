@@ -11,8 +11,8 @@ namespace MUZI::net::coroutine
 	public:
 		using AcceptCallBack = std::function<void(MCoroutineServer&, MCoroSessionPack)>;
 	public:
-		MCoroutineServer(int& error_code, const MServerEndPoint& endpoint);
-		MCoroutineServer(int& error_code, IOContext& context, const MServerEndPoint& endpoint);
+		MCoroutineServer(int& error_code, const MServerEndPoint& endpoint, NotifiedFunction notified_function);
+		MCoroutineServer(int& error_code, IOContext& context, const MServerEndPoint& endpoint, NotifiedFunction notified_function);
 		MCoroutineServer() = delete;
 		~MCoroutineServer();
 	public:
