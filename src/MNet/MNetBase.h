@@ -24,10 +24,11 @@ namespace MUZI::net
 	using AddressSeccion = boost::asio::ip::address_v4;
 	using Protocol = boost::asio::ip::tcp;
 	using TCPSocket = boost::asio::ip::tcp::socket;
+	using TCPAcceptor = boost::asio::ip::tcp::acceptor;
+	using TCPResolver = boost::asio::ip::tcp::resolver;
 	using IOContext = boost::asio::io_context;
 	using IOContextWork = boost::asio::io_context::work; // 用以防止没有注册事件，但run就直接返回了
 	using IOContextWorkPackage = std::unique_ptr<IOContextWork>;
-	using TCPAcceptor = boost::asio::ip::tcp::acceptor;
 	using Port = uint16_t;
 	using HostQuery = boost::asio::ip::tcp::resolver::query;
 	using HostResolver = boost::asio::ip::tcp::resolver;
@@ -36,7 +37,8 @@ namespace MUZI::net
 	using ReadBuffs = boost::asio::const_buffers_1;
 	using WriteBuffs = boost::asio::mutable_buffers_1;
 	using Strand = boost::asio::strand<IOContext::executor_type>;
-	
+	using Request = boost::asio::streambuf;
+	using Reponse = boost::asio::streambuf;
 
 	template<typename K, typename V>
 	using Map = std::map<K, V>;
@@ -47,6 +49,5 @@ namespace MUZI::net
 	template<typename T>
 	using Vector = std::vector<T>;
 }
-
 
 #endif // !__MUZI_MNETBASE_H__
