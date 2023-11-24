@@ -9,13 +9,13 @@ namespace MUZI::net::http
 	{
 	public:
 		MHttpClient(const String& server, const String path);
-		MHttpClient(IOContext& io_context, const String& server, const String path);
+		MHttpClient(IOContext& io_context, const String& server, const String path) ;
 		MHttpClient(const MHttpClient&) = delete;
-		MHttpClient(MHttpClient&& client);
+		MHttpClient(MHttpClient&& client) noexcept;
 		~MHttpClient();
 	public:
 		void operator=(const MHttpClient&) = delete;
-		void operator=(MHttpClient&& client);
+		void operator=(MHttpClient&& client) noexcept;
 	public:
 		void handleResolver(const EC& ec, const TCPResolver::results_type& endpoints);
 		void handleConnect(const EC& ec, boost::asio::ip::tcp::endpoint endpoint);

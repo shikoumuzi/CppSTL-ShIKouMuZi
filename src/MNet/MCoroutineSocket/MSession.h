@@ -19,9 +19,9 @@ namespace MUZI::net::coroutine
 	public:
 		String createUUID();
 	public:
-		inline bool isWriteCompleted();
-		inline bool isReadCompleted();
-		inline bool isClose();
+		bool isWriteCompleted();
+		bool isReadCompleted();
+		bool isClose();
 		
 	public:
 		const String& getUUID();

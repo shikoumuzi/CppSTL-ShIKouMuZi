@@ -31,7 +31,7 @@ namespace MUZI::net::http
 				this->handleResolver(ec, endpoints);
 			});
 	}
-	MHttpClient::MHttpClient(MHttpClient&& client) :
+	MHttpClient::MHttpClient(MHttpClient&& client) noexcept:
 		m_resolver(std::move(client.m_resolver)),
 		m_socket(std::move(client.m_socket)),
 		m_io_context(std::move(client.m_io_context))
@@ -46,7 +46,7 @@ namespace MUZI::net::http
 		}
 		this->m_io_context = nullptr;
 	}
-	void MHttpClient::operator=(MHttpClient&& client)
+	void MHttpClient::operator=(MHttpClient&& client) noexcept
 	{
 		this->m_socket.close();
 		this->m_socket = std::move(client.m_socket);

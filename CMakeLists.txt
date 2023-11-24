@@ -171,7 +171,7 @@ set(SOURCES
 	"src/MNet/MAsyncSocket/MAsyncServer.cpp"
 	"src/MNet/MAsyncSocket/MAsyncClient.cpp"
 	"src/MNet/MAsyncSocket/MSession.cpp"
-	"src/MNet/MLogicSystem/MLogicSystem.cpp"
+	
 	"src/MEventLoop/MEventLoop.cpp"
 	"src/MEventLoop/MEvent.cpp"
 	"src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.cpp"  

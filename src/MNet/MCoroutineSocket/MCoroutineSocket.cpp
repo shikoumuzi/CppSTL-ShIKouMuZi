@@ -69,6 +69,11 @@ namespace MUZI::net::coroutine
 		};
 	}
 
+	MSyncAnnularQueue<MCoroSessionPack>& MCoroutineSocket::getSessionNotifiedQueue()
+	{
+		return this->m_data->session_notified_queue;
+	}
+
 	MCoroSessionPack& MCoroutineSocket::getSession(const String& uuid)
 	{
 		return this->m_data->m_sessions.at(uuid);
@@ -170,7 +175,7 @@ namespace MUZI::net::coroutine
 		return Awaitable<int>();
 	}
 
-	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket, 0(MCoroSessionPack & session, const void* data, size_t data_size, int msg_id)
+	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket(MCoroSessionPack & session, const void* data, size_t data_size, int msg_id)
 	{
 		session->send_queue.push(std::make_shared<MSendMsgNode>(data, data_size, msg_id));
 		if (session->isWriteCompleted())
@@ -205,9 +210,9 @@ namespace MUZI::net::coroutine
 		return Awaitable<int>();
 	}
 
-	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket, 0(MCoroSessionPack & session, const std::string & data, int msg_id)
+	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket(MCoroSessionPack & session, const std::string & data, int msg_id)
 	{
-		return this->writeToSocket, 0(session, data.data(), data.size(), msg_id);
+		return this->writeToSocket(session, data.data(), data.size(), msg_id);
 	}
 
 	void MCoroutineSocket::run()

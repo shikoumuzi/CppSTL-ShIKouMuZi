@@ -9,33 +9,35 @@
 
 namespace MUZI::net
 {
+	template<typename T>
 	class MLogicNode
 	{
 	public:
-		friend class LogicSystem;
+		//friend class LogicSystem;
 	public:
 		MLogicNode()
 		{}
-		MLogicNode(async::NetAsyncIOAdapt& adapt, RecvMsgPackage package)
-			:adapt(adapt), package(package)
+		MLogicNode(async::NetAsyncIOAdapt& session, RecvMsgPackage package)
+			:session(session), package(package)
 		{}
 	
 	public:
-		inline async::NetAsyncIOAdapt& getAdapt()
+		inline T& getSession()
 		{
-			return this->adapt;
+			return this->session;
 		}
-		inline RecvMsgPackage& getRecvMsgPackage()
+		inline RecvMsgPackage& getPackage()
 		{
 			return this->package;
 		}
 	private:
-		async::NetAsyncIOAdapt adapt;
+		T session;
 		RecvMsgPackage package;
 
 	};
 
-	using MLogicPackage = std::shared_ptr<MLogicNode>;
+	template<typename T>
+	using MLogicPackage = std::shared_ptr<MLogicNode<T>>;
 }
 
 #endif // !__MUZI_MLOGICNODE_H__
