@@ -36,12 +36,19 @@ namespace MUZI::net
 		std::same_as<T, async::MAsyncSocket> || std::same_as<T, coroutine::MCoroutineSocket>;
 	};
 
-
 	template<SessionConcept Session = async::MSession, SocketConcpet Socket = async::MAsyncSocket>
 	class LogicSystem : public  singleton::MSingleton<LogicSystem<Session, Socket>>
 	{
 	public:
-
+		using _Session = Session;
+		using _Socket = Socket;
+	public:
+		constexpr bool is_mathched()
+		{
+			return (std::is_same_v<Session, coroutine::MCoroSessionPack> && std::same_as<Socket, coroutine::MCoroutineSocket>) ||
+				(std::is_same_v<Session, async::MAsyncSocket> && std::same_as<Socket, coroutine::MCoroSessionPack>);
+		}
+	public:
 		using MsgCtrlCallBack = std::function<void(Session, const int msg_id, const std::string& msg_data)>;
 	private:
 		LogicSystem(async::MAsyncServer& server) :
@@ -90,8 +97,6 @@ namespace MUZI::net
 				return;
 			}
 			(*var_ptr)->writePackage(session_pack, msg_data);
-			
-
 		}
 		void ctrlRecvMsg()
 		{
@@ -121,7 +126,7 @@ namespace MUZI::net
 						}
 						// 调用对应回调函数
 						call_back_iter->second(msg_node->getSession(), msg_node->getPackage()->getId(), static_cast<char*>(msg_node->getPackage()->getMsg()));
-					
+
 						this->m_recv_msg_que.pop();
 					}
 					break;

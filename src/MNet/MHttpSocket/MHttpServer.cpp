@@ -56,8 +56,8 @@ namespace MUZI::net::http
 	MHttpServer::HttpConnection::HttpConnection(
 		class MHttpServer* parent,
 		TCPSocket& socket,
-		size_t buffer_size = __MUZI_MHTTPSERVER_BUFFER_SIZE__,
-		size_t time_out = __MUZI_MHTTPSERVER_TIMEOUT_VALUE__) :
+		size_t buffer_size,
+		size_t time_out) :
 		m_data(new HttpConnectionData(parent, socket, buffer_size, time_out))
 	{
 	}
