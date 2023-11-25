@@ -162,7 +162,7 @@ namespace MUZI::net
 			return this->m_work_flag;
 		}
 	public:
-		void notifiedFun(Socket&)
+		void notifiedFun(Socket& socket)
 		{
 			MSyncAnnularQueue<Session>& sessions_notified_queue = socket.getSessionNotifiedQueue();
 

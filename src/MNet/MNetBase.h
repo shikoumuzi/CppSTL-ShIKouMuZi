@@ -38,8 +38,8 @@ namespace MUZI::net
 	using ReadBuffs = boost::asio::const_buffers_1;
 	using WriteBuffs = boost::asio::mutable_buffers_1;
 	using Strand = boost::asio::strand<IOContext::executor_type>;
-	using Request = boost::asio::streambuf;
-	using Reponse = boost::asio::streambuf;
+	using RequestBuffer = boost::asio::streambuf;
+	using ReponseBuffer = boost::asio::streambuf;
 
 	template<typename K, typename V>
 	using Map = std::map<K, V>;

@@ -97,32 +97,119 @@ namespace MUZI::net::http
 			// 读取reponse
 			boost::asio::async_read(
 				this->getSocket(),
-				this->getReponse(),
+				this->getResponse(),
 				[this](const EC& ec, size_t byte)
 				{
-					this->handleRead(ec, byte);
+					this->handleReadStatusLine(ec, byte);
 				}
 			);
 		}
 		MLog::w("MHttpClient::handleWriteRequest", "error");
 	}
-	void MHttpClient::handleRead(const EC& ec, size_t byte)
+	
+	void MHttpClient::handleReadStatusLine(const EC& ec, size_t byte)
 	{
+		if (!ec)
+		{
+			//当收到对方数据时，先解析响应的头部信息
+			std::istream response_stream(&this->m_response);
+			String http_version;
+			uint32_t status_code = 0;
+			String status_msg;
+			response_stream >> http_version;
+			response_stream >> status_code;
+			std::getline(response_stream, status_msg);
+			// 读出HTTP版本，以及返回的状态码，如果状态码不是200，则返回，是200说明响应成功。
+			if (!response_stream || http_version.substr(0, 5) != "HTTP/")
+			{
+				MLog::w("MHttpClient::handleReadStatusLine", "Invalid response");
+				return;
+			}
+			if (status_code != 200)
+			{
+				MLog::w("MHttpClient::handleReadStatusLine", "Response returned with status code ");
+				MLog::w("MHttpClient::handleReadStatusLine", "status code is %d\n", status_code);
+				return;
+			}
+
+			boost::asio::async_read_until(this->getSocket(), this->getResponse(), "\r\n\r\n",
+				[this](const EC& ec, size_t byte)
+				{
+					this->handleReadHeaders(ec, byte);
+				});
+		}
+		else
+		{
+			MLog::w("MHttpClient::handleReadStatusLine", "Error is %s", ec.what().c_str());
+		}
+	}
+	void MHttpClient::handleReadHeaders(const EC& ec, size_t byte)
+	{
+		if (!ec)
+		{
+			std::istream response_stream(&this->m_response);
+			String header;
+			while (std::getline(response_stream, header) && header != "r")
+			{
+				MLog::w("MHttpClient::handleReadHeaders", "header is %s\n", header.c_str());
+			}
+
+			if (this->m_response.size() > 0)
+			{
+				std::cout << &this->m_response;
+			}
+
+			boost::asio::async_read(
+				this->m_socket,
+				this->m_response,
+				[this](const EC& ec, size_t byte)
+				{
+					this->handleReadContent(ec, byte);
+				}
+			);
+		}
+		else
+		{
+			MLog::w("MHttpClient::handleReadHeaders", "Error is %s", ec.what().c_str());
+		}
+		
+	}
+	void MHttpClient::handleReadContent(const EC& ec, size_t byte)
+	{
+		if (!ec)
+		{
+			// 读出响应的内容，继续监听读事件读取相应的内容，直到接收到EOF信息
+			std::cout << &this->m_response << std::endl;
+			boost::asio::async_read(this->m_socket, this->m_response,
+				boost::asio::transfer_at_least(1),
+				[this](const EC& ec, size_t byte)
+				{
+					this->handleReadContent(ec, byte);
+				});
+		}
+		else
+		{
+			MLog::w("MHttpClient::handleReadContent", "Error is %s", ec.what().c_str());
+		}
 	}
 	TCPSocket& MHttpClient::getSocket()
 	{
 		return this->m_socket;
 	}
-	Request& MHttpClient::getRequest()
+	RequestBuffer& MHttpClient::getRequest()
 	{
 		return this->m_request;
 	}
-	Reponse& MHttpClient::getReponse()
+	ReponseBuffer& MHttpClient::getResponse()
 	{
-		return this->m_reponse;
+		return this->m_response;
 	}
 	IOContext& MHttpClient::getIOContext()
 	{
 		return *this->m_io_context;
+	}
+	void MHttpClient::run()
+	{
+		this->m_io_context->run();
 	}
 }
