@@ -3,9 +3,10 @@
 #include<rapidjson/document.h>
 #include<rapidjson/stringbuffer.h>
 #include<rapidjson/writer.h>
-
+#include<string_view>
 namespace MUZI::net::http
 {
+	int MHttpServer::HttpConnection::DirectoryMode = 0;
 	class HttpConnectionData
 	{
 	public:
@@ -38,6 +39,18 @@ namespace MUZI::net::http
 		m_data(nullptr)
 	{
 	}
+	void MHttpServer::accept(TCPAcceptor& acceptor, TCPSocket& socket)
+	{
+		acceptor.async_accept(socket,
+			[this, &acceptor, &socket](const EC& ec)
+			{
+				if (!ec)
+				{
+					std::make_shared<HttpConnection>(std::move(socket))->start();
+				}
+				this->accept(acceptor, socket);
+			});
+	}
 	MHttpServer::HttpConnection::HttpConnection(
 		class MHttpServer* parent,
 		TCPSocket& socket,
@@ -56,6 +69,8 @@ namespace MUZI::net::http
 	}
 	void MHttpServer::HttpConnection::start()
 	{
+		this->readRequest();
+		this->checkDeadline();
 	}
 	void MHttpServer::HttpConnection::readRequest()
 	{
@@ -191,5 +206,79 @@ namespace MUZI::net::http
 				self->m_data->m_timer.cancel();
 			}
 		);
+	}
+	bool MHttpServer::HttpConnection::resisterPath(String& target, const FilePath& dir_path, int deepth)
+	{
+		if (deepth > 9)
+		{
+			return false;
+		}
+		if (!dir_path.is_absolute())
+		{
+			return false;
+		}
+		boost::filesystem::recursive_directory_iterator iter(dir_path);
+		while (iter != boost::filesystem::recursive_directory_iterator())
+		{
+			if (boost::filesystem::is_regular_file(iter->path()))
+			{
+				auto file_path = iter->path();
+				if (file_path.extension() != "html" or
+					file_path.stem() != target)
+				{
+					continue;
+				}
+				this->m_data->parent->m_data->m_file_mapping[target] = file_path;
+				return true;
+			}
+			else if (boost::filesystem::is_directory(iter->path()))
+			{
+				this->resisterPath(target, iter->path(), deepth + 1);
+			}
+		}
+
+		return false;
+	}
+	bool MHttpServer::HttpConnection::registerPath(String& target, const FilePath& file_path)
+	{
+		if (!boost::filesystem::exists(file_path) or
+			!boost::filesystem::is_regular_file(file_path) or
+			file_path.extension() != "html" or
+			file_path.stem() != target)
+		{
+			return false;
+		}
+		this->m_data->parent->m_data->m_file_mapping[target] = file_path;
+		return true;
+	}
+	void MHttpServer::HttpConnection::registerPaths(const FilePath& dir_path, int deepth)
+	{
+		if (deepth > 9)
+		{
+			return;
+		}
+		if (!boost::filesystem::exists(dir_path) or
+			!boost::filesystem::is_directory(dir_path) or
+			!dir_path.is_absolute())
+		{
+			return;
+		}
+		boost::filesystem::recursive_directory_iterator iter(dir_path);
+		while (iter != boost::filesystem::recursive_directory_iterator())
+		{
+			if (boost::filesystem::is_regular_file(iter->path()))
+			{
+				auto file_path = iter->path();
+				if (file_path.extension() != "html")
+				{
+					continue;
+				}
+				this->m_data->parent->m_data->m_file_mapping[file_path.stem().string()] = file_path;
+			}
+			else if (boost::filesystem::is_directory(iter->path()))
+			{
+				this->registerPaths(iter->path(), deepth + 1);
+			}
+		}
 	}
 }

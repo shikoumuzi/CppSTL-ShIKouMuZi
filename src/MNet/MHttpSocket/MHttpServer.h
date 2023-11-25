@@ -33,6 +33,7 @@ namespace MUZI::net::http
 			using HttpVerb = boost::beast::http::verb;
 			using HttpStatus = boost::beast::http::status;
 			using HttpField = boost::beast::http::field;
+			static int DirectoryMode;
 		public:
 			HttpConnection(class MHttpServer* parent, TCPSocket& socket, size_t buffer_size = __MUZI_MHTTPSERVER_BUFFER_SIZE__, size_t time_out = __MUZI_MHTTPSERVER_TIMEOUT_VALUE__);
 			~HttpConnection();
@@ -46,10 +47,16 @@ namespace MUZI::net::http
 			void createPostResponse();
 			void writeResponse();
 		public:
+			bool registerPath(String& target, const FilePath& file_path);
+			bool resisterPath(String& target, const FilePath& dir_path, int directory_mode);
+			void registerPaths(const FilePath& dir_path, int deepth = 0);
+		public:
 			class HttpConnectionData* m_data;
 		};
 	public:
 		MHttpServer();
+	public:
+		void accept(TCPAcceptor& acceptor, TCPSocket& socket);
 	public:
 		class HttpServerData* m_data;
 	};
