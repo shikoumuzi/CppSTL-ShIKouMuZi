@@ -50,11 +50,15 @@ namespace MUZI::net::http
 			bool registerPath(String& target, const FilePath& file_path);
 			bool resisterPath(String& target, const FilePath& dir_path, int directory_mode);
 			void registerPaths(const FilePath& dir_path, int deepth = 0);
+
 		public:
 			class HttpConnectionData* m_data;
 		};
 	public:
 		MHttpServer();
+	public:
+		Map<String, FilePath>& getTargetMapping();
+		FilePath getFilePath(String& target);
 	public:
 		void accept(TCPAcceptor& acceptor, TCPSocket& socket);
 	public:

@@ -39,6 +39,7 @@ namespace MUZI::net::http
 		m_data(nullptr)
 	{
 	}
+
 	void MHttpServer::accept(TCPAcceptor& acceptor, TCPSocket& socket)
 	{
 		acceptor.async_accept(socket,
@@ -51,6 +52,7 @@ namespace MUZI::net::http
 				this->accept(acceptor, socket);
 			});
 	}
+
 	MHttpServer::HttpConnection::HttpConnection(
 		class MHttpServer* parent,
 		TCPSocket& socket,
@@ -59,6 +61,7 @@ namespace MUZI::net::http
 		m_data(new HttpConnectionData(parent, socket, buffer_size, time_out))
 	{
 	}
+
 	MHttpServer::HttpConnection::~HttpConnection()
 	{
 		if (this->m_data != nullptr)
@@ -67,11 +70,13 @@ namespace MUZI::net::http
 			this->m_data = nullptr;
 		}
 	}
+
 	void MHttpServer::HttpConnection::start()
 	{
 		this->readRequest();
 		this->checkDeadline();
 	}
+
 	void MHttpServer::HttpConnection::readRequest()
 	{
 		auto self = shared_from_this();
@@ -84,6 +89,7 @@ namespace MUZI::net::http
 				}
 			});
 	}
+
 	void MHttpServer::HttpConnection::checkDeadline()
 	{
 		auto self = shared_from_this();
@@ -97,6 +103,7 @@ namespace MUZI::net::http
 				}
 			});
 	}
+
 	void MHttpServer::HttpConnection::processRequest()
 	{
 		this->m_data->m_response.version(this->m_data->m_request.version());
@@ -132,6 +139,7 @@ namespace MUZI::net::http
 
 		this->writeResponse();
 	}
+
 	void MHttpServer::HttpConnection::createGetResponse()
 	{
 		// 查看请求路径， 假设/count表示请求了多少次
@@ -156,6 +164,7 @@ namespace MUZI::net::http
 		boost::filesystem::load_string_file(result_iter->second.c_str(), mail_body);
 		boost::beast::ostream(this->m_data->m_response.body()) << mail_body;
 	}
+
 	void MHttpServer::HttpConnection::createPostResponse()
 	{
 		auto result_iter = this->m_data->parent->m_data->m_file_mapping.find(String(this->m_data->m_request.target()));
@@ -192,6 +201,7 @@ namespace MUZI::net::http
 		boost::filesystem::load_string_file(result_iter->second.c_str(), mail_body);
 		boost::beast::ostream(this->m_data->m_response.body()) << mail_body;
 	}
+
 	void MHttpServer::HttpConnection::writeResponse()
 	{
 		auto self = shared_from_this();
@@ -207,6 +217,7 @@ namespace MUZI::net::http
 			}
 		);
 	}
+
 	bool MHttpServer::HttpConnection::resisterPath(String& target, const FilePath& dir_path, int deepth)
 	{
 		if (deepth > 9)
@@ -233,12 +244,13 @@ namespace MUZI::net::http
 			}
 			else if (boost::filesystem::is_directory(iter->path()))
 			{
-				this->resisterPath(target, iter->path(), deepth + 1);
+				return this->resisterPath(target, iter->path(), deepth + 1);
 			}
 		}
 
 		return false;
 	}
+
 	bool MHttpServer::HttpConnection::registerPath(String& target, const FilePath& file_path)
 	{
 		if (!boost::filesystem::exists(file_path) or
@@ -251,6 +263,7 @@ namespace MUZI::net::http
 		this->m_data->parent->m_data->m_file_mapping[target] = file_path;
 		return true;
 	}
+
 	void MHttpServer::HttpConnection::registerPaths(const FilePath& dir_path, int deepth)
 	{
 		if (deepth > 9)
@@ -280,5 +293,20 @@ namespace MUZI::net::http
 				this->registerPaths(iter->path(), deepth + 1);
 			}
 		}
+	}
+
+	Map<String, MHttpServer::FilePath>& MHttpServer::getTargetMapping()
+	{
+		return this->m_data->m_file_mapping;
+	}
+
+	MHttpServer::FilePath MHttpServer::getFilePath(String& target)
+	{
+		auto iter = this->m_data->m_file_mapping.find(target);
+		if (iter == this->m_data->m_file_mapping.end())
+		{
+			return FilePath();
+		}
+		return iter->second;
 	}
 }
