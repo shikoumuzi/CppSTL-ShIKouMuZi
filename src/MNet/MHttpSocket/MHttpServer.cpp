@@ -80,6 +80,7 @@ namespace MUZI::net::http
 	void MHttpServer::HttpConnection::readRequest()
 	{
 		auto self = shared_from_this();
+		this->m_data->m_request.clear();
 		boost::beast::http::async_read(this->m_data->m_socket, this->m_data->m_buffer, this->m_data->m_request,
 			[self](const EC& ec, std::size_t byte_transferred)
 			{
@@ -211,9 +212,12 @@ namespace MUZI::net::http
 			this->m_data->m_response,
 			[self](const EC& ec, size_t bytes_transafered)
 			{
-				// 只关闭发送端，尽量不要全关，因为有四次挥手的存在，若客户端未响应，而服务器全部关闭时会存在僵尸连接，
-				self->m_data->m_socket.shutdown(TCPSocket::shutdown_send);
-				self->m_data->m_timer.cancel();
+				if (ec)
+				{
+					// 只关闭发送端，尽量不要全关，因为有四次挥手的存在，若客户端未响应，而服务器全部关闭时会存在僵尸连接，
+					self->m_data->m_socket.shutdown(TCPSocket::shutdown_send);
+					self->m_data->m_timer.cancel();
+				}
 			}
 		);
 	}
