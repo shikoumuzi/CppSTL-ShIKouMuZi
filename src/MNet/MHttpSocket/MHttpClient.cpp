@@ -31,7 +31,7 @@ namespace MUZI::net::http
 				this->handleResolver(ec, endpoints);
 			});
 	}
-	MHttpClient::MHttpClient(MHttpClient&& client) noexcept:
+	MHttpClient::MHttpClient(MHttpClient&& client) noexcept :
 		m_resolver(std::move(client.m_resolver)),
 		m_socket(std::move(client.m_socket)),
 		m_io_context(std::move(client.m_io_context))
@@ -100,14 +100,14 @@ namespace MUZI::net::http
 				this->getResponse(),
 				[this](const EC& ec, size_t byte)
 				{
-					this->handleReadStatusLine(ec, byte);
+					this->handleRead(ec, byte);
 				}
 			);
 		}
 		MLog::w("MHttpClient::handleWriteRequest", "error");
 	}
-	
-	void MHttpClient::handleReadStatusLine(const EC& ec, size_t byte)
+
+	void MHttpClient::handleRead(const EC& ec, size_t byte)
 	{
 		if (!ec)
 		{
@@ -172,7 +172,6 @@ namespace MUZI::net::http
 		{
 			MLog::w("MHttpClient::handleReadHeaders", "Error is %s", ec.what().c_str());
 		}
-		
 	}
 	void MHttpClient::handleReadContent(const EC& ec, size_t byte)
 	{

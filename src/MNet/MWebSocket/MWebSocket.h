@@ -12,9 +12,11 @@
 #include<queue>
 #include"MSTL/h/MSyncAnnularQueue.h"
 #include"MSTL/h/MAtomicLock.h"
+#include"MDesignModel/MSingleton/MSingleton.h"
+#include<mutex>
 namespace MUZI::net
 {
-	class MWebSocketServer
+	class MWebSocketServer : public singleton::MSingleton<MWebSocketServer>
 	{
 	public:
 		class MWebSocketConnection : public std::enable_shared_from_this<class MWebSocketConnection>
@@ -22,8 +24,8 @@ namespace MUZI::net
 		public:
 			using WebSocketStream = boost::beast::websocket::stream < boost::beast::tcp_stream>;
 		public:
-			MWebSocketConnection();
-			MWebSocketConnection(IOContext& io_context);
+			MWebSocketConnection(MWebSocketServer* parent);
+			MWebSocketConnection(MWebSocketServer* parent, IOContext& io_context);
 			MWebSocketConnection(const MWebSocketConnection&) = delete;
 
 		public:
@@ -35,18 +37,25 @@ namespace MUZI::net
 			void start();
 		public:
 			void accept();
-
+			void send(const void* data, size_t data_size);
+			void send(const String&);
 		public:
 			CLASSDATA(class MWebSocketConnection)* m_data;
 		};
 	public:
 		//using WebSocketRequest = boost::beast::http::request;
-	public:
+	private:
 		MWebSocketServer();
 	public:
-		void accept();
+		MWebSocketServer(const MWebSocketServer&) = delete;
 	public:
-		void read();
+		void operator=(const MWebSocketServer&) = delete;
+	public:
+		void accept();
+
+	public:
+		void addConnection();
+		void eraseConnection();
 
 	public:
 		class MWebSocketServerData* m_data;

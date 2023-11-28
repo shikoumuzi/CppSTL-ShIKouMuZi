@@ -228,7 +228,7 @@ namespace MUZI::net::async
 		}
 
 	public:
-		void handleReadStatusLine(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transafered)
+		void handleRead(const EC& ec, NetAsyncIOAdapt adapt, std::size_t bytes_transafered)
 		{
 			if (ec.value() != 0)
 			{
@@ -257,7 +257,7 @@ namespace MUZI::net::async
 						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
-								this->handleReadStatusLine(ec, adapt, size);
+								this->handleRead(ec, adapt, size);
 							});
 
 						return;
@@ -309,7 +309,7 @@ namespace MUZI::net::async
 							boost::asio::buffer(static_cast<char*>(adapt->recv_tmp_buff->getData()), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
-								this->handleReadStatusLine(ec, adapt, size);
+								this->handleRead(ec, adapt, size);
 							});
 						adapt->head_parse = true;
 
@@ -348,7 +348,7 @@ namespace MUZI::net::async
 						adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 							[this, adapt](const EC& ec, size_t size)->void
 							{
-								this->handleReadStatusLine(ec, adapt, size);
+								this->handleRead(ec, adapt, size);
 							});
 						return;
 					}
@@ -375,7 +375,7 @@ namespace MUZI::net::async
 					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 						[this, adapt](const EC& ec, std::size_t size)->void
 						{
-							this->handleReadStatusLine(ec, adapt, size);
+							this->handleRead(ec, adapt, size);
 						});
 					return;
 				}
@@ -411,7 +411,7 @@ namespace MUZI::net::async
 					adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 						[this, adapt](const EC& ec, size_t size)->void
 						{
-							this->handleReadStatusLine(ec, adapt, size);
+							this->handleRead(ec, adapt, size);
 						});
 					return;
 				}
@@ -488,7 +488,7 @@ namespace MUZI::net::async
 							boost::asio::bind_executor(adapt->m_strand,
 								[this, adapt](const EC& ec, size_t size)->void
 								{
-									this->handleReadStatusLine(ec, adapt, size);
+									this->handleRead(ec, adapt, size);
 								}));
 
 						return;
@@ -541,7 +541,7 @@ namespace MUZI::net::async
 							boost::asio::bind_executor(adapt->m_strand,
 								[this, adapt](const EC& ec, size_t size)->void
 								{
-									this->handleReadStatusLine(ec, adapt, size);
+									this->handleRead(ec, adapt, size);
 								}));
 						adapt->head_parse = true;
 
@@ -581,7 +581,7 @@ namespace MUZI::net::async
 							boost::asio::bind_executor(adapt->m_strand,
 								[this, adapt](const EC& ec, size_t size)->void
 								{
-									this->handleReadStatusLine(ec, adapt, size);
+									this->handleRead(ec, adapt, size);
 								}));
 						return;
 					}
@@ -609,7 +609,7 @@ namespace MUZI::net::async
 						boost::asio::bind_executor(adapt->m_strand,
 							[this, adapt](const EC& ec, std::size_t size)->void
 							{
-								this->handleReadStatusLine(ec, adapt, size);
+								this->handleRead(ec, adapt, size);
 							}));
 					return;
 				}
@@ -646,7 +646,7 @@ namespace MUZI::net::async
 						boost::asio::bind_executor(adapt->m_strand,
 							[this, adapt](const EC& ec, size_t size)->void
 							{
-								this->handleReadStatusLine(ec, adapt, size);
+								this->handleRead(ec, adapt, size);
 							}));
 					return;
 				}
@@ -839,7 +839,7 @@ namespace MUZI::net::async
 		adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
 			[this, adapt](const EC& ec, size_t size)->void
 			{
-				this->m_data->handleReadStatusLine(ec, adapt, size);
+				this->m_data->handleRead(ec, adapt, size);
 			});
 
 		return 0;
