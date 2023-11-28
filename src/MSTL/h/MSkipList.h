@@ -57,11 +57,81 @@ namespace MUZI
 		{}
 		MSkipList(const std::initializer_list<T>&)
 		{}
+		~MSkipList()
+		{}
 	public:
-		void operator+=(const MSkipList&)
+		/// @brief this function will copy all nodes(data) from other list
+		/// @param list other object which type is MSkipList&
+		void operator+=(const MSkipList<T>& list)
 		{}
-		void operator+=(MSkipList&& list)
+		/// @brief this function will connect the end of node from 'this' with the front of node from list, and the list will be empty
+		/// @param list other object which type is MSkipList&&
+		void operator+=(MSkipList<T>&& list)
 		{}
+		/// @brief thie function will copy all data from other list
+		/// @param list other object which type is std::span<T>&&
+		void operator+=(std::span<T>& list)
+		{}
+		void operator+(const MSkipList<T>& list)
+		{}
+		/// @brief this function will connect the end of node from 'this' with the front of node from list, and the list will be empty
+		/// @param list other object which type is MSkipList&&
+		void operator+(MSkipList<T>&& list)
+		{}
+		/// @brief thie function will copy all data from other list
+		/// @param list other object which type is std::span<T>&&
+		void operator+(std::span<T>& list)
+		{}
+		void operator=(const MSkipList<T>&)
+		{}
+		void operator=(MSkipList<T>&&)
+		{}
+	public: // 增删查改
+		void push_back()
+		{}
+		void pop_back()
+		{}
+		void push_front()
+		{}
+		void pop_front()
+		{}
+		void emplace_back()
+		{}
+		void emplace_front()
+		{}
+		void insert()
+		{}
+		void emplace()
+		{}
+		void find()
+		{}
+		void erase()
+		{}
+		void find_if()
+		{}
+		void erase_if()
+		{}
+	public: // 获取信息 和 迭代器
+		void data()
+		{}
+		void size()
+		{}
+		void length()
+		{}
+		void empty()
+		{}
+		void begin()
+		{}
+		void end()
+		{}
+	public: // 简易内存操作
+		void resize()
+		{}
+		void reserve()
+		{}
+		void clear()
+		{}
+
 	private:
 		MAtomicLock m_atomic_lock;
 		__MSkipList_Node__<T>* m_header;
