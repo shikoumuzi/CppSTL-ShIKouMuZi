@@ -18,7 +18,19 @@ namespace MUZI::net::http
 			parent(parent),
 			m_socket(std::move(socket)),
 			m_buffer(buffer_size),
-			m_timer(this->m_socket.get_executor(), std::chrono::seconds(time_out)) // 设置超时时间，如果超过该值还没处理完http则返回
+			m_timer(this->m_socket.get_executor(), std::chrono::seconds(time_out)), // 设置超时时间，如果超过该值还没处理完http则返回
+			m_uuid(MHttpServer::HttpConnection::createUUID())
+		{}
+		HttpConnectionData(
+			class MHttpServer* parent,
+			TCPSocket&& socket,
+			size_t buffer_size = __MUZI_MHTTPSERVER_BUFFER_SIZE__,
+			size_t time_out = __MUZI_MHTTPSERVER_TIMEOUT_VALUE__) :
+			parent(parent),
+			m_socket(std::move(socket)),
+			m_buffer(buffer_size),
+			m_timer(this->m_socket.get_executor(), std::chrono::seconds(time_out)), // 设置超时时间，如果超过该值还没处理完http则返回
+			m_uuid(MHttpServer::HttpConnection::createUUID())
 		{}
 	public:
 		TCPSocket m_socket;
@@ -26,36 +38,50 @@ namespace MUZI::net::http
 		boost::beast::http::request<boost::beast::http::dynamic_body> m_request; // 动态包体
 		boost::beast::http::response<boost::beast::http::dynamic_body> m_response;
 		boost::beast::net::steady_timer m_timer;
+		String m_uuid;
 		class MHttpServer* parent;
 	};
 
 	class HttpServerData
 	{
 	public:
-		std::map<String, MHttpServer::FilePath> m_file_mapping;
-	};
-
-	MHttpServer::MHttpServer() :
-		m_data(nullptr)
-	{
-	}
-
-	void MHttpServer::accept(TCPAcceptor& acceptor, TCPSocket& socket)
-	{
-		acceptor.async_accept(socket,
-			[this, &acceptor, &socket](const EC& ec)
+		HttpServerData() :
+			m_io_context_new_flag(true),
+			m_io_context(new IOContext())
+		{
+		}
+		HttpServerData(IOContext& io_context) :
+			m_io_context_new_flag(false),
+			m_io_context(&io_context)
+		{
+		}
+		~HttpServerData()
+		{
+			if (this->m_io_context_new_flag)
 			{
-				if (!ec)
-				{
-					std::make_shared<HttpConnection>(std::move(socket))->start();
-				}
-				this->accept(acceptor, socket);
-			});
-	}
+				delete this->m_io_context;
+				this->m_io_context = nullptr;
+			}
+		}
+	public:
+		std::map<String, MHttpServer::FilePath> m_file_mapping;
+		std::map<String, std::shared_ptr<MHttpServer::HttpConnection>> m_connection_mapping;
+		IOContext* m_io_context;
+		bool m_io_context_new_flag;
+	};
 
 	MHttpServer::HttpConnection::HttpConnection(
 		class MHttpServer* parent,
 		TCPSocket& socket,
+		size_t buffer_size,
+		size_t time_out) :
+		m_data(new HttpConnectionData(parent, socket, buffer_size, time_out))
+	{
+	}
+
+	MHttpServer::HttpConnection::HttpConnection(
+		MHttpServer* parent,
+		TCPSocket&& socket,
 		size_t buffer_size,
 		size_t time_out) :
 		m_data(new HttpConnectionData(parent, socket, buffer_size, time_out))
@@ -71,10 +97,27 @@ namespace MUZI::net::http
 		}
 	}
 
+	String MHttpServer::HttpConnection::createUUID()
+	{
+		static boost::uuids::random_generator rgen;
+		return boost::uuids::to_string(rgen());
+	}
+
+	const String& MHttpServer::HttpConnection::getUUID()
+	{
+		return this->m_data->m_uuid;
+	}
+
 	void MHttpServer::HttpConnection::start()
 	{
 		this->readRequest();
 		this->checkDeadline();
+	}
+
+	void MHttpServer::HttpConnection::close()
+	{
+		this->m_data->m_socket.close();
+		this->m_data->parent->m_data->m_connection_mapping.erase(this->getUUID());
 	}
 
 	void MHttpServer::HttpConnection::readRequest()
@@ -98,10 +141,8 @@ namespace MUZI::net::http
 		this->m_data->m_timer.async_wait(
 			[self](const EC& ec)
 			{
-				if (!ec)
-				{
-					self->m_data->m_socket.close();
-				}
+				self->m_data->m_socket.close();
+				self->m_data->parent->m_data->m_connection_mapping.erase(self->getUUID());
 			});
 	}
 
@@ -222,7 +263,41 @@ namespace MUZI::net::http
 		);
 	}
 
-	bool MHttpServer::HttpConnection::resisterPath(String& target, const FilePath& dir_path, int deepth)
+	MHttpServer::MHttpServer() :
+		m_data(new HttpServerData())
+	{
+	}
+
+	MHttpServer::MHttpServer(IOContext& io_context) :
+		m_data(new HttpServerData(io_context))
+	{
+	}
+
+	MHttpServer::~MHttpServer()
+	{
+		if (this->m_data != nullptr)
+		{
+			delete this->m_data;
+			this->m_data = nullptr;
+		}
+	}
+
+	void MHttpServer::accept(TCPAcceptor& acceptor, TCPSocket& socket)
+	{
+		acceptor.async_accept(socket,
+			[this, &acceptor, &socket](const EC& ec)
+			{
+				if (!ec)
+				{
+					auto connect_ptr = std::make_shared<HttpConnection>(this, std::move(socket));
+					this->m_data->m_connection_mapping[connect_ptr->getUUID()] = connect_ptr;
+					connect_ptr->start();
+				}
+				this->accept(acceptor, socket);
+			});
+	}
+
+	bool MHttpServer::resisterPath(String& target, const FilePath& dir_path, int deepth)
 	{
 		if (deepth > 9)
 		{
@@ -243,7 +318,7 @@ namespace MUZI::net::http
 				{
 					continue;
 				}
-				this->m_data->parent->m_data->m_file_mapping[target] = file_path;
+				this->m_data->m_file_mapping[target] = file_path;
 				return true;
 			}
 			else if (boost::filesystem::is_directory(iter->path()))
@@ -255,7 +330,7 @@ namespace MUZI::net::http
 		return false;
 	}
 
-	bool MHttpServer::HttpConnection::registerPath(String& target, const FilePath& file_path)
+	bool MHttpServer::registerPath(String& target, const FilePath& file_path)
 	{
 		if (!boost::filesystem::exists(file_path) or
 			!boost::filesystem::is_regular_file(file_path) or
@@ -264,11 +339,11 @@ namespace MUZI::net::http
 		{
 			return false;
 		}
-		this->m_data->parent->m_data->m_file_mapping[target] = file_path;
+		this->m_data->m_file_mapping[target] = file_path;
 		return true;
 	}
 
-	void MHttpServer::HttpConnection::registerPaths(const FilePath& dir_path, int deepth)
+	void MHttpServer::registerPaths(const FilePath& dir_path, int deepth)
 	{
 		if (deepth > 9)
 		{
@@ -290,7 +365,7 @@ namespace MUZI::net::http
 				{
 					continue;
 				}
-				this->m_data->parent->m_data->m_file_mapping[file_path.stem().string()] = file_path;
+				this->m_data->m_file_mapping[file_path.stem().string()] = file_path;
 			}
 			else if (boost::filesystem::is_directory(iter->path()))
 			{

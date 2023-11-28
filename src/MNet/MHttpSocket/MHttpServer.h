@@ -12,6 +12,9 @@
 #include<boost/filesystem.hpp>
 #include<iostream>
 #include<fstream>
+#include<boost/uuid/uuid.hpp>
+#include<boost/uuid/random_generator.hpp>
+#include<boost/uuid/uuid_io.hpp>
 #include<boost/filesystem/string_file.hpp>
 
 #define __MUZI_MHTTPSERVER_BUFFER_SIZE__ 8192
@@ -36,9 +39,14 @@ namespace MUZI::net::http
 			static int DirectoryMode;
 		public:
 			HttpConnection(class MHttpServer* parent, TCPSocket& socket, size_t buffer_size = __MUZI_MHTTPSERVER_BUFFER_SIZE__, size_t time_out = __MUZI_MHTTPSERVER_TIMEOUT_VALUE__);
+			HttpConnection(class MHttpServer* parent, TCPSocket&& socket, size_t buffer_size = __MUZI_MHTTPSERVER_BUFFER_SIZE__, size_t time_out = __MUZI_MHTTPSERVER_TIMEOUT_VALUE__);
 			~HttpConnection();
 		public:
+			static String createUUID();
+			const String& getUUID();
+		public:
 			void start();
+			void close();
 		public:
 			void readRequest();
 			void checkDeadline();
@@ -46,21 +54,25 @@ namespace MUZI::net::http
 			void createGetResponse();
 			void createPostResponse();
 			void writeResponse();
-		public:
-			bool registerPath(String& target, const FilePath& file_path);
-			bool resisterPath(String& target, const FilePath& dir_path, int directory_mode);
-			void registerPaths(const FilePath& dir_path, int deepth = 0);
 
 		public:
 			class HttpConnectionData* m_data;
 		};
 	public:
 		MHttpServer();
+		MHttpServer(IOContext& io_context);
+		MHttpServer(const MHttpServer&) = delete;
+		~MHttpServer();
 	public:
 		Map<String, FilePath>& getTargetMapping();
 		FilePath getFilePath(String& target);
 	public:
+		bool registerPath(String& target, const FilePath& file_path);
+		bool resisterPath(String& target, const FilePath& dir_path, int directory_mode);
+		void registerPaths(const FilePath& dir_path, int deepth = 0);
+	public:
 		void accept(TCPAcceptor& acceptor, TCPSocket& socket);
+
 	public:
 		class HttpServerData* m_data;
 	};
