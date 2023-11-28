@@ -160,7 +160,7 @@ namespace MUZI::net
 				}
 				self->send(std::move(send_msg));
 			}
-		)
+		);
 	}
 
 	MWebSocketServer::MWebSocketConnection::MWebSocketConnection(MWebSocketServer* parent) :
