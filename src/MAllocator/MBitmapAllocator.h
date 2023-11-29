@@ -28,6 +28,7 @@ namespace MUZI {
 	public:
 		MBitmapAllocator()
 		{}
+		MBitmapAllocator(MBitmapAllocator&& allocator);
 		~MBitmapAllocator()
 		{}
 	private:
@@ -285,11 +286,11 @@ namespace MUZI {
 				}
 				this->p_data->p_start[pos].setCapacity(array_size);
 			}
-			void pop_back();// 负责标记最后一个为0
-			bool compare_by_array_size();// 用于排满后进行和全回收内容的长度对比
-			void swap();
+			void pop_back() {}// 负责标记最后一个为0
+			bool compare_by_array_size() {}// 用于排满后进行和全回收内容的长度对比
+			void swap(){}
 		private:
-			bool isNull();
+			bool isNull() {}
 		private:
 			void* allocate()
 			{
@@ -329,6 +330,9 @@ namespace MUZI {
 		{/*未实现*/
 		}
 	public:
+		/// @brief this function will alloacte memory
+		/// @param size block size, it will allocate a block of memory which capacity is sizeof(T) * size  
+		/// @return the pointer which pointer a block of memory
 		void* allocate(size_t size) override
 		{
 			return bitmap_allocate(size);
