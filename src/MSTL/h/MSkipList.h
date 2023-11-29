@@ -8,7 +8,9 @@
 #include"MAllocator/MBitmapAllocator.h"
 #include<iterator>
 #include<atomic>
-#define __MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__ 3 
+#define __MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__ 3 /*初始的索引层数*/
+#define __MUZI_MSKIPLIST_DEFAULT_EXTEAND_COEFFICIENT__ 1.5 /*内存申请拓展系数*/
+#define __MUZI_MSKIPLIST_DEFAULT_INDEX_LEVEL_UP_COEFFICIENT__ 2000 /*索引层级上升边界值*/
 
 namespace MUZI
 {
@@ -50,6 +52,12 @@ namespace MUZI
 				index_level(this->randLevel(max_level)),
 				index_next(new __MSkipListNode__<T>*[index_level] {nullptr})
 			{}
+			__MSkipListNode__(T&& value, __MSkipListNode__<T>* next, int max_level) :
+				value(value),
+				next(next),
+				index_level(this->randLevel(max_level)),
+				index_next(new __MSkipListNode__<T>* [index_level] {nullptr})
+			{}
 			__MSkipListNode__(const __MSkipListNode__& node) :
 				value(node.value),
 				next(node.next),
@@ -63,11 +71,11 @@ namespace MUZI
 				this->next = nullptr;
 			}
 		public:
-			T value;
-			__MSkipListNode__<T>* next;
-			__MSkipListNode__<T>** index_next;
-			size_t index_level;
-			std::atomic<bool> m_writing_flag;
+			T value; // 值
+			__MSkipListNode__<T>* next; // 下一个节点
+			__MSkipListNode__<T>** index_next; // 索引下一个节点
+			size_t index_level; // 索引层数
+			std::atomic<bool> m_writing_flag; // 用以在并发条件下判断当前结点是否需要修改
 		};
 	public:
 		MSkipList() :
@@ -256,18 +264,94 @@ namespace MUZI
 	public: // 增删查改
 		void push_back(const T& ele)
 		{
+			// 为新节点分配内存空间
+			__MSkipListNode__<T>* node = this->__getNewNode__();
+			
+			// 构造新节点
+			new(node) __MSkipListNode__<T>(ele, nullptr, this->m_max_level);
+			// 修改尾节点
+			this->m_tail->next = node;
+			this->m_tail = node;
+			for (size_t i = 0; i < node->index_level; ++i)
+			{
+				this->m_level_tail[i].pointer = node;
+			}
+			this->m_size += 1;
+			
+			// 更新索引层级
+			this->__updateLevel__();
 
 		}
 		void pop_back()
-		{}
-		void push_front()
-		{}
+		{
+			auto tail_node = this->m_tail;
+
+		}
+		void push_front(const T& ele)
+		{
+			// 为新节点分配内存空间
+			__MSkipListNode__<T>* node = this->__getNewNode__();
+
+			// 构造新节点
+			new(node) __MSkipListNode__<T>(ele, nullptr, this->m_max_level);
+
+			// 修改头节点
+			node->next = this->m_header;
+			this->m_header = node;
+			for (size_t i = 0; i < node->index_level; ++i)
+			{
+				node->index_next[i] = this->m_level_header[i].pointer;
+				this->m_level_header[i].pointer = node;
+			}
+			this->m_size += 1;
+
+			// 更新索引层级
+			this->__updateLevel__();
+		}
 		void pop_front()
 		{}
-		void emplace_back()
-		{}
-		void emplace_front()
-		{}
+		void emplace_back(T&& ele)
+		{
+			// 为新节点分配内存空间
+			__MSkipListNode__<T>* node = this->__getNewNode__();
+
+			// 构造新节点
+			new(node) __MSkipListNode__<T>(std::move(ele), nullptr, this->m_max_level);
+
+			// 修改头节点
+			node->next = this->m_header;
+			this->m_header = node;
+			for (size_t i = 0; i < node->index_level; ++i)
+			{
+				node->index_next[i] = this->m_level_header[i].pointer;
+				this->m_level_header[i].pointer = node;
+			}
+			this->m_size += 1;
+
+			// 更新索引层级
+			this->__updateLevel__();
+		}
+		void emplace_front(T&& ele)
+		{
+			// 为新节点分配内存空间
+			__MSkipListNode__<T>* node = this->__getNewNode__();
+
+			// 构造新节点
+			new(node) __MSkipListNode__<T>(ele, nullptr, this->m_max_level);
+
+			// 修改头节点
+			node->next = this->m_header;
+			this->m_header = node;
+			for (size_t i = 0; i < node->index_level; ++i)
+			{
+				node->index_next[i] = this->m_level_header[i].pointer;
+				this->m_level_header[i].pointer = node;
+			}
+			this->m_size += 1;
+
+			// 更新索引层级
+			this->__updateLevel__();
+		}
 		void insert()
 		{}
 		void emplace()
@@ -310,9 +394,37 @@ namespace MUZI
 		{}
 		void clear()
 		{}
-	private: // 私有方法
-		void __extendMemory__()
-		{}		
+	private: // 私有方法	
+		__MSkipListNode__<T>* __getNewNode__()
+		{
+			// 为新节点分配内存空间
+			__MSkipListNode__<T>* node = nullptr;
+			// 检查战备池
+			if (this->m_null_node_header == nullptr)
+			{
+				this->m_null_node_header = static_cast<__MSkipListNode__<T>*>\
+					(this->m_allocator.allocate(this->m_capacity * __MUZI_MSKIPLIST_DEFAULT_EXTEAND_COEFFICIENT__));
+				this->m_capacity *= __MUZI_MSKIPLIST_DEFAULT_EXTEAND_COEFFICIENT__;
+				// 切分分配的内存
+				__MSkipListNode__<T>* tmp_ptr = this->m_null_node_header;
+				for (; tmp_ptr != nullptr && tmp_ptr->next != nullptr; tmp_ptr = tmp_ptr->next)
+				{
+					tmp_ptr->next = tmp_ptr + 1;
+				}
+				tmp_ptr->next = nullptr;
+			}
+			node = this->m_null_node_header;
+			this->m_null_node_header = this->m_null_node_header->next;
+			return node;
+		}
+		void __updateLevel__()
+		{
+			// 更新最大索引层数
+			if (this->m_size % 2000 == 0)
+			{
+				this->m_max_level += 1;
+			}
+		}
 
 	private:
 		MAtomicLock m_atomic_lock; // 原子锁
