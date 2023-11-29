@@ -5,7 +5,6 @@
 #include<queue>
 namespace MUZI
 {
-
 	//RBTree
 	template<__Tree_Node_Inline_Ele_Type__ T>
 	class MRBTree
@@ -22,7 +21,7 @@ namespace MUZI
 		{
 		public:
 #define __MRBTREE_NODE_COLOR_RED__ true
-#define __MRBTREE_NODE_COLOR_BLACK__ false 
+#define __MRBTREE_NODE_COLOR_BLACK__ false
 		public:
 			__MRBTreeNode__() :color(__MRBTREE_NODE_COLOR_RED__) {}
 			__MRBTreeNode__(T ele, bool color) :color(color)
@@ -49,10 +48,10 @@ namespace MUZI
 		public:
 			friend class MRBTree<T>;
 		public:
-			iterator():m_data(nullptr), m_status(__ITERATOR_STAT__::DISABLE), parent(nullptr) {}
-			iterator(__MRBTreeNode__<T>& node, MRBTree<T>* parent,int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), m_status(status),parent(parent) {}
+			iterator() :m_data(nullptr), m_status(__ITERATOR_STAT__::DISABLE), parent(nullptr) {}
+			iterator(__MRBTreeNode__<T>& node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), m_status(status), parent(parent) {}
 			iterator(__MRBTreeNode__<T>* node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(node), m_status(status), parent(parent) {}
-			iterator(T& ele, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE):parent(parent), m_status(status)
+			iterator(T& ele, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :parent(parent), m_status(status)
 			{
 				if ((this->m_data = parent->__findNode__(ele)) == nullptr)
 				{
@@ -60,8 +59,8 @@ namespace MUZI
 					this->parent = nullptr;
 				}
 			}
-			iterator(const iterator<T>& it): m_data(it.m_data), m_status(it.m_status), parent(it.parent){}
-			iterator(iterator<T>&& it):m_data(it.m_data), m_status(it.m_status), parent(it.parent)
+			iterator(const iterator<T>& it) : m_data(it.m_data), m_status(it.m_status), parent(it.parent) {}
+			iterator(iterator<T>&& it) :m_data(it.m_data), m_status(it.m_status), parent(it.parent)
 			{
 				it.m_data = nullptr;
 				it.m_status = __ITERATOR_STAT__::ENABLE;
@@ -177,7 +176,7 @@ namespace MUZI
 					}
 				}
 			}
-			void operator-=(size_t step) 
+			void operator-=(size_t step)
 			{
 				if (this->m_status == __ITERATOR_STAT__::DISABLE || this->m_data == nullptr)
 				{
@@ -248,7 +247,7 @@ namespace MUZI
 		public:
 			friend class MRBTree<T>;
 		public:
-			reverse_iterator():m_data(nullptr), status(__ITERATOR_STAT__::DISABLE), parent(nullptr){}
+			reverse_iterator() :m_data(nullptr), status(__ITERATOR_STAT__::DISABLE), parent(nullptr) {}
 			reverse_iterator(const reverse_iterator& rit) :m_data(rit.m_data), status(rit.status), parent(rit.parent) {}
 			reverse_iterator(__MRBTreeNode__<T>& node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(&node), status(status), parent(parent) {}
 			reverse_iterator(__MRBTreeNode__<T>* node, MRBTree<T>* parent, int status = __ITERATOR_STAT__::ENABLE) :m_data(node), status(status), parent(parent) {}
@@ -438,7 +437,6 @@ namespace MUZI
 			MRBTree<T>* parent;
 		};
 
-
 	public:
 		MRBTree() :root(nullptr), node_count(0) {}
 		MRBTree(const MRBTree<T>&) = delete;
@@ -467,7 +465,7 @@ namespace MUZI
 			}
 			return iterator<T>(*p, this);
 		}
-		const iterator<T> end() const 
+		const iterator<T> end() const
 		{
 			return this->final_it;
 		}
@@ -492,7 +490,6 @@ namespace MUZI
 			//	return iterator<T>();
 			//}
 			return iterator<T>(this->__insertNode__(it.m_data->ele), this, __ITERATOR_STAT__::ENABLE);
-			
 		}
 		void insert(const T& ele)
 		{
@@ -544,7 +541,7 @@ namespace MUZI
 		}
 		bool set(const T& ele, const T& o_ele)
 		{
-			if(ele != o_ele)
+			if (ele != o_ele)
 			{
 				return false;
 			}
@@ -593,7 +590,7 @@ namespace MUZI
 		}
 		__MRBTreeNode__<T>* __insertNode__(const T& ele)
 		{
-			__MRBTreeNode__<T>* x = this->root, *last_x = nullptr, *root_x = this->root;
+			__MRBTreeNode__<T>* x = this->root, * last_x = nullptr, * root_x = this->root;
 			T x_ele;
 			int child = -1;
 			while (x)// 寻找到插入点的parent
@@ -679,10 +676,10 @@ namespace MUZI
 				T tmp_ele = predecessor_node->getElement();
 				predecessor_node->setElement(node->getElement());
 				node->setElement(ele);
-				
+
 				// 处理 存在一个子节点的 前驱节点
-				__MRBTreeNode__<T>* replacement 
-					= predecessor_node->getChildNode(__CHILDE_NODE__::LEFT) != nullptr 
+				__MRBTreeNode__<T>* replacement
+					= predecessor_node->getChildNode(__CHILDE_NODE__::LEFT) != nullptr
 					? predecessor_node->getChildNode(__CHILDE_NODE__::LEFT)
 					: predecessor_node->getChildNode(__CHILDE_NODE__::RIGHT);
 
@@ -744,8 +741,6 @@ namespace MUZI
 					predecessor_node->parent = nullptr;
 					node = predecessor_node;
 				}
-
-
 			}
 
 			// 归还被删除的节点
@@ -814,7 +809,6 @@ namespace MUZI
 						rnode = node->getChildNode(__CHILDE_NODE__::RIGHT);
 					}
 
-
 					// // 找兄弟要，兄弟为2节点, 需要将兄弟节点退化为红色，同父节点一同成为3/4节点
 					if (!__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::LEFT))
 						&& !__MRBTreeNode__<T>::isRed(rnode->getChildNode(__CHILDE_NODE__::RIGHT)))
@@ -873,7 +867,6 @@ namespace MUZI
 						//重新回到右孩子
 						lnode = node->getChildNode(__CHILDE_NODE__::LEFT);
 					}
-
 
 					// // 找兄弟要，兄弟为2节点, 需要将兄弟节点退化为红色，同父节点一同成为3/4节点
 					if (!__MRBTreeNode__<T>::isRed(lnode->getChildNode(__CHILDE_NODE__::RIGHT))
@@ -1004,7 +997,7 @@ namespace MUZI
 		}
 	private:
 		__MRBTreeNode__<T>* root;
-		uint64_t node_count;    
+		uint64_t node_count;
 		const static iterator<T> final_it;
 		const static reverse_iterator<T> final_rit;
 	};
@@ -1021,8 +1014,6 @@ namespace MUZI
 	{
 		return new MTree< T, MRBTree<T>>;
 	}
-
-
 };
 
 #endif // !__MUZI_MRBTREE_H__
