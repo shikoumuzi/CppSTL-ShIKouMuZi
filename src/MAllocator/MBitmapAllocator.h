@@ -2,12 +2,10 @@
 #ifndef __MUZI_MBITMAPALLOCATOR_H__
 #define __MUZI_MBITMAPALLOCATOR_H__
 
-
-
 namespace MUZI {
 	// 相比起普通POOL 这里采用数组代替链表的方式保管内存块
 		// 优点是可以随时将内存资源归还给操作系统、简单精简、有延缓归还能力
-		// 
+		//
 	//template<typename T>
 	//concept __muzi_alloctor_mod_bitmap_data_type__ = requires(T x)
 	//{
@@ -23,7 +21,6 @@ namespace MUZI {
 		{
 			return dynamic_cast<MAllocator*>(new MBitmapAllocator<T>());
 		}
-	
 
 	public:
 		MBitmapAllocator()
@@ -102,7 +99,6 @@ namespace MUZI {
 							this->p_data->p_end = this->p_data->p_start + pos + 1;
 						}
 						this->p_data->p_bitmap[no_full_bitmap] |= tmp_bit;
-
 					}
 					tmp_bit >>= 1;
 				}
@@ -288,7 +284,7 @@ namespace MUZI {
 			}
 			void pop_back() {}// 负责标记最后一个为0
 			bool compare_by_array_size() {}// 用于排满后进行和全回收内容的长度对比
-			void swap(){}
+			void swap() {}
 		private:
 			bool isNull() {}
 		private:
@@ -331,7 +327,7 @@ namespace MUZI {
 		}
 	public:
 		/// @brief this function will alloacte memory
-		/// @param size block size, it will allocate a block of memory which capacity is sizeof(T) * size  
+		/// @param size block size, it will allocate a block of memory which capacity is sizeof(T) * size
 		/// @return the pointer which pointer a block of memory
 		void* allocate(size_t size) override
 		{
@@ -341,6 +337,8 @@ namespace MUZI {
 		{
 			bitmap_deallocate(p);
 		}
+		void clear() {}
+		void extend(MBitmapAllocator&&) {}
 	};
 }
 #endif // !__MUZI_MBITMAPALLOCATOR_H__
