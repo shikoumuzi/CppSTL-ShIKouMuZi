@@ -25,7 +25,7 @@ namespace MUZI {
 	public:
 		MBitmapAllocator()
 		{}
-		MBitmapAllocator(MBitmapAllocator&& allocator);
+		MBitmapAllocator(MBitmapAllocator&& allocator){}
 		~MBitmapAllocator()
 		{}
 	private:

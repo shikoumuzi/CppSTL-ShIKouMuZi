@@ -24,6 +24,7 @@
 
 #include<stdio.h>
 #include<iostream>
+#include<vector>
 
 
 //void server()
@@ -149,6 +150,7 @@
 
 void myprint()
 {
+	std::vector<int> a;
 	return;
 }
 
