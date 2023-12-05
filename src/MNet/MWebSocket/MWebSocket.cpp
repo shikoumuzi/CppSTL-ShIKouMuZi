@@ -180,7 +180,7 @@ namespace MUZI::net
 
 	void MWebSocketServer::accept()
 	{
-		auto that = std::make_shared<MWebSocketConnection>(*this->m_data->m_io_context);
+		auto that = std::make_shared<MWebSocketConnection>(this, *this->m_data->m_io_context);
 		this->m_data->m_acceptor.async_accept(
 			boost::beast::get_lowest_layer(*that->m_data->m_ws_ptr).socket(),
 			[this, that](const EC& ec)
