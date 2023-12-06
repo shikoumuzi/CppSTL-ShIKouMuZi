@@ -92,6 +92,19 @@ namespace MUZI
 				return this->index_next[0];
 			}
 		public:
+			inline void protectWriting()
+			{
+				this->m_writing_flag = true;
+			}
+			inline void releaseWriting()
+			{
+				this->m_writing_flag = false;
+			}
+			inline bool isWriting()
+			{
+				return this->m_writing_flag;
+			}
+		public:
 			T value; // 值
 			//__MSkipListNode__<T>* next; // 下一个节点
 			__MSkipListNode__<T>** index_next;// 索引和下一个节点集合
@@ -194,6 +207,11 @@ namespace MUZI
 				return p_ret;
 			}
 		public:
+			void releaseNode(__MSkipListNode__<T>* node)
+			{
+				this->m_node_allocator.deallocate(node);
+			}
+		private:
 			__MSkipListNode__<T>* __getNewNode__()
 			{
 				// 为新节点分配内存空间
@@ -366,11 +384,12 @@ namespace MUZI
 		{
 			auto it = list.cbegin();
 			__MSkipListNode__<T>* node = this->m_node_factory.initNode(*it, this->m_max_level);
-			__MSkipListNode__<T>* front_node = this->__findLocation__(node);
+			__MSkipListNode__<T>* front_node = this->__findLocationByValue__(node->value);
+			front_node->protectWriting();
 			node->next() = front_node->next();
 			front_node->next() = node;
 			this->m_size += 1;
-			front_node->m_writing_flag = false;
+			front_node->releaseWriting();
 			++it;
 			__MSkipListNode__<T>* last_node = node;
 
@@ -380,13 +399,14 @@ namespace MUZI
 				// 构造新节点
 				node = this->m_node_factory.initNode(*it, this->m_max_level);
 				// 插入新节点
-				front_node = this->__findLocation__(node, last_node);
+				front_node = this->__findLocationByValue__(node->value, last_node);
+				front_node->protectWriting();
 				node->next() = front_node->next();
 				front_node->next() = node;
 				// 增加元素数
 				this->m_size += 1;
 				// 解锁
-				front_node->m_writing_flag = false;
+				front_node->releaseWriting();
 				// 获取新的进度
 				last_node = node;
 			}
@@ -474,17 +494,29 @@ namespace MUZI
 			if (this->m_size == 0)
 			{
 				__MSkipListNode__<T>* node = this->m_node_factory.initNode(ele, this->m_max_level, true);
+				this->m_header = node;
+				this->m_tail = node;
+				this->m_index_header[0].pointer = node;
+
 
 				return;
 			}
 			// 如果说ele小于头结点的值, 就直接插入到头
 			if (ele < this->m_header->value)
 			{
+				__MSkipListNode__<T>* node = this->m_node_factory.initNode(ele, this->m_header, this->m_max_level);
+				for (int i = 0; i <= node->index_level; ++i)
+				{
+					this->m_index_header[0].pointer = node;
+					
+				}
+				this->m_header = node;
+				return;
 			}
 			__MSkipListNode__<T>* node = this->m_node_factory.initNode(ele, this->m_max_level);
 			// 便递归下降索引边插入更新索引
 			// 先将未索引的部分删选以快速找到需要选择的区间
-			__MSkipListNode__<T>* front_node = this->m_index_header[this->m_max_level]->pointer;
+			__MSkipListNode__<T>* front_node = this->m_index_header[this->m_max_level].pointer;
 			size_t i = this->m_max_level;
 			for (; i > node->index_level; )
 			{
@@ -541,7 +573,7 @@ namespace MUZI
 					continue;
 				}
 				//判断当前索引下一级的值
-				if (front_node->index_next[i]->value > ele)
+				if (front_node->index_next[i]->value >= ele)
 				{
 					// 不是最后一层都是索引
 
@@ -564,8 +596,6 @@ namespace MUZI
 					front_node = front_node->index_next[i];
 					continue;
 				}
-				// 如果相等就直接进入插入程序
-				break;
 				//}
 			}
 
@@ -580,10 +610,64 @@ namespace MUZI
 			//this->m_size += 1;
 			//front_node->m_writing_flag = false;
 		}
-		void erase()
+		void erase(const T& value)
 		{
+			if (this->m_size == 0)
+			{
+				return;
+			}
+			if (this->m_size == 1)
+			{
+				return;
+			}
+			if (value < this->m_header->value)
+			{
+				return;
+			}
+			size_t i = this->m_max_level;
+			__MSkipListNode__<T>* front_node = this->m_header;
+			__MSkipListNode__<T>* tar_del_node = nullptr;
+			// 当size 不为0时 一定存在一个节点, 寻找节点
+			for (; i >= 0;)
+			{
+				// 代表直到末尾也都没有找到值
+				if (front_node->index_next[i] == nullptr)
+				{
+					if (i == 0)
+					{
+						return;
+					}
+					// 当本级索引找不到时则下降索引寻找
+					--i;
+					continue;
+				}
+				if (value < front_node->index_next[i]->value)
+				{
+					front_node = front_node->index_next[--i];
+					continue;
+				}
+				if (value > front_node->index_next[i]->value)
+				{
+					front_node = front_node->index_next[i];
+					continue;
+				}
+				if (value == front_node->index_next[i]->value)
+				{
+					front_node->index_next[i] = front_node->index_next[i]->index_next[i];
+					tar_del_node = front_node->index_next[i];
+					--i;
+					continue;
+				}
+			}
+			if (tar_del_node == nullptr)
+			{
+				return;
+			}
+
+			this->m_node_factory.releaseNode(tar_del_node);
 			this->m_size -= 1;
 		}
+
 		MIterator<T> find(T value, const MIterator<T>& it = MIterator(this->m_index_header[this->m_max_level - 1].pointer))
 		{
 			__MSkipListNode__<T>* p_node = it.data;
@@ -750,29 +834,56 @@ namespace MUZI
 		/// @brief this function will find a location which can insert node orderly and will set writting_flag to be true
 		/// @param node a node which be constructed
 		/// @return a node which in the front of the target location
-		__MSkipListNode__<T>* __findLocation__(__MSkipListNode__<T>* node, __MSkipListNode__<T>* start_node = nullptr)
+		__MSkipListNode__<T>* __findLocationByValue__(const T& value, __MSkipListNode__<T>* start_node = nullptr)
 		{
 			// 如果找到就返回相等的，如果找不到就找小于该value的节点和大于该value的节点的可插入位置
-			__MSkipListNode__<T>* ret_node = nullptr;
-
 			if (this->m_size == 0)
 			{
 				return nullptr;
 			}
-
-			size_t i = this->m_max_level - 1;
-
+			if (value < this->m_header->value)
+			{
+				return nullptr;
+			}
+			size_t i = this->m_max_level;
+			__MSkipListNode__<T>* front_node = this->m_header;
 			// 当size 不为0时 一定存在一个节点, 寻找节点
-
-			ret_node->m_writing_flag = true;
-			return ret_node;
+			for (;i >= 0;)
+			{
+				// 代表直到末尾也都没有找到值
+				if (front_node->index_next[i] == nullptr)
+				{
+					if (i == 0)
+					{
+						return nullptr;
+					}
+					// 当本级索引找不到时则下降索引寻找
+					--i;
+					continue;
+				}
+				if (value < front_node->index_next[i]->value)
+				{
+					front_node = front_node->index_next[--i];
+					continue;
+				}
+				if (value > front_node->index_next[i]->value)
+				{
+					front_node = front_node->index_next[i];
+					continue;
+				}
+				if (value == front_node->index_next[i]->value)
+				{
+					return front_node;
+				}
+			}
+			return nullptr;
 		}
 
 	private:
 		MAtomicLock m_atomic_lock; // 原子锁
 		__MSkipListNode__<T>* m_header; // 数据头
 		__MSkipListNode__<T>* m_tail; // 数据尾
-		std::vector<__MSkipListIndexBround__<T>*> m_index_header; // 索引头集合
+		std::vector<__MSkipListIndexBround__<T>> m_index_header; // 索引头集合
 		__MSkipListNodeFactory__<T> m_node_factory;
 		size_t m_size; // 元素数
 		index_t m_max_level; // 最大索引层级(从 0 开始计数)
