@@ -262,29 +262,99 @@ namespace MUZI
 		{
 		public:
 			friend class MSkipList<T>;
+			friend class MCIterator<T>;
 		public:
-			MIterator()
+			MIterator() :
+				data(nullptr)
 			{}
+			MIterator(const MIterator<T>& iter) :
+				data(iter.data)
+			{}
+			MIterator(MIterator<T>&& iter) :
+				data(iter.data)
+			{
+				iter.data = nullptr;
+			}
 		private:
 			MIterator(__MSkipListNode__<T>* data) :
 				data(data)
 			{}
 		public:
-			bool operator==(const MIterator<T>& iterator)
+			bool operator==(const MIterator<T>& iter)
 			{
-				return false;
+				return this->data == iter.data || this->data->value == iter.data->value;
 			}
-			std::strong_ordering operator<=>(const MIterator<T>& iterator)
+			std::weak_ordering operator<=>(const MIterator<T>& iter)
 			{
-				return std::strong_ordering();
+				return this->data->value <=> iter.data->value;
 			}
 			void operator++()
-			{}
-			void operator++(int)
-			{}
+			{
+				if (this->data != nullptr || this->data->next() != nullptr)
+				{
+					this->data = this->data->next();
+				}
+			}
+			MIterator<T> operator++(int)
+			{
+				MIterator<T> ret_iter = *this;
+				this->operator++();
+				return ret_iter;
+			}
+			MIterator<T> operator+(MIterator::difference_type offset)
+			{
+				MIterator<T> iter = *this;
+				while (offset--)
+				{
+					if (this->data != nullptr || this->data->next() != nullptr)
+					{
+						this->data = this->data->next();
+						continue;
+					}
+					break;
+				}
+				return iter;
+			}
+			void operator+=(MIterator::difference_type offset)
+			{
+				while (offset--)
+				{
+					if (this->data != nullptr || this->data->next() != nullptr)
+					{
+						this->data = this->data->next();
+						continue;
+					}
+					break;
+				}
+			}
+			void operator=(const MIterator<T>& iter)
+			{
+				this->data = iter->data;
+			}
 			T& operator*()
 			{
-				return *data;
+				return this->data->value;
+			}
+			T& operator->()
+			{
+				return this->data->value;
+			}
+		public:
+			bool operator==(const MIterator<T>& iter) const
+			{
+				return this->data == iter.data || this->data->value == iter.data->value;
+			}
+			std::weak_ordering operator<=>(const MIterator<T>& iter) const
+			{
+				return this->data->value <=> iter.data->value;
+			}
+			const T& operator*() const
+			{
+				return this->data->value;
+			}
+			const T& operator->() const
+			{
+				return this->data->value;
 			}
 		public:
 			__MSkipListNode__<T>* data;
@@ -292,7 +362,60 @@ namespace MUZI
 
 		template<typename T = __MDefaultTypeDefine__>
 		class MCIterator : private MIterator<T>
-		{};
+		{
+		public:
+			MCIterator() {}
+			MCIterator(const MCIterator<T>& iter) :
+				data(iter.data)
+			{}
+			MCIterator(MCIterator<T>&& iter) :
+				data(iter.data)
+			{
+				iter.data = nullptr;
+			}
+			MCIterator(const MIterator<T>& iter) :
+				data(iter.data)
+			{}
+			MCIterator(MIterator<T>&& iter) :
+				data(iter.data)
+			{
+				iter.data = nullptr;
+			}
+		public:
+			bool operator==(const MCIterator<T>& iter)
+			{
+				return this->data == iter.data || this->data->value == iter.data->value;
+			}
+			std::weak_ordering operator<=>(const MCIterator<T>& iter)
+			{
+				return this->data->value <=> iter.data->value;
+			}
+			const T& operator*()
+			{
+				return this->data->value;
+			}
+			const T& operator->()
+			{
+				return this->data->value;
+			}
+		public:
+			bool operator==(const MCIterator<T>& iter) const
+			{
+				return this->data == iter.data || this->data->value == iter.data->value;
+			}
+			std::weak_ordering operator<=>(const MCIterator<T>& iter) const
+			{
+				return this->data->value <=> iter.data->value;
+			}
+			const T& operator*() const
+			{
+				return this->data->value;
+			}
+			const T& operator->() const
+			{
+				return this->data->value;
+			}
+		};
 
 		//template<typename T>
 		//class MRIterator: private MIterator<T>
@@ -498,7 +621,6 @@ namespace MUZI
 				this->m_tail = node;
 				this->m_index_header[0].pointer = node;
 
-
 				return;
 			}
 			// 如果说ele小于头结点的值, 就直接插入到头
@@ -508,7 +630,6 @@ namespace MUZI
 				for (int i = 0; i <= node->index_level; ++i)
 				{
 					this->m_index_header[0].pointer = node;
-					
 				}
 				this->m_header = node;
 				return;
@@ -667,7 +788,17 @@ namespace MUZI
 			this->m_node_factory.releaseNode(tar_del_node);
 			this->m_size -= 1;
 		}
-
+		MIterator<T> erase(MIterator<T>& iter)
+		{
+			if (iter.data == nullptr || iter.data->next() == nullptr)
+			{
+				return this->end();
+			}
+			MIterator<T> ret_node = MIterator<T>(iter.data->next());
+			this->erase(iter.data->value);
+			iter.data = nullptr;
+			return ret_node;
+		}
 		MIterator<T> find(T value, const MIterator<T>& it = MIterator(this->m_index_header[this->m_max_level - 1].pointer))
 		{
 			__MSkipListNode__<T>* p_node = it.data;
@@ -848,7 +979,7 @@ namespace MUZI
 			size_t i = this->m_max_level;
 			__MSkipListNode__<T>* front_node = this->m_header;
 			// 当size 不为0时 一定存在一个节点, 寻找节点
-			for (;i >= 0;)
+			for (; i >= 0;)
 			{
 				// 代表直到末尾也都没有找到值
 				if (front_node->index_next[i] == nullptr)
