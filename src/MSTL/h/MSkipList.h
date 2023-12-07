@@ -864,8 +864,8 @@ namespace MUZI
 				return this->end();
 			}
 
-			size_t i = this->m_max_level;
-			__MSkipListNode__<T>* front_node = this->m_header;
+			size_t i = it.data->index_level;
+			__MSkipListNode__<T>* front_node = it.data;
 			for (; i >= 0;)
 			{
 				// 代表直到末尾也都没有找到值
