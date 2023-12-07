@@ -12,6 +12,7 @@
 #include<compare>
 #include<unordered_map>
 #include"MBase/MObjectBase.h"
+
 #define __MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__ 0 /*初始的索引层数*/
 #define __MUZI_MSKIPLIST_DEFAULT_EXTEAND_COEFFICIENT__ 1.5 /*内存申请拓展系数*/
 #define __MUZI_MSKIPLIST_DEFAULT_INDEX_LEVEL_UP_COEFFICIENT__ 2047  /*索引层级上升边界值(2048 - 1)*/
@@ -212,6 +213,12 @@ namespace MUZI
 			{
 				this->m_node_allocator.deallocate(node);
 			}
+		public:
+			void receiveFromFactory(__MSkipListNodeFactory__<T>&& factory)
+			{
+				this->m_node_allocator.receive(factory.m_node_allocator);
+				this->m_capacity += factory.m_capacity;
+			}
 		private:
 			__MSkipListNode__<T>* __getNewNode__()
 			{
@@ -258,7 +265,7 @@ namespace MUZI
 		public:
 			void operator=(const __MSkipListNodeFactory__<T>& factory)
 			{
-			}
+			} 
 		private:
 			MBitmapAllocator<__MSkipListNode__<T>*> m_index_allocator; // 索引分配器
 			MBitmapAllocator<__MSkipListNode__<T>> m_node_allocator; // 节点分配器
@@ -366,6 +373,11 @@ namespace MUZI
 			{
 				return this->data->value;
 			}
+		private:
+			inline __MSkipListNode__<T>* getData()
+			{
+				return this->data;
+			}
 		public:
 			inline bool isVaild()
 			{
@@ -459,17 +471,10 @@ namespace MUZI
 			m_index_header(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__),
 			m_node_factory(this->m_max_level)
 		{}
-		MSkipList(const MSkipList<T>& list) :
-			m_header(nullptr),
-			m_max_level(list.m_max_level),
-			m_node_factory(this->m_max_level, list.capacity()),
-			m_size(list.m_size),
-			m_index_header(list.m_index_header)
-
+		MSkipList(const MSkipList<T>& list):
+			MSkipList()
 		{
-			//this->m_level_tail[0].pointer = this->m_tail;
-			// 构建剩余所有索引
-			this->__constructAllIndex__();
+			this->append(list);
 		}
 		MSkipList(MSkipList<T>&& list) :
 			m_max_level(list.m_max_level),
@@ -490,39 +495,74 @@ namespace MUZI
 			//list.m_level_header.resize(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__, { nullptr });
 			//list.m_level_tail.resize(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__, { nullptr });
 		}
-		MSkipList(int size) :
-			m_header(nullptr),
-			m_max_level(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__),
-			m_node_factory(this->m_max_level),
-			m_size(size),
-			m_index_header(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__)
-		{
-			// 构建索引
-			this->__constructAllIndex__();
-		}
 		MSkipList(const std::initializer_list<T>& list) :
-			m_header(nullptr),
-			m_max_level(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__),
-			m_node_factory(this->m_max_level),
-			m_size(list.size()),
-			m_index_header(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__)
-			//m_level_tail(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__),
+			MSkipList()
 		{
-			size_t i = 0;
-			for (auto it = list.begin(); it != list.end() - 1; ++it)
-			{
-				(this->m_header + i)->next() = (this->m_header + i + 1);
-				new(&(this->m_header->value)) T(*it);
-				(this->m_header + i)->index_level = __MSkipListNode__<T>::randLevel(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__);
-				i += 1;
-			}
-			this->m_tail = this->m_header + i;
-			this->m_tail->next() = nullptr;
-
-			this->__constructAllIndex__();
+			this->append(list);
 		}
 		~MSkipList()
 		{
+		}
+	public:
+		void operator+=(const MSkipList<T>& list)
+		{
+			this->append(list);
+		}
+		void operator+=(MSkipList<T>&& list)
+		{
+			this->append(list);
+		}
+		void operator+=(const std::span<T>& list)
+		{
+			this->append(list);
+		}
+		void operator+=(const std::initializer_list<T>& list)
+		{
+			this->append(list);
+		}
+		MSkipList<T> operator+(const MSkipList<T>& list)
+		{
+			MSkipList<T> ret_list = *this;
+			ret_list += list;
+			return ret_list;
+		}
+		MSkipList<T> operator+(MSkipList<T>&& list)
+		{
+			MSkipList<T> ret_list = *this;
+			ret_list += list;
+			return ret_list;
+		}
+		MSkipList<T> operator+(const std::span<T>& list)
+		{
+			MSkipList<T> ret_list = *this;
+			ret_list += list;
+			return ret_list;
+		}
+		MSkipList<T> operator+(const std::initializer_list<T>& list)
+		{
+			MSkipList<T> ret_list = *this;
+			ret_list += list;
+			return ret_list;
+		}
+		void operator=(const MSkipList<T>& list)
+		{
+			this->clear();
+			this->append(list);
+		}
+		void operator=(MSkipList<T>&& list)
+		{
+			this->clear();
+			this->append(list);
+		}
+		void operator=(const std::span<T>& list)
+		{
+			this->clear();
+			this->append(list);
+		}
+		void operator=(const std::initializer_list<T>& list)
+		{
+			this->clear();
+			this->append(list);
 		}
 	public: // 增删查改
 		void insert(const T& ele)
@@ -632,8 +672,10 @@ namespace MUZI
 					continue;
 				}
 				//}
-			}
 
+				
+			}
+			this->__updateLevel__();
 			this->m_size += 1;
 		}
 		void emplace(T&& ele)
@@ -744,7 +786,7 @@ namespace MUZI
 				}
 				//}
 			}
-
+			this->__updateLevel__();
 			this->m_size += 1;
 		}
 		void erase(const T& value)
@@ -800,7 +842,7 @@ namespace MUZI
 			{
 				return;
 			}
-
+			this->__updateLevel__();
 			this->m_node_factory.releaseNode(tar_del_node);
 			this->m_size -= 1;
 		}
@@ -855,6 +897,164 @@ namespace MUZI
 				}
 			}
 			return MIterator<T>();
+		}
+		void append(const MSkipList<T>& list)
+		{
+			auto end_iter = list.end();
+			for (auto it = list.begin(); it != end_iter; ++it)
+			{
+				this->insert(*it);
+			}
+		}
+		void append(MSkipList<T>&& list)
+		{
+			this->m_node_factory.receiveFromFactory(std::move(list.m_node_factory));
+			// 先检查表内是否无值，有的话单独初始化内容
+			auto end_it = list.end();
+			for (auto it = list.begin(); it != end_it; ++it)
+			{
+				if (this->m_size == 0)
+				{
+					__MSkipListNode__<T>* node = it.data;
+					this->m_header = node;
+					this->m_tail = node;
+					this->m_index_header[0].pointer = node;
+
+					return;
+				}
+				// 如果说ele小于头结点的值, 就直接插入到头
+				if (*it < this->m_header->value)
+				{
+					__MSkipListNode__<T>* node = it.data;
+					for (int i = 0; i <= node->index_level; ++i)
+					{
+						this->m_index_header[0].pointer = node;
+					}
+					this->m_header = node;
+					return;
+				}
+				__MSkipListNode__<T>* node = it.data;
+				// 便递归下降索引边插入更新索引
+				// 先将未索引的部分删选以快速找到需要选择的区间
+				__MSkipListNode__<T>* front_node = this->m_index_header[this->m_max_level].pointer;
+				size_t i = this->m_max_level;
+				for (; i > node->index_level; )
+				{
+					// 当前front_node->value 一定小于 ele
+					//if (front_node->value < ele)
+					//{
+					// 当下个结点为空时，通过continue，更加细化查找节点
+					if (front_node->next() == nullptr)
+					{
+						//// 高于0的都继续continue
+						//if (i != 0)
+						//{
+						//	continue;
+						//}
+						//// 直接插入尾巴
+						// 因为该for循环 最起码 都是 > 0的 所以该步一定为continue
+						--i;
+						continue;
+					}
+					//判断当前索引下一级的值
+					if (front_node->index_next[i]->value > *it)
+					{
+						// 当前节点下降查询
+						front_node = front_node->index_next[--i];
+						continue;
+					}
+					if (front_node->index_next[i]->value < *it)
+					{
+						// 就继续向当前级别索引的下一个索引节点前进
+						front_node = front_node->index_next[i];
+						continue;
+					}
+					// 如果相等就直接进入插入程序
+					break;
+					//}
+				}
+
+				// 然后开始边搜索边更新索引
+				for (; i >= 0; )
+				{
+					// 当前front_node->value 一定小于 ele
+					//if (front_node->value < ele)
+					//{
+					// 当下个结点为空时，通过continue，更加细化查找节点
+					if (front_node->next() == nullptr)
+					{
+						front_node->index_next[i - 1] = node;
+						node->index_next[i - 1] = nullptr;
+						if (i == 0)
+						{
+							this->m_tail = node;
+						}
+						--i;
+						continue;
+					}
+					//判断当前索引下一级的值
+					if (front_node->index_next[i]->value >= *it)
+					{
+						// 不是最后一层都是索引
+
+						// 将node节点插入当前级别索引
+						__MSkipListNode__<T>* front_next_node = front_node->index_next[i - 1];
+						front_node->index_next[i - 1] = node;
+						node->index_next[i - 1] = front_next_node;
+
+						front_node = front_node->index_next[--i];
+						if (i != 0)
+						{
+							continue;
+						}
+						break;
+
+						// 到了最后一层就是next节点连接层
+					}
+					if (front_node->index_next[i]->value < *it)
+					{
+						front_node = front_node->index_next[i];
+						continue;
+					}
+					//}
+				}
+				this->__updateLevel__();
+				this->m_size += 1;
+			}
+
+
+		}
+		void append(const std::span<T>& list)
+		{
+			auto end_iter = list.end();
+			for (auto it = list.begin(); it != end_iter; ++it)
+			{
+				this->insert(*it);
+			}
+		}
+		void append(const std::initializer_list<T>& list)
+		{
+			auto end_iter = list.end();
+			for (auto it = list.begin(); it != end_iter; ++it)
+			{
+				this->insert(*it);
+			}
+		}
+		void extend(const MSkipList<T>& list)
+		{
+			this->append(list);
+		}
+		void extend(MSkipList<T>&& list)
+		{
+			this->append(list);
+		}
+		void extend(const std::span<T>& list)
+		{
+			this->append(list);
+		}
+		void extend(const std::initializer_list<T>& list)
+		{
+			this->append(list);
 		}
 	public:
 		MIterator<T> find(T value, const MIterator<T>& it = MIterator<T>(this->m_header)) const
@@ -1105,7 +1305,7 @@ namespace MUZI
 			}
 			return nullptr;
 		}
-
+		
 	private:
 		__MSkipListNode__<T>* m_header; // 数据头
 		__MSkipListNode__<T>* m_tail; // 数据尾
