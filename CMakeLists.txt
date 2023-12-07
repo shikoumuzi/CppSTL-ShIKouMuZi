@@ -45,6 +45,21 @@ include_directories(src/)
 include_directories(${H_FILE_PATH})
 # message(STATUS " H_FILE_PATH IS ${H_FILE_PATH}")
 
+# 设置颜色
+# string(ASCII 27 Esc)
+# set(Yellow "${Esc}")
+
+# 导入模块
+include("src/MAllocator/MAllocator.cmake")
+include("src/MBase/MBase.cmake")
+include("src/MDataBase/MSQLite/MSQLite.cmake")
+include("src/MDesignModel/MDesignModel.cmake")
+include("src/MEventLoop/MEventLoop.cmake")
+include("src/MLog/MLog.cmake")
+include("src/MFileSystem/MFileSystem.cmake")
+include("src/MFTP/MFTP.cmake")
+include("src/MSTL/MSTL.cmake")
+include("src/MNet/MNet.cmake")
 
 # BOOST的设置
 # 设置不使用静态库
@@ -100,84 +115,99 @@ if(RapidJSON_FOUND)
 	message(STATUS "rapidjson_INCLUDE_DIRS=${RapidJSON_INCLUDE_DIRS}")
 endif()
 
+# 导入子目录
+# add_subdirectory("src/MAllocator")
+# add_subdirectory("src/MBase")
 
 set(HEADERS
 	${H_FILE_PATH}
-	"src/MSTL/h/MTreeMap.h" 
-	"src/MSTL/h/MHashMap.h" 
-	"src/MSTL/h/MList.h" 
-	"src/MBase/MError.h" 
-	"src/MSTL/h/MStack.h" 
-	"src/MSTL/h/MDeque.h" 
-	"src/MFTP/MFTPProto.h" 
-	"src/MFileSystem/MFileDataBase.h" 
-	"src/MFileSystem/MFileInput.h" 
-	"src/MFileSystem/MFileOutput.h"  
-	"src/MFileSystem/FileIOQueue.h"  
-	"src/MFileSystem/MFileBase/MFileInWin.h" 
-	"src/MDataBase/MSQLite/MSQLiite.h"
-	"src/MAllocator/MPoolAllocator.h" 
-	"src/MAllocator/MLOKIAllocator.h" 
-	"src/MAllocator/MArrayAllocaor.h"
-	"src/MNet/MEndPoint/MClientEndPoint.h"
-	"src/MNet/MEndPoint/MServerEndPoint.h"
-	"src/MNet/MNetBase.h"
-	"src/MNet/MSyncSocket/MSyncSocket.h"
-	"src/MLog/MLog.h"
-	"src/MNet/MAsyncSocket/MAsyncSocket.h"
-	"src/MNet/MAsyncSocket/MAsyncServer.h"
-	"src/MNet/MEndPoint/MEndPoint.h"
-	"src/MNet/MAsyncSocket/MAsyncClient.h"
-	"src/MNet/MMsgNode/MMsgNode.h" 
-	"src/MNet/MAsyncSocket/MSession.h"
-	"src/MSTL/h/MSyncAnnularQueue.h" 
-	"src/MSTL/h/MAtomicLock.h"
-	"src/MDesignModel/MObserver/MObserver.h"
-	"src/MDesignModel/MObserver/MSubject.h" 
-	"src/MNet/MMsgNode/MSendMsgNode.h" 
-	"src/MNet/MMsgNode/MRecvMsgNode.h" 
-	"src/MDesignModel/MSingleton/MSingleton.h"
-	"src/MNet/MLogicSystem/MLogicSystem.h"
-	"src/MNet/MLogicSystem/MLogicNode.h" 
-	"src/MEventLoop/MEvent.h" 
-	"src/MEventLoop/MEventLoop.h" 
-	"src/MEventLoop/MSlot/MSlot.h"
-	"src/MEventLoop/MSlot/MSignal.h" 
-	"src/MEventLoop/MSlot/MConnect.h"
-	"src/MEventLoop/MEventObject.h" 
+	#"src/MLog/MLog.h"
+
+	# "src/MSTL/h/MTreeMap.h" 
+	# "src/MSTL/h/MHashMap.h" 
+	# "src/MSTL/h/MList.h" 
+	# "src/MSTL/h/MStack.h" 
+	# "src/MSTL/h/MDeque.h" 
+	# "src/MSTL/h/MSyncAnnularQueue.h" 
+	# "src/MSTL/h/MVector.h" 
+	# "src/MSTL/h/MSkipList.h"  
+	# "src/MSTL/h/MArray.h"
+	# "src/MSTL/h/MAtomicLock.h"
+	
+	# "src/MFileSystem/MFileDataBase.h" 
+	# "src/MFileSystem/MFileInput.h" 
+	# "src/MFileSystem/MFileOutput.h"  
+	# "src/MFileSystem/FileIOQueue.h"  
+	# "src/MFileSystem/MFileBase/MFileInWin.h" 
+	# "src/MDataBase/MSQLite/MSQLiite.h"
+
+	# "src/MNet/MEndPoint/MClientEndPoint.h"
+	# "src/MNet/MEndPoint/MServerEndPoint.h"
+	# "src/MNet/MNetBase.h"
+	# "src/MNet/MSyncSocket/MSyncSocket.h"
+	# "src/MNet/MAsyncSocket/MAsyncSocket.h"
+	# "src/MNet/MAsyncSocket/MAsyncServer.h"
+	# "src/MNet/MEndPoint/MEndPoint.h"
+	# "src/MNet/MAsyncSocket/MAsyncClient.h"
+	# "src/MNet/MMsgNode/MMsgNode.h" 
+	# "src/MNet/MAsyncSocket/MSession.h"
+	# "src/MNet/MMsgNode/MSendMsgNode.h" 
+	# "src/MNet/MMsgNode/MRecvMsgNode.h" 
+	# "src/MNet/MLogicSystem/MLogicSystem.h"
+	# "src/MNet/MLogicSystem/MLogicNode.h" 
+	# "src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.h"
+	# "src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.h"
+	# "src/MNet/MCoroutineSocket/MCoroutineSocket.h"
+	#"src/MNet/MCoroutineSocket/MSession.h" 
+	#"src/MNet/MHttpSocket/MHttpServer.h" 
+	#"src/MNet/MReliableUDP/MReliableUDP.h" 
+	#"src/MNet/MWebSocket/MWebSocket.h" 
+	#"src/MNet/MCoroutineSocket/MCoroutineServer.h" 
+	#"src/MNet/MCoroutineSocket/MCoroutineClient.h" 
+	#"src/MNet/MHttpSocket/MHttpClient.h" 
+
+	# "src/MDesignModel/MObserver/MObserver.h"
+	# "src/MDesignModel/MObserver/MSubject.h" 
+	# "src/MDesignModel/MSingleton/MSingleton.h"
+
+
 	"src/MSignal/MSignalUtils.h"
-	"src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.h"
-	"src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.h"
-	"src/MNet/MCoroutineSocket/MCoroutineSocket.h"
+
 
 )
 
 set(SOURCES
 	${CPP_FILE_PATH}
-	"src/MDataBase/MSQLite/MSQLite.cpp"
-	"src/MFileSystem/FileIOQueue.cpp"
-	"src/MFileSystem/MFileInput.cpp" 
-	"src/MFileSystem/MFile.cpp" 
-	"src/MAllocator/MPoolAllocator.cpp" 
-	"src/MAllocator/MLOKIAllocator.cpp" 
-	"src/MFileSystem/MFileOutput.cpp" 
-	"src/MFileSystem/MFileDataBase.cpp" 
-	"src/MFTP/MFTP.cpp" 
-	"src/MNet/MEndPoint/MClientEndPoint.cpp"
-	"src/MNet/MEndPoint/MServerEndPoint.cpp"
-	"src/MNet/MSyncSocket/MSyncSocket.cpp"  
-	"src/MLog/MLog.cpp"
-	"src/MNet/MAsyncSocket/MAsyncSocket.cpp"
-	"src/MNet/MAsyncSocket/MAsyncServer.cpp"
-	"src/MNet/MAsyncSocket/MAsyncClient.cpp"
-	"src/MNet/MAsyncSocket/MSession.cpp"
+	#"src/MLog/MLog.cpp"
 	
-	"src/MEventLoop/MEventLoop.cpp"
-	"src/MEventLoop/MEvent.cpp"
-	"src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.cpp"  
-	"src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.cpp"
-	"src/MSTL/h/MVector.h" "src/MSignal/MSignalUtils.cpp"
-	 "src/MNet/MCoroutineSocket/MCoroutineSocket.cpp"
+	#"src/MFileSystem/FileIOQueue.cpp"
+	#"src/MFileSystem/MFileInput.cpp" 
+	#"src/MFileSystem/MFile.cpp" 
+	#"src/MFileSystem/MFileOutput.cpp" 
+	#"src/MFileSystem/MFileDataBase.cpp" 
+	# "src/MFTP/MFTP.cpp" 
+
+	#"src/MNet/MEndPoint/MClientEndPoint.cpp"
+	#"src/MNet/MEndPoint/MServerEndPoint.cpp" 
+	#"src/MNet/MSyncSocket/MSyncSocket.cpp"  
+	#"src/MNet/MAsyncSocket/MAsyncSocket.cpp"
+	#"src/MNet/MAsyncSocket/MAsyncServer.cpp"
+	#"src/MNet/MAsyncSocket/MAsyncClient.cpp"
+	#"src/MNet/MAsyncSocket/MSession.cpp"
+	#"src/MNet/MIOPool/MAsioIOServerPool/MAsioIOServerPool.cpp"  
+	#"src/MNet/MIOPool/MAsioIOThreadPool/MAsioIOThreadPool.cpp"
+	#"src/MNet/MCoroutineSocket/MCoroutineSocket.cpp"
+	#"src/MNet/MHttpSocket/MHttpServer.cpp" 
+	#"src/MNet/MHttpSocket/MHttpClient.cpp"
+	#"src/MNet/MCoroutineSocket/MCoroutineServer.cpp" 
+	#"src/MNet/MCoroutineSocket/MCoroutineClient.cpp" 
+	#"src/MNet/MWebSocket/MWebSocket.cpp" 
+	#"src/MNet/MCoroutineSocket/MSession.cpp" 
+	#"src/MEventLoop/MEventLoop.cpp"
+	#"src/MEventLoop/MEvent.cpp"
+
+	
+	"src/MSignal/MSignalUtils.cpp"
 
 )
 
@@ -190,7 +220,9 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
-       "src/MNet/MCoroutineSocket/MSession.h" "src/MNet/MCoroutineSocket/MSession.cpp" "src/MNet/MCoroutineSocket/MCoroutineServer.h" "src/MNet/MCoroutineSocket/MCoroutineServer.cpp" "src/MNet/MCoroutineSocket/MCoroutineClient.h" "src/MNet/MCoroutineSocket/MCoroutineClient.cpp" "src/MNet/MHttpSocket/MHttpClient.h" "src/MNet/MHttpSocket/MHttpServer.cpp" "src/MNet/MHttpSocket/MHttpClient.cpp" "src/MNet/MHttpSocket/MHttpServer.h" "src/MNet/MReliableUDP/MReliableUDP.h" "src/MNet/MWebSocket/MWebSocket.h" "src/MNet/MWebSocket/MWebSocket.cpp" "src/MSTL/h/MSkipList.h"  "src/MSTL/h/MArray.h")
+
+
+)
 
 
 
