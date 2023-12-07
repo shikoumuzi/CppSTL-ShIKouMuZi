@@ -4,11 +4,12 @@
 #include"MIterator.h"
 #include<queue>
 #include"MBase/MObjectBase.h"
+#include<iterator>
 namespace MUZI
 {
 	//RBTree
 	template<__Tree_Node_Inline_Ele_Type__ T = __MDefaultTypeDefine__>
-	class MRBTree
+	class MRBTree : std::iterator<std::bidirectional_iterator_tag, T, size_t, const T, T>
 	{
 	private: // childnode
 		enum __CHILDE_NODE__
@@ -264,8 +265,7 @@ namespace MUZI
 		public:
 			void disable() noexcept
 			{
-				this->parent = nullptr;
-				this->m_data = T();
+				this->m_iter.disable();
 			}
 			inline bool status()
 			{

@@ -275,7 +275,7 @@ namespace MUZI
 		};
 	public:
 		template<typename T = __MDefaultTypeDefine__>
-		class MIterator : public std::MIterator<std::forward_iterator_tag, T, size_t, const T*, T>
+		class MIterator : public std::iterator<std::forward_iterator_tag, T, size_t, const T*, T>
 		{
 		public:
 			friend class MSkipList<T>;
