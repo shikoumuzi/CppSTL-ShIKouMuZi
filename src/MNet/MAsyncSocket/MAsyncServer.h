@@ -13,13 +13,12 @@
 
 namespace MUZI::net::async
 {
-
-	class MAsyncServer: public MAsyncSocket
+	class MAsyncServer : public MAsyncSocket
 	{
 	public:
-		static void defalutNotifyFunction(MAsyncSocket&){}
+		static void defalutNotifyFunction(MAsyncSocket&) {}
 	public:
-		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;
+		using MIterator = std::map<String, NetAsyncIOAdapt>::iterator;
 		using AcceptCallBack = std::function<void(MAsyncServer&, NetAsyncIOAdapt)>;
 		//using NotifiedFunction = std::function<void(MAsyncServer&)>;
 	public:
@@ -28,7 +27,7 @@ namespace MUZI::net::async
 		friend class MAsyncServerData;
 	public:
 		MAsyncServer(int& error_code, const MServerEndPoint& endpoint, NotifiedFunction notified_fun = defalutNotifyFunction);
-		MAsyncServer(int& error_code, IOContext& context ,const MServerEndPoint& endpoint, NotifiedFunction notified_fun = defalutNotifyFunction);
+		MAsyncServer(int& error_code, IOContext& context, const MServerEndPoint& endpoint, NotifiedFunction notified_fun = defalutNotifyFunction);
 		MAsyncServer() = delete;
 		~MAsyncServer();
 	public:
@@ -38,11 +37,7 @@ namespace MUZI::net::async
 
 	private:
 		class MAsyncServerData* m_data;
-		
 	};
 }
-
-
-
 
 #endif // !__MUZI_MASYNCSERVER_H__

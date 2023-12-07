@@ -33,7 +33,6 @@ namespace MUZI
 		MIterator() = delete;
 		MIterator(const MIterator<T, Iterator>& that)
 		{
-
 		}
 		MIterator(MIterator<T, Iterator>&& that)
 		{
@@ -53,7 +52,7 @@ namespace MUZI
 		}
 		inline bool operator==(const MIterator& that)
 		{
-			return this->iterator == that.iterator;
+			return this->iterator == that.MIterator;
 		}
 		inline T operator* ()
 		{

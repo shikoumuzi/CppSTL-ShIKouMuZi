@@ -4,7 +4,6 @@
 #include"boost/algorithm/string.hpp"
 namespace MUZI::net::sync
 {
-
 	struct MSyncSocket::MSyncSocketData
 	{
 	public:
@@ -47,7 +46,7 @@ namespace MUZI::net::sync
 		this->m_data->isServer = true;
 		new(&(this->m_data->protocol)) Protocol(Protocol::v4());// 初始化协议
 		new(&(this->m_data->data.server)) \
-			MSyncSocketData::ServerSocketData({ std::move(TCPAcceptor(this->m_data->io_context, endpoint.getEndPoint()->protocol()))});// 初始化acceptor
+			MSyncSocketData::ServerSocketData({ std::move(TCPAcceptor(this->m_data->io_context, endpoint.getEndPoint()->protocol())) });// 初始化acceptor
 		new(&(this->m_data->local_endpoint.server_endpoint)) MServerEndPoint(endpoint);// 初始化endpoint
 		//this->m_data->data.server.acceptor
 	}
@@ -191,7 +190,7 @@ namespace MUZI::net::sync
 		}
 		else
 		{
-			return NetSyncIOAdapt() ;
+			return NetSyncIOAdapt();
 		}
 	}
 	int MSyncSocket::write(const NetSyncIOAdapt& adapt, const String& data)
@@ -237,7 +236,7 @@ namespace MUZI::net::sync
 		EC ec;
 		if (this->m_data->isServer)
 		{
-			if(immediate_request_mode)
+			if (immediate_request_mode)
 			{
 				// 通过调用read_some来向网络写入数据，每次从偏移量开始， 类似Linux 的receive api
 				total_bytes += adapt->read_some(boost::asio::buffer(static_cast<char*>(buff) + total_bytes, requiredsize - total_bytes), ec);
@@ -283,6 +282,4 @@ namespace MUZI::net::sync
 		}
 		return 0;
 	}
-
-
 }

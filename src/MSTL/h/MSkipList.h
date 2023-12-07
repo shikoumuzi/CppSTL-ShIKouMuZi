@@ -265,7 +265,7 @@ namespace MUZI
 		public:
 			void operator=(const __MSkipListNodeFactory__<T>& factory)
 			{
-			} 
+			}
 		private:
 			MBitmapAllocator<__MSkipListNode__<T>*> m_index_allocator; // 索引分配器
 			MBitmapAllocator<__MSkipListNode__<T>> m_node_allocator; // 节点分配器
@@ -275,7 +275,7 @@ namespace MUZI
 		};
 	public:
 		template<typename T = __MDefaultTypeDefine__>
-		class MIterator : public std::iterator<std::forward_iterator_tag, T, size_t, const T*, T>
+		class MIterator : public std::MIterator<std::forward_iterator_tag, T, size_t, const T*, T>
 		{
 		public:
 			friend class MSkipList<T>;
@@ -458,7 +458,7 @@ namespace MUZI
 		//class MRIterator: private MIterator<T>
 		//{};
 	public:
-		using iterator = class MSkipList<T>::MIterator<T>;
+		using MIterator = class MSkipList<T>::MIterator<T>;
 		using const_iterator = class MSkipList<T>::MCIterator<T>;
 		//using reverse_iterator = class MSkipList<T>::MRIterator<T>;
 	public:
@@ -471,7 +471,7 @@ namespace MUZI
 			m_index_header(__MUZI_MSKIPLIST_DEFAULT_MAX_LEVEL__),
 			m_node_factory(this->m_max_level)
 		{}
-		MSkipList(const MSkipList<T>& list):
+		MSkipList(const MSkipList<T>& list) :
 			MSkipList()
 		{
 			this->append(list);
@@ -672,8 +672,6 @@ namespace MUZI
 					continue;
 				}
 				//}
-
-				
 			}
 			this->__updateLevel__();
 			this->m_size += 1;
@@ -1021,8 +1019,6 @@ namespace MUZI
 				this->__updateLevel__();
 				this->m_size += 1;
 			}
-
-
 		}
 		void append(const std::span<T>& list)
 		{
@@ -1305,7 +1301,7 @@ namespace MUZI
 			}
 			return nullptr;
 		}
-		
+
 	private:
 		__MSkipListNode__<T>* m_header; // 数据头
 		__MSkipListNode__<T>* m_tail; // 数据尾

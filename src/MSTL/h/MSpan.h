@@ -10,36 +10,36 @@ namespace MUZI
 	template<typename T>
 	concept __muzi_span_stl_type__ = requires(T x)
 	{
-		typename T::iterator;
+		typename T::MIterator;
 		typename T::value_type;
 		{x.size()}->std::same_as<size_t>;
-		{x.begin()}->std::same_as<typename T::iterator>;
-		{x.end()}->std::same_as<typename T::iterator>;
+		{x.begin()}->std::same_as<typename T::MIterator>;
+		{x.end()}->std::same_as<typename T::MIterator>;
 		x.operator[];
 	}
-	&& requires(typename T::iterator x)
+	&& requires(typename T::MIterator x)
 	{
 		{*x};
 		x.operator++();
 		x.operator--();
-		std::copyable<typename T::iterator>;
-		std::movable<typename T::iterator>;
+		std::copyable<typename T::MIterator>;
+		std::movable<typename T::MIterator>;
 		//std::derived_from<typename T::iterator, MIterator>;
 	};
 
 	// 采用value_type提取出类型
-	template<__muzi_span_stl_type__ T, 
-		std::size_t stl_element_size = 
+	template<__muzi_span_stl_type__ T,
+		std::size_t stl_element_size =
 		sizeof(std::remove_reference<typename T::value_type>::type),
-		typename Alloc = std::allocator<typename T::iterator>>
-	class MSpan
+		typename Alloc = std::allocator<typename T::MIterator>>
+		class MSpan
 	{
 	public:
 		class span_iterator :public MIterator
 		{
 		public:
 			// 这里采用new出来的方式
-			span_iterator(T::iterator* item)
+			span_iterator(T::MIterator* item)
 			{
 				this->item = item;
 			}
@@ -60,7 +60,7 @@ namespace MUZI
 			bool operator==(MIterator& item)
 			{
 				// 派生类指针/引用转换，需要基类存在虚函数
-				return this->item->operator==(*(dynamic_cast<MSpan::iterator&>(item).item));
+				return this->item->operator==(*(dynamic_cast<MSpan::MIterator&>(item).item));
 			}
 			//bool operator<(MIterator& item)
 			//{
@@ -75,10 +75,10 @@ namespace MUZI
 				return this->item->operator*();
 			}
 		public:
-			T::iterator* item;
+			T::MIterator* item;
 		};
 	public:
-		using iterator = span_iterator;
+		using MIterator = span_iterator;
 	public:
 		MSpan(T& other)
 		{
@@ -119,17 +119,16 @@ namespace MUZI
 		}
 		inline span_iterator begin()
 		{
-			return span_iterator(new T::iterator(this->_data->begin()));
+			return span_iterator(new T::MIterator(this->_data->begin()));
 		}
 		inline span_iterator end()
 		{
-			return span_iterator(new T::iterator(this->_data->end()));
+			return span_iterator(new T::MIterator(this->_data->end()));
 		}
-		
+
 	public:
 		T* _data;
 		size_t n;
 	};
-
 };
 #endif // __MUZI_SPAN_H__

@@ -27,7 +27,7 @@ namespace MUZI::net::async
 	public:
 		using RawMRecvMsgNode = MRecvMsgNode;
 		using JsonMRecvMsgNode = MRecvMsgNode;
-		using iterator = std::map<String, NetAsyncIOAdapt>::iterator;
+		using MIterator = std::map<String, NetAsyncIOAdapt>::iterator;
 		using NotifiedFunction = std::function<void(MAsyncSocket&)>;
 	public:
 		struct NotifiedLock
@@ -68,10 +68,10 @@ namespace MUZI::net::async
 
 	public:
 
-		iterator begin();
-		iterator end();
+		MIterator begin();
+		MIterator end();
 		void erase(String UUID);
-		iterator erase(iterator& it);
+		MIterator erase(MIterator& it);
 	public:
 		int splitSendPackage(NetAsyncIOAdapt adapt, void* data, uint32_t size, uint32_t id);
 	public:

@@ -19,7 +19,7 @@ namespace MUZI::net::coroutine
 	public:
 		template<typename T>
 		using Awaitable = boost::asio::awaitable<T>;
-		using iterator = std::map<String, MCoroSessionPack>::iterator;
+		using MIterator = std::map<String, MCoroSessionPack>::iterator;
 		using NotifiedFunction = std::function<void(MCoroutineSocket&)>;
 	public:
 		MCoroutineSocket(NotifiedFunction notified_function);
@@ -33,15 +33,15 @@ namespace MUZI::net::coroutine
 		Map<String, MCoroSessionPack>& getSessions();
 	public:
 		Awaitable<int> readFromSocket(MCoroSessionPack& session);
-		Awaitable<int> writeToSocket(MCoroSessionPack & session, const void* data, size_t data_sze, int msg_id = 0);
-		Awaitable<int> writeToSocket(MCoroSessionPack & session, const std::string & data, int msg_id = 0);
+		Awaitable<int> writeToSocket(MCoroSessionPack& session, const void* data, size_t data_sze, int msg_id = 0);
+		Awaitable<int> writeToSocket(MCoroSessionPack& session, const std::string& data, int msg_id = 0);
 	public:
 		void run();
 	public:
-		iterator begin();
-		iterator end();
+		MIterator begin();
+		MIterator end();
 		void erase(String UUID);
-		iterator erase(iterator& it);
+		MIterator erase(MIterator& it);
 		void closeSession(MCoroSessionPack& session);
 	public:
 		class MCoroutineSocketData* m_data;

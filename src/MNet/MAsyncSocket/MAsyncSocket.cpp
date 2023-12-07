@@ -924,12 +924,12 @@ namespace MUZI::net::async
 		return NotifiedLock(this->m_data->notified_mutex, this->m_data->notified_cond);
 	}
 
-	MAsyncSocket::iterator MAsyncSocket::begin()
+	MAsyncSocket::MIterator MAsyncSocket::begin()
 	{
 		return this->m_data->sessions.begin();
 	}
 
-	MAsyncSocket::iterator MAsyncSocket::end()
+	MAsyncSocket::MIterator MAsyncSocket::end()
 	{
 		return this->m_data->sessions.end();
 	}
@@ -954,7 +954,7 @@ namespace MUZI::net::async
 		this->m_data->sessions.erase(UUID);
 	}
 
-	MAsyncSocket::iterator MAsyncSocket::erase(iterator& it)
+	MAsyncSocket::MIterator MAsyncSocket::erase(MIterator& it)
 	{
 		return this->m_data->sessions.erase(it);
 	}

@@ -175,7 +175,7 @@ namespace MUZI::net::coroutine
 		return Awaitable<int>();
 	}
 
-	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket(MCoroSessionPack & session, const void* data, size_t data_size, int msg_id)
+	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket(MCoroSessionPack& session, const void* data, size_t data_size, int msg_id)
 	{
 		session->send_queue.push(std::make_shared<MSendMsgNode>(data, data_size, msg_id));
 		if (session->isWriteCompleted())
@@ -210,7 +210,7 @@ namespace MUZI::net::coroutine
 		return Awaitable<int>();
 	}
 
-	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket(MCoroSessionPack & session, const std::string & data, int msg_id)
+	MCoroutineSocket::Awaitable<int> MCoroutineSocket::writeToSocket(MCoroSessionPack& session, const std::string& data, int msg_id)
 	{
 		return this->writeToSocket(session, data.data(), data.size(), msg_id);
 	}
@@ -227,12 +227,12 @@ namespace MUZI::net::coroutine
 		this->erase(session->uuid);
 	}
 
-	MCoroutineSocket::iterator MCoroutineSocket::begin()
+	MCoroutineSocket::MIterator MCoroutineSocket::begin()
 	{
 		return this->m_data->m_sessions.begin();
 	}
 
-	MCoroutineSocket::iterator MCoroutineSocket::end()
+	MCoroutineSocket::MIterator MCoroutineSocket::end()
 	{
 		return this->m_data->m_sessions.end();
 	}
@@ -242,7 +242,7 @@ namespace MUZI::net::coroutine
 		this->m_data->m_sessions.erase(uuid);
 	}
 
-	MCoroutineSocket::iterator MCoroutineSocket::erase(iterator& it)
+	MCoroutineSocket::MIterator MCoroutineSocket::erase(MIterator& it)
 	{
 		return this->m_data->m_sessions.erase(it);
 	}

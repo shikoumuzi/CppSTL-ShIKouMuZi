@@ -11,32 +11,30 @@ namespace MUZI
 	{
 	public:
 		using vaule = T;
-		using iterator = MVector<T>::Iterator;
+		using MIterator = MVector<T>::Iterator;
 	public:
 		class MVectorView
 		{
-
 		};
 	public:
 		class Iterator
 		{
-
 		};
 	public:
-		void operator+=(const MVector<T>&){}
-		void operator+(const MVector<T>&){}
-		void operator-=(const MVector<T>&){}
-		void operator-(const MVector<T>&){}
-		void operator*=(const MVector<T>&){}
-		void operator*(const MVector<T>&){}
-		void operator/=(const MVector<T>&){}
-		void operator/(const MVector<T>&){}
-		void operator<<(){}
-		void operator>>(){}
-		void operator=(const MVector<T>&){}
-		void operator=(const MVectorView<T>&){}
-		void operator~(){}
-		T& operator[](size_t index){}
+		void operator+=(const MVector<T>&) {}
+		void operator+(const MVector<T>&) {}
+		void operator-=(const MVector<T>&) {}
+		void operator-(const MVector<T>&) {}
+		void operator*=(const MVector<T>&) {}
+		void operator*(const MVector<T>&) {}
+		void operator/=(const MVector<T>&) {}
+		void operator/(const MVector<T>&) {}
+		void operator<<() {}
+		void operator>>() {}
+		void operator=(const MVector<T>&) {}
+		void operator=(const MVectorView<T>&) {}
+		void operator~() {}
+		T& operator[](size_t index) {}
 		bool operator==()
 		{
 			return false;
@@ -54,22 +52,22 @@ namespace MUZI
 		{}
 		void insert() {}
 		void erase() {}
-		void erase_if(){}
-		void find(){}
-		void assign(){}
+		void erase_if() {}
+		void find() {}
+		void assign() {}
 		void at() {}
 		void clear() {}
-		void emplace(){}
-		void swap(){}
+		void emplace() {}
+		void swap() {}
 	public:
-		void split(){}
-		void filter(){}
-		void sort(){}
+		void split() {}
+		void filter() {}
+		void sort() {}
 	public:
 		void resize() {}
-		void reserve(){}
+		void reserve() {}
 	public:
-		T* data() 
+		T* data()
 		{
 			return this->m_data;
 		}
@@ -93,14 +91,14 @@ namespace MUZI
 		{
 			return *(this->m_data + this->m_size);
 		}
-		void begin(){}
-		void end(){}
-		void cbegin(){}
-		void cend(){}
-		void rbegin(){}
-		void rend(){}
-		void crbegin(){}
-		void crend(){}
+		void begin() {}
+		void end() {}
+		void cbegin() {}
+		void cend() {}
+		void rbegin() {}
+		void rend() {}
+		void crbegin() {}
+		void crend() {}
 		bool empty()
 		{
 			return this->m_data == nullptr or this->size == 0;
@@ -116,7 +114,7 @@ namespace MUZI
 			return std::weak_ordering();
 		}
 	public:
-		T* data() const 
+		T* data() const
 		{
 			return this->m_data;
 		}
@@ -152,7 +150,7 @@ namespace MUZI
 		{
 			return this->m_data == nullptr or this->size == 0;
 		}
-		
+
 	private:
 		size_t m_size;
 		size_t m_capacity;

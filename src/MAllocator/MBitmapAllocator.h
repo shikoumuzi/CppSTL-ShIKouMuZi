@@ -25,11 +25,11 @@ namespace MUZI {
 	public:
 		MBitmapAllocator()
 		{}
-		MBitmapAllocator(MBitmapAllocator&& allocator){}
+		MBitmapAllocator(MBitmapAllocator&& allocator) {}
 		~MBitmapAllocator()
 		{}
 	private:
-		template<typename T>
+		//template<typename T>
 		class BitMapVector
 		{
 		public:
@@ -234,7 +234,7 @@ namespace MUZI {
 			size_t bitmap_size;
 		};
 
-		template<typename T>
+		//template<typename T>
 		class BitMapVectors
 		{
 		public:
@@ -321,7 +321,7 @@ namespace MUZI {
 			size_t allocated_num;
 		};
 
-		template<typename T>
+		//template<typename T>
 		class MBitmapMemory
 		{
 		public:
