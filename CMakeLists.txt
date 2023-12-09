@@ -26,7 +26,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})# 静态库输出
 # 路径变量设置
 set(BOOST_CODE_LIBRARY_PATH F:/CodeLibrary/boost_1_79_0)
 set(SQLITE3_CODE_LIBRARY_PATH D:/sqlite)
-set(RAPIDJSON_CODE_LIBRARY_PATH D:/rapidjson)
+set(RAPIDJSON_CODE_LIBRARY_PATH F:/CodeLibrary/rapidjson)
+set(FFMPEG_CODE_LIBRARY_PATH F:/CodeLibrary/ffmpeg)
 
 # 添加头文件路径
 file(GLOB_RECURSE CPP_FILE_PATH src/*.cpp)
@@ -50,70 +51,112 @@ include_directories(${H_FILE_PATH})
 # set(Yellow "${Esc}")
 
 # 导入模块
-include("src/MAllocator/MAllocator.cmake")
-include("src/MBase/MBase.cmake")
-include("src/MDataBase/MSQLite/MSQLite.cmake")
-include("src/MDesignModel/MDesignModel.cmake")
-include("src/MEventLoop/MEventLoop.cmake")
-include("src/MLog/MLog.cmake")
-include("src/MFileSystem/MFileSystem.cmake")
-include("src/MFTP/MFTP.cmake")
-include("src/MSTL/MSTL.cmake")
-include("src/MNet/MNet.cmake")
+macro(importModule)
+	include("src/MAllocator/MAllocator.cmake")
+	include("src/MBase/MBase.cmake")
+	include("src/MDataBase/MSQLite/MSQLite.cmake")
+	include("src/MDesignModel/MDesignModel.cmake")
+	include("src/MEventLoop/MEventLoop.cmake")
+	include("src/MLog/MLog.cmake")
+	include("src/MFileSystem/MFileSystem.cmake")
+	include("src/MFTP/MFTP.cmake")
+	include("src/MSTL/MSTL.cmake")
+	include("src/MNet/MNet.cmake")
+	include("src/MMedia/MMPlayer/MMPlayer.cmake")
+endmacro()
+importModule()
 
-# BOOST的设置
-# 设置不使用静态库
-set (Boost_USE_STATIC_LIBS OFF)
+macro(initBoost)
+	# BOOST的设置
+	# 设置不使用静态库
+	set (Boost_USE_STATIC_LIBS OFF)
 
-# 设置使用多线程库
-set (Boost_USE_MULTITHREADED ON)
+	# 设置使用多线程库
+	set (Boost_USE_MULTITHREADED ON)
 
-# 设置不使用静态运行时库
-set (Boost_USE_STATIC_RUNTIME OFF)
+	# 设置不使用静态运行时库
+	set (Boost_USE_STATIC_RUNTIME OFF)
 
-# 添加boost路径
-set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${BOOST_CODE_LIBRARY_PATH})
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${BOOST_CODE_LIBRARY_PATH}/stage/lib)
-set(BOOST_ROOT ${BOOST_CODE_LIBRARY_PATH})# 设置自己的路径
+	# 添加boost路径
+	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${BOOST_CODE_LIBRARY_PATH})
+	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${BOOST_CODE_LIBRARY_PATH}/stage/lib)
+	set(BOOST_ROOT ${BOOST_CODE_LIBRARY_PATH})# 设置自己的路径
 
-find_package(BOOST REQUIRED  COMPONENTS  system filesystem asio)
-# target_link_libraries 需要在add_excutable后面
-if(Boost_FOUND)
-	include_directories(${Boost_INCLUDE_DIRS}) 
-	link_directories(${Boost_LIBRARY_DIRS})
-	message(STATUS "Boost 库信息:")
-	message(STATUS "Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
-	message(STATUS "Boost_LIBRARY_DIRS=${Boost_LIBRARY_DIRS}")
-endif()
+	find_package(BOOST REQUIRED  COMPONENTS  system filesystem asio)
+	# target_link_libraries 需要在add_excutable后面
+	if(Boost_FOUND)
+		include_directories(${Boost_INCLUDE_DIRS}) 
+		link_directories(${Boost_LIBRARY_DIRS})
+		message(STATUS "Boost 库信息:")
+		message(STATUS "Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
+		message(STATUS "Boost_LIBRARY_DIRS=${Boost_LIBRARY_DIRS}")
+	endif()
+endmacro()
+initBoost()
 
-# sqlte配置
-set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-amalgamation-3410200)
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200)
-set(SQLITE3_ROOT ${SQLITE3_CODE_LIBRARY_PATH})
+macro(initSQLite)
+	# sqlte配置
+	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-amalgamation-3410200)
+	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200)
+	set(SQLITE3_ROOT ${SQLITE3_CODE_LIBRARY_PATH})
 
-# 连接sqlite
-find_package(SQLite3 REQUIRED)
+	# 连接sqlite
+	find_package(SQLite3 REQUIRED)
 
-if(SQLite3_FOUND)
-	include_directories(${SQLite3_INCLUDE_DIRS}) # Assume sqlite header is in /usr/include
-	link_directories(${SQLite3_LIBRARIES}) # Assume sqlite library is in /usr/lib
-	message(STATUS "Sqlite3 库信息:")
-	message(STATUS "Sqlite3_INCLUDE_DIRS=${SQLite3_INCLUDE_DIRS}")
-	message(STATUS "Sqlite3_LIBRARY_DIRS=${SQLite3_LIBRARIES}")
-endif()
+	if(SQLite3_FOUND)
+		include_directories(${SQLite3_INCLUDE_DIRS}) # Assume sqlite header is in /usr/include
+		link_directories(${SQLite3_LIBRARIES}) # Assume sqlite library is in /usr/lib
+		message(STATUS "Sqlite3 库信息:")
+		message(STATUS "Sqlite3_INCLUDE_DIRS=${SQLite3_INCLUDE_DIRS}")
+		message(STATUS "Sqlite3_LIBRARY_DIRS=${SQLite3_LIBRARIES}")
+	endif()
+endmacro()
+initSQLite()
 
-# rapidcpp 配置
-set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${RAPIDJSON_CODE_LIBRARY_PATH}/include/rapidjson)
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${RAPIDJSON_CODE_LIBRARY_PATH}/build)
-set(RapidJSON_ROOT ${RAPIDJSON_CODE_LIBRARY_PATH}/build)
+macro(initRapidJson)
+	# rapidcpp 配置
+	
+	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${RAPIDJSON_CODE_LIBRARY_PATH}/include/rapidjson)
+	set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${RAPIDJSON_CODE_LIBRARY_PATH}/build)
+	set(RapidJSON_ROOT ${RAPIDJSON_CODE_LIBRARY_PATH}/build)
 
-find_package(RapidJSON REQUIRED)
-# 连接rapidjson
-if(RapidJSON_FOUND)
-	include_directories(${RapidJSON_INCLUDE_DIRS})
-	message(STATUS "rapidjson 库信息:")
-	message(STATUS "rapidjson_INCLUDE_DIRS=${RapidJSON_INCLUDE_DIRS}")
-endif()
+	find_package(RapidJSON REQUIRED)
+	# 连接rapidjson
+	if(RapidJSON_FOUND)
+		include_directories(${RapidJSON_INCLUDE_DIRS})
+		message(STATUS "rapidjson 库信息:")
+		message(STATUS "rapidjson_INCLUDE_DIRS=${RapidJSON_INCLUDE_DIRS}")
+	endif()
+endmacro()
+initRapidJson()
+
+# 由于部分库采用pkg_config配置 所以需要通过查找 pkg_config导入到cmake当中
+macro(importPkgConfig)
+	set(PKG_CONFIG_EXECUTABLE D:/pkg-config-lite-0.28-1/bin/pkg-config.exe)
+	find_package(PkgConfig  REQUIRED)
+	message(STATUS "PKG_CONFIG import: ${PKG_CONFIG_FOUND}")
+	message(STATUS "PKG_CONFIG version: ${PKG_CONFIG_VERSION_STRING}")
+
+endmacro()
+importPkgConfig()
+ 
+# 连接ffmpeg
+macro(initFFmpeg)
+	
+	# 将目标地址地址导入搜索路径
+	set(ENV{PKG_CONFIG_PATH} "F:/CodeLibrary/ffmpeg/lib/pkgconfig")
+	
+	# 通过pkg_search_module搜索
+	pkg_search_module(ffmpeg REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil)
+
+	message(STATUS "ffmpeg_LIBRARIES: ${ffmpeg_LIBRARIES}")
+	message(STATUS "ffmpeg_INCLUDE_DIRS: ${ffmpeg_INCLUDE_DIRS}")
+
+	include_directories(${ffmpeg_INCLUDE_DIRS})
+	link_directories(${ffmpeg_LIBRARIES})
+
+endmacro()
+initFFmpeg()
 
 # 导入子目录
 # add_subdirectory("src/MAllocator")
@@ -203,6 +246,7 @@ set(SOURCES
 	#"src/MNet/MCoroutineSocket/MCoroutineClient.cpp" 
 	#"src/MNet/MWebSocket/MWebSocket.cpp" 
 	#"src/MNet/MCoroutineSocket/MSession.cpp" 
+
 	#"src/MEventLoop/MEventLoop.cpp"
 	#"src/MEventLoop/MEvent.cpp"
 
@@ -222,6 +266,8 @@ add_executable (CppSTL-shikounuzi
 	${HEADERS}
 
 
+ "src/MMedia/MMPlayer/MMAV/MMAV.h"
+ "src/MMedia/MMPlayer/MMAV/MMAV.cpp"
 )
 
 
@@ -236,15 +282,20 @@ add_executable (CppSTL-shikounuzi
 # link_directories一定要放在add_executable前面，target_link_libraries一定要放在add_executable后面
 
 # cmake变量名是区分大小写的
+macro(targetLinkLib)
+	target_link_libraries(CppSTL-shikounuzi PUBLIC ${SQLite3_LIBRARIES}) # Link with sqlite3 library
+	message(STATUS "sqlite is targeted")
 
-target_link_libraries(CppSTL-shikounuzi PUBLIC ${SQLite3_LIBRARIES}) # Link with sqlite3 library
-message(STATUS "sqlite is targeted")
+	target_link_libraries(CppSTL-shikounuzi PUBLIC ${BOOST_LIBRARIES})
+	message(STATUS "boost is targeted")
 
-target_link_libraries(CppSTL-shikounuzi PUBLIC ${BOOST_LIBRARIES})
-message(STATUS "boost is targeted")
+	target_link_libraries(CppSTL-shikounuzi PUBLIC ${rapidjson_LIRARIES})
+	message(STATUS "rapidjson is targeted")
 
-target_link_libraries(CppSTL-shikounuzi PUBLIC ${rapidjson_LIRARIES})
-message(STATUS "boost is targeted")
+	target_link_libraries(CppSTL-shikounuzi PUBLIC ${ffmpeg_LIBRARIES})
+endmacro()
+targetLinkLib()
+
 
 
 
