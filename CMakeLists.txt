@@ -4,11 +4,11 @@
 cmake_minimum_required (VERSION 3.0)
 
 # Enable Hot Reload for MSVC compilers if supported.
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT 
-  "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-endif()
+# if (POLICY CMP0141)
+#   cmake_policy(SET CMP0141 NEW)
+#   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT 
+#   "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+# endif()
 
 project (CppSTL-shikounuzi)
 set(PROJECT_NAME CppSTL-shikounuzi)
@@ -96,8 +96,8 @@ initBoost()
 
 macro(initSQLite)
 	# sqlte配置
-	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-amalgamation-3410200)
-	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200)
+	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-amalgamation-3440200)
+	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win64-x64-3260000)
 	set(SQLITE3_ROOT ${SQLITE3_CODE_LIBRARY_PATH})
 
 	# 连接sqlite
@@ -109,7 +109,11 @@ macro(initSQLite)
 		message(STATUS "Sqlite3 库信息:")
 		message(STATUS "Sqlite3_INCLUDE_DIRS=${SQLite3_INCLUDE_DIRS}")
 		message(STATUS "Sqlite3_LIBRARY_DIRS=${SQLite3_LIBRARIES}")
+		# add_library(sqlite3 SHARED imported)
+		# set_target_properties(sqlite3 PROPERTIES IMPORTED_LOCATION ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win64-x64-3260000/sqlite3.dll)
+
 	endif()
+
 endmacro()
 initSQLite()
 
@@ -136,7 +140,6 @@ macro(importPkgConfig)
 	find_package(PkgConfig  REQUIRED)
 	message(STATUS "PKG_CONFIG import: ${PKG_CONFIG_FOUND}")
 	message(STATUS "PKG_CONFIG version: ${PKG_CONFIG_VERSION_STRING}")
-
 endmacro()
 importPkgConfig()
  
@@ -147,13 +150,39 @@ macro(initFFmpeg)
 	set(ENV{PKG_CONFIG_PATH} "F:/CodeLibrary/ffmpeg/lib/pkgconfig")
 	
 	# 通过pkg_search_module搜索
-	pkg_search_module(ffmpeg REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil)
+	pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil)
+	#pkg_search_module(ffmpeg REQUIRED IMPORTED_TARGET libavcodec)
+	message(STATUS "FFMPEG_LIBRARIES: ${FFMPEG_LIBRARIES}")
+	message(STATUS "FFMPEG_INCLUDE_DIRS: ${FFMPEG_INCLUDE_DIRS}")
+	message(STATUS "FFMPEG_LINK_LIBRARIES: ${FFMPEG_LINK_LIBRARIES}")
+	message(STATUS "FFMPEG_LIBRARY_DIRS: ${FFMPEG_LIBRARY_DIRS}")
 
-	message(STATUS "ffmpeg_LIBRARIES: ${ffmpeg_LIBRARIES}")
-	message(STATUS "ffmpeg_INCLUDE_DIRS: ${ffmpeg_INCLUDE_DIRS}")
+	# 为每个都添加上.lib后缀
+	set(FFMPEG_LIBRARIES_WITH_EXTEND)
+	foreach(var ${FFMPEG_LIBRARIES})
+		list( APPEND FFMPEG_LIBRARIES_WITH_EXTEND ${var}.lib)
+	endforeach()
+	foreach(var ${FFMPEG_LIBRARIES_WITH_EXTEND})
+		message("var is :" ${var})
+	endforeach()
+	message("FFMPEG_LIBRARIES_WITH_EXTEND: " ${FFMPEG_LIBRARIES_WITH_EXTEND})
 
-	include_directories(${ffmpeg_INCLUDE_DIRS})
-	link_directories(${ffmpeg_LIBRARIES})
+	# 查询动态库路径
+	set(FFMEPG_TARGET_DLLS)
+	file(GLOB_RECURSE FFMPEG_DLLS ${FFMPEG_CODE_LIBRARY_PATH}/bin/*.dll)
+	foreach(var_i ${FFMPEG_LIBRARIES})
+		foreach(var_j ${FFMPEG_DLLS})
+			string(FIND ${var_j} ${var_i} result REVERSE)
+			if(NOT (result EQUAL -1))
+				list( APPEND FFMEPG_TARGET_DLLS ${var_j})
+			endif()
+		endforeach()
+	endforeach()
+	# message(STATUS "FFMPEG_DLLS:${FFMPEG_DLLS}" )
+	message(STATUS "FFMEPG_TARGET_DLLS:${FFMEPG_TARGET_DLLS}" )
+
+	include_directories(${FFMPEG_INCLUDE_DIRS})
+	link_directories(${FFMPEG_LIBRARY_DIRS})
 
 endmacro()
 initFFmpeg()
@@ -266,9 +295,11 @@ add_executable (CppSTL-shikounuzi
 	${HEADERS}
 
 
- "src/MMedia/MMPlayer/MMAV/MMAV.h"
- "src/MMedia/MMPlayer/MMAV/MMAV.cpp"
-)
+ "src/MMedia/MMPlayer/MMAV/MMAVPackage.h"
+ "src/MMedia/MMPlayer/MMAV/MMAVReader.cpp"
+ "src/MMedia/MMPlayer/MMAV/MMAVPackage.cpp" 
+ "src/MMedia/MMPlayer/MMAV/MMAVReader.h" 
+ "src/MMedia/MMPlayer/MMAV/MMAV.h")
 
 
 
@@ -291,12 +322,16 @@ macro(targetLinkLib)
 
 	target_link_libraries(CppSTL-shikounuzi PUBLIC ${rapidjson_LIRARIES})
 	message(STATUS "rapidjson is targeted")
-
-	target_link_libraries(CppSTL-shikounuzi PUBLIC ${ffmpeg_LIBRARIES})
+	
+	#ffmpeg_LINK_LIBRARIES 是cmake文档中的 所提及的变量 the libraries and their absolute paths 包含库及其路径
+	#target_link_libraries(CppSTL-shikounuzi PUBLIC ${FFMPEG_LIBRARY_DIRS})
+	#target_link_libraries(CppSTL-shikounuzi PUBLIC ${FFMPEG_LINK_LIBRARIES})
+	
+	target_link_libraries(CppSTL-shikounuzi PUBLIC ${FFMPEG_LIBRARIES_WITH_EXTEND})
+	# target_link_libraries(CppSTL-shikounuzi PRIVATE PkgConfg::FFMPEG)
+	message(STATUS "FFMPEG is targeted")
 endmacro()
 targetLinkLib()
-
-
 
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
@@ -305,11 +340,15 @@ endif()
 
 # 设置dll拷贝
 # file(copy ${SQLite3_LIBRARIES}/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-install(FILES ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}/../bin)
-
+# 安装sqlite dll
+install(FILES ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win64-x64-3260000/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}/../bin)
+# 安装ffmpeg dll
+foreach(var ${FFMPEG_DLLS})
+	install(FILES ${var} DESTINATION ${EXECUTABLE_OUTPUT_PATH}/../bin)
+endforeach()
 
 message(STATUS "CMAKE Install 项目信息：")
-message(STATUS "SQLITE.LIB=${SQLITE3_CODE_LIBRARY_PATH}/sqlite-tools-win32-x86-3410200/sqlite3.dll")
+message(STATUS "SQLITE.LIB=${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win64-x64-3260000/sqlite3.dll")
 
 message(STATUS "CMAKE 项目输出信息：")
 message(STATUS "EXECUTABLE_OUTPUT_PATH=${EXECUTABLE_OUTPUT_PATH}")

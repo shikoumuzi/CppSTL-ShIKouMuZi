@@ -203,6 +203,8 @@ void address(const int& a)
 	std::cout << "fun a:" << &a << std::endl;
 }
 
+#include"MMedia/MMPlayer/MMAV/MMAV.h"
+#include<thread>
 int main(int arg, char* argv[])
 {
 	//std::cout << MUZI::__muzi_span_stl_type__<std::string> << std::endl;
@@ -240,10 +242,33 @@ int main(int arg, char* argv[])
 	//shared_ptr_test();
 
 	//emit(1, 2, 2);
-	int a = 0;
-	std::cout << "main a:" << &a << std::endl;
-	address(a);
+	//int a = 0;
+	//std::cout << "main a:" << &a << std::endl;
+	//address(a);
 
+	MUZI::ffmpeg::MMAVReader reader;
+	if (reader.open("E:/迅雷下载/[231203][231124][ピンクパイナップル]となりの家のアネットさん THE ANIMATION 第2巻(No Watermark).mp4") < 0)
+	{
+		printf("Open File Fail\n");
+		reader.close();
+		return -1;
+	}
+
+	while (true)
+	{
+		MUZI::ffmpeg::MMAVPackage pack;
+		int ret = 0;
+		ret = reader.read(pack);
+		if (ret < 0)
+		{
+			reader.close();
+			return -1;
+		}
+		printf("Read Packet Success\n");
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+
+	}
+	reader.close();
 	return 0;
 
 
