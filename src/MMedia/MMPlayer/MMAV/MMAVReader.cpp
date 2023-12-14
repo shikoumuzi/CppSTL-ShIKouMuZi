@@ -45,6 +45,6 @@ namespace MUZI::ffmpeg
 	}
 	int MMAVReader::read(MMAVPackage& package)
 	{
-		return av_read_frame(this->m_av_context, package.m_av_packet);
+		return (av_read_frame(this->m_av_context, package.m_av_packet) < 0) ? -1 : package.m_av_packet->size;
 	}
 }

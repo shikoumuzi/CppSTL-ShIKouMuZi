@@ -97,7 +97,7 @@ initBoost()
 macro(initSQLite)
 	# sqlte配置
 	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-amalgamation-3440200)
-	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win64-x64-3260000)
+	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win-x64-3440200)
 	set(SQLITE3_ROOT ${SQLITE3_CODE_LIBRARY_PATH})
 
 	# 连接sqlite
@@ -110,7 +110,7 @@ macro(initSQLite)
 		message(STATUS "Sqlite3_INCLUDE_DIRS=${SQLite3_INCLUDE_DIRS}")
 		message(STATUS "Sqlite3_LIBRARY_DIRS=${SQLite3_LIBRARIES}")
 		# add_library(sqlite3 SHARED imported)
-		# set_target_properties(sqlite3 PROPERTIES IMPORTED_LOCATION ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win64-x64-3260000/sqlite3.dll)
+		# set_target_properties(sqlite3 PROPERTIES IMPORTED_LOCATION ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win-x64-3440200/sqlite3.dll)
 
 	endif()
 
@@ -341,14 +341,17 @@ endif()
 # 设置dll拷贝
 # file(copy ${SQLite3_LIBRARIES}/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH})
 # 安装sqlite dll
-install(FILES ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win64-x64-3260000/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}/../bin)
+install(FILES ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win-x64-3440200/sqlite3.dll DESTINATION ${EXECUTABLE_OUTPUT_PATH}/../bin)
 # 安装ffmpeg dll
 foreach(var ${FFMPEG_DLLS})
 	install(FILES ${var} DESTINATION ${EXECUTABLE_OUTPUT_PATH}/../bin)
 endforeach()
 
 message(STATUS "CMAKE Install 项目信息：")
-message(STATUS "SQLITE.LIB=${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win64-x64-3260000/sqlite3.dll")
+message(STATUS "SQLITE.dll=${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win-x64-3440200/sqlite3.dll")
+foreach(var ${FFMPEG_DLLS})
+	message(STATUS "FFmpeg.dll=${var}")
+endforeach()
 
 message(STATUS "CMAKE 项目输出信息：")
 message(STATUS "EXECUTABLE_OUTPUT_PATH=${EXECUTABLE_OUTPUT_PATH}")

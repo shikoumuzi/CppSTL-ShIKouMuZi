@@ -5,6 +5,7 @@ enum MERROR
 {
 	// 完成并且无错
 	COMPLETE = 0,
+	FAILED = -1,
 
 	NOADIR,
 	NOAFILE,

@@ -249,7 +249,7 @@ int main(int arg, char* argv[])
 	MUZI::ffmpeg::MMAVReader reader;
 	if (reader.open("E:/迅雷下载/[231203][231124][ピンクパイナップル]となりの家のアネットさん THE ANIMATION 第2巻(No Watermark).mp4") < 0)
 	{
-		printf("Open File Fail\n");
+		printf("Open File Fail\n");  
 		reader.close();
 		return -1;
 	}
@@ -264,8 +264,8 @@ int main(int arg, char* argv[])
 			reader.close();
 			return -1;
 		}
-		printf("Read Packet Success\n");
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		printf("Read Packet Success, now size is %d\n", ret);
+		std::this_thread::sleep_for(std::chrono::microseconds(500));
 
 	}
 	reader.close();
