@@ -53,7 +53,8 @@ enum MERROR
 	LISTEN_ERROR,
 	SOCKET_SYSTEM_ERROR,
 
+	// า๔สำฦต
+	STREAM_ID_NO_EXIT,
 };
 
 #endif // ! __MUZI_MERROR_H__
-

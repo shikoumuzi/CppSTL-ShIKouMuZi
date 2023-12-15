@@ -2,6 +2,7 @@
 #ifndef __MUZI_MMAVPACKAGE_H__
 #define __MUZI_MMAVPACKAGE_H__
 #include<boost/filesystem.hpp>
+#include"MAVBase.h"
 extern "C"
 {
 #include<libavformat/avformat.h>

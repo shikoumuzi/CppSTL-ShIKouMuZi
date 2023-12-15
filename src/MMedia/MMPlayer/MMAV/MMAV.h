@@ -3,6 +3,7 @@
 #define __MUZI_MMAV_H__
 #include"MMAVPackage.h"
 #include"MMAVReader.h"
+#include"MMAVDecoder.h"
 namespace MUZI::ffmpeg
 {
 }
