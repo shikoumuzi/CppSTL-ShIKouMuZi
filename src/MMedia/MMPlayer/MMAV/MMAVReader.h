@@ -1,12 +1,11 @@
 #pragma once
 #ifndef __MUZI_MMAVREADER_H__
 #define __MUZI_MMAVREADER_H__
-#include<boost/filesystem.hpp>
+
 #include"MMAVStream.h"
-#include"MAVBase.h"
+#include"MMAVBase.h"
 extern "C"
 {
-#include<libavformat/avformat.h>
 }
 #include"MMAVPackage.h"
 
@@ -14,6 +13,7 @@ namespace MUZI::ffmpeg
 {
 	class MMAVReader
 	{
+		MMAV_FRIEND_CLASS
 	public:
 		using Path = boost::filesystem::path;
 	public:
@@ -24,8 +24,8 @@ namespace MUZI::ffmpeg
 		int close();
 		int read(MMAVPackage& package);
 	public:
-		inline int getStreamSize();
-		int getStream(MMAVStream& stream, int stream_id);
+		int getStreamSize();
+		int getStream(MMAVStream& dest_stream, int stream_id);
 
 	private:
 		AVFormatContext* m_av_format_context;

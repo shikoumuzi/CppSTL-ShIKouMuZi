@@ -1,17 +1,13 @@
 #pragma once
 #ifndef __MUZI_MMAVSTREAM_H__
 #define __MUZI_MMAVSTREAM_H__
-#include"MAVBase.h"
-#include<libavcodec/avcodec.h>
-extern "C"
-{
-}
+#include"MMAVBase.h"
+
 namespace MUZI::ffmpeg
 {
 	class MMAVStream
 	{
-	public:
-		friend class MMAVReader;
+		MMAV_FRIEND_CLASS
 	public:
 		MMAVStream();
 		MMAVStream(const MMAVStream&);
@@ -19,7 +15,7 @@ namespace MUZI::ffmpeg
 		~MMAVStream();
 
 	private:
-		int m_stream_index = -1;
+		int m_stream_index;
 		AVCodecParameters* m_code_parm;
 	};
 }

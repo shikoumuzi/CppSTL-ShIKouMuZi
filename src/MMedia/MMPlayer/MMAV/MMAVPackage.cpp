@@ -9,9 +9,9 @@ namespace MUZI::ffmpeg
     {
     }
     MMAVPackage::MMAVPackage(MMAVPackage&& package):
-        m_av_packet(nullptr)
+        m_av_packet(package.m_av_packet)
     {
-        av_packet_move_ref(package.m_av_packet, this->m_av_packet);
+        package.m_av_packet = av_packet_alloc();
     }
     MMAVPackage::~MMAVPackage()
     {

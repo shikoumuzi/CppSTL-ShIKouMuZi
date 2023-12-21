@@ -21,7 +21,7 @@ namespace MUZI::ffmpeg
 	{
 		if (this->m_av_format_context == nullptr)
 		{
-			return -1;
+			return MERROR::MAV_OBJECT_IS_NOT_USEFUL;
 		}
 		if (avformat_open_input(&this->m_av_format_context, file_path.string().c_str(), nullptr, nullptr) < 0)
 		{
@@ -38,7 +38,7 @@ namespace MUZI::ffmpeg
 	{
 		if (this->m_av_format_context == nullptr)
 		{
-			return -1;
+			return MERROR::MAV_OBJECT_IS_NOT_USEFUL;
 		}
 		avformat_close_input(&this->m_av_format_context);
 		return 0;
@@ -50,16 +50,26 @@ namespace MUZI::ffmpeg
 
 	int MMAVReader::getStreamSize()
 	{
+		if (this->m_av_format_context == nullptr)
+		{
+			return MERROR::MAV_OBJECT_IS_NOT_USEFUL;
+		}
 		return this->m_av_format_context->nb_streams;
 	}
 
 	int MMAVReader::getStream(MMAVStream& stream, int stream_id)
 	{
+		if (this->m_av_format_context == nullptr)
+		{
+			return MERROR::MAV_OBJECT_IS_NOT_USEFUL;
+		}
 		if (stream_id >= this->m_av_format_context->nb_streams)
 		{
-			return MERROR::STREAM_ID_NO_EXIT;
+			return MERROR::MAV_STREAM_ID_NO_EXIT;
 		}
-		stream.m_stream_index = this->m_av_format_context->streams[stream_id]->index;
+		auto p_ffmepg_stream = this->m_av_format_context->streams[stream_id];
+		stream.m_stream_index = p_ffmepg_stream->index;
+		avcodec_parameters_copy(stream.m_code_parm, p_ffmepg_stream->codecpar);
 		return 0;
 	}
 }

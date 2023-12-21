@@ -2,15 +2,13 @@
 #ifndef __MUZI_MMAVPACKAGE_H__
 #define __MUZI_MMAVPACKAGE_H__
 #include<boost/filesystem.hpp>
-#include"MAVBase.h"
-extern "C"
-{
-#include<libavformat/avformat.h>
-}
+#include"MMAVBase.h"
+
 namespace MUZI::ffmpeg
 {
 	class MMAVPackage
 	{
+		MMAV_FRIEND_CLASS
 	public:
 		friend class MMAVReader;
 	public:

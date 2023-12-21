@@ -1,22 +1,24 @@
 #pragma once
 #ifndef __MUZI_MMAVDCODER_H__
 #define __MUZI_MMAVDCODER_H__
-#include"MAVBase.h"
-extern "C"
-{
-#include<libavcodec/avcodec.h>
-}
+#include"MMAVBase.h"
+#include"MMAVStream.h"
+#include"MMAVPackage.h"
+
 namespace MUZI::ffmpeg
 {
 	class MMAVDecoder
 	{
+		MMAV_FRIEND_CLASS
 	public:
 		MMAVDecoder();
 		MMAVDecoder(const MMAVDecoder&);
 		MMAVDecoder(MMAVDecoder&&);
 		~MMAVDecoder();
 	public:
-		int initDecoder();
+		int initDecoder(MMAVStream& av_stream);
+		int sendPackage(MMAVPackage& pkt);
+		int recvPackage(MMAVPackage& pkt);
 	private:
 		AVCodecContext* m_av_codec_context;
 	};

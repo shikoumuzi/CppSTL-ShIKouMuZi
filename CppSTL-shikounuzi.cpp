@@ -20,12 +20,11 @@
 //#include"MNet/MAsyncSocket/MAsyncServer.h"
 //#include<thread>
 //#include"MLog/MLog.h"
-//#include<MSTL/h/MSyncAnnularQueue.h>	
+//#include<MSTL/h/MSyncAnnularQueue.h>
 
 #include<stdio.h>
 #include<iostream>
 #include<vector>
-
 
 //void server()
 //{
@@ -59,7 +58,7 @@
 //					}
 //
 //					}));
-//			
+//
 //		}
 //
 //
@@ -162,7 +161,7 @@ void myprint(int a, int b, int c)
 template<typename T>
 void emit(T t)
 {
-	std::cout << t << " "; 
+	std::cout << t << " ";
 }
 
 //template<typename T, typename... Arg>
@@ -196,7 +195,6 @@ void emit(Arg... arg)
 	//	emit(arg...);
 	//}
 }
-
 
 void address(const int& a)
 {
@@ -245,11 +243,11 @@ int main(int arg, char* argv[])
 	//int a = 0;
 	//std::cout << "main a:" << &a << std::endl;
 	//address(a);
-
+	printf("%d\n", MERROR::MAV_STREAM_ID_NO_EXIT);
 	MUZI::ffmpeg::MMAVReader reader;
 	if (reader.open("E:/迅雷下载/[231203][231124][ピンクパイナップル]となりの家のアネットさん THE ANIMATION 第2巻(No Watermark).mp4") < 0)
 	{
-		printf("Open File Fail\n");  
+		printf("Open File Fail\n");
 		reader.close();
 		return -1;
 	}
@@ -264,12 +262,9 @@ int main(int arg, char* argv[])
 			reader.close();
 			return -1;
 		}
-		printf("Read Packet Success, now size is %d\n", ret);
+		printf("Read Packet Success, now size is %d, now stream size is %d \n", ret, reader.getStreamSize());
 		std::this_thread::sleep_for(std::chrono::microseconds(500));
-
 	}
 	reader.close();
 	return 0;
-
-
 }
