@@ -7,6 +7,13 @@ namespace MUZI::ffmpeg
 	class MMAVFrame
 	{
 		MMAV_FRIEND_CLASS
+	public:
+		MMAVFrame();
+		MMAVFrame(const MMAVFrame& av_frame);
+		MMAVFrame(MMAVFrame&& av_frame);
+		~MMAVFrame();
+	private:
+		AVFrame* m_av_frame;
 	};
 }
 

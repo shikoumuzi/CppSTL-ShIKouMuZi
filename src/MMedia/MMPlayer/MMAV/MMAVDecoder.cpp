@@ -56,8 +56,13 @@ namespace MUZI::ffmpeg
 		return 0;
 	}
 
-	int MMAVDecoder::recvPackage(MMAVPackage& pkt)
+	int MMAVDecoder::recvPackage(MMAVFrame& frm)
 	{
+		int ret = avcodec_receive_frame(this->m_av_codec_context, frm.m_av_frame);
+		if (ret < 0)
+		{
+			return (ret == AVERROR_EOF) ? MERROR::MAV_DECODER_RECV_EOF : MERROR::MAV_DECODER_RECV_PACKAGE_FAILED;
+		}
 		return 0;
 	}
 }

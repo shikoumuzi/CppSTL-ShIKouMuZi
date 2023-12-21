@@ -304,7 +304,7 @@ add_executable (CppSTL-shikounuzi
  "src/MMedia/MMPlayer/MMAV/MMAVDecoder.cpp" 
  "src/MMedia/MMPlayer/MMAV/MMAVStream.h" 
  "src/MMedia/MMPlayer/MMAV/MMAVStream.cpp" 
- "src/MMedia/MMPlayer/MMAV/MMAVBase.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.cpp")
+ "src/MMedia/MMPlayer/MMAV/MMAVBase.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.cpp" "src/MMedia/MMPlayer/MMAV/example/MMAVExample.h" "src/MSTL/example/MSyncAnnularQueueExample.h")
 
 
 

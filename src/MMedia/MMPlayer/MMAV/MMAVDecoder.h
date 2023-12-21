@@ -4,6 +4,7 @@
 #include"MMAVBase.h"
 #include"MMAVStream.h"
 #include"MMAVPackage.h"
+#include"MMAVFrame.h"
 
 namespace MUZI::ffmpeg
 {
@@ -18,7 +19,7 @@ namespace MUZI::ffmpeg
 	public:
 		int initDecoder(MMAVStream& av_stream);
 		int sendPackage(MMAVPackage& pkt);
-		int recvPackage(MMAVPackage& pkt);
+		int recvPackage(MMAVFrame& frm);
 	private:
 		AVCodecContext* m_av_codec_context;
 	};

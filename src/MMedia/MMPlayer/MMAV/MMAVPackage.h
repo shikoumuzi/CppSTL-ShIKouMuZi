@@ -16,8 +16,11 @@ namespace MUZI::ffmpeg
 		MMAVPackage(const MMAVPackage& package);
 		MMAVPackage(MMAVPackage&& package);
 		~MMAVPackage();
+	public:
+		MMAVPackage getRef();
 	private:
 		AVPacket* m_av_packet;
+		bool m_ref_flag;
 	};
 }
 
