@@ -8,10 +8,30 @@ namespace MUZI::ffmpeg
 	{
 		MMAV_FRIEND_CLASS
 	public:
+		class MMAVFrameRef
+		{
+			MMAV_FRIEND_CLASS
+		private:
+			MMAVFrameRef();
+		public:
+			MMAVFrameRef(const MMAVFrameRef& av_frame);
+			MMAVFrameRef(MMAVFrameRef&& av_frame);
+			~MMAVFrameRef();
+		public:
+			void operator=(MMAVFrame& av_frame);
+			void operator=(MMAVFrameRef& av_frame);
+		private:
+			AVFrame* m_av_frame;
+		};
+	public:
 		MMAVFrame();
 		MMAVFrame(const MMAVFrame& av_frame);
 		MMAVFrame(MMAVFrame&& av_frame);
 		~MMAVFrame();
+	public:
+		MMAVFrameRef getRef();
+	public:
+		void operator=(const MMAVFrame& av_frame);
 	private:
 		AVFrame* m_av_frame;
 	};

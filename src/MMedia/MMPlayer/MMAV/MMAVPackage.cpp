@@ -1,39 +1,77 @@
 #include"MMAVPackage.h"
 namespace MUZI::ffmpeg
 {
-	MMAVPackage::MMAVPackage() :
-		m_av_packet(av_packet_alloc()),
-		m_ref_flag(false)
+	MMAVPackage::MMAVPackageRef::MMAVPackageRef() :
+		m_av_packet(av_packet_alloc())
 	{}
-	MMAVPackage::MMAVPackage(const MMAVPackage& package) :
-		m_av_packet(av_packet_clone(package.m_av_packet)),
-		m_ref_flag(false)
+	MMAVPackage::MMAVPackageRef::MMAVPackageRef(const MMAVPackageRef& package) :
+		m_av_packet(av_packet_alloc())
 	{
+		av_packet_ref(this->m_av_packet, package.m_av_packet);
 	}
+	MMAVPackage::MMAVPackageRef::MMAVPackageRef(MMAVPackageRef&& package) :
+		m_av_packet(package.m_av_packet)
+	{
+		package.m_av_packet = nullptr;
+	}
+	MMAVPackage::MMAVPackageRef::~MMAVPackageRef()
+	{
+		if (this->m_av_packet != nullptr)
+		{
+			// av_packet_free 会自动减少引用计数
+			av_packet_free(&this->m_av_packet);
+		}
+	}
+
+	void MMAVPackage::MMAVPackageRef::operator=(MMAVPackage& package)
+	{
+		if (this->m_av_packet == nullptr)
+		{
+			this->m_av_packet = av_packet_alloc();
+		}
+		else
+		{
+			av_packet_unref(this->m_av_packet);
+		}
+		this->m_av_packet = package.getRef().m_av_packet;
+	}
+
+	void MMAVPackage::MMAVPackageRef::operator=(MMAVPackageRef& package)
+	{
+		if (this->m_av_packet == nullptr)
+		{
+			this->m_av_packet = av_packet_alloc();
+		}
+		else
+		{
+			av_packet_unref(this->m_av_packet);
+		}
+		av_packet_ref(this->m_av_packet, package.m_av_packet);
+	}
+
+	MMAVPackage::MMAVPackage() :
+		m_av_packet(av_packet_alloc())
+	{}
 	MMAVPackage::MMAVPackage(MMAVPackage&& package) :
-		m_av_packet(package.m_av_packet),
-		m_ref_flag(package.m_ref_flag)
+		m_av_packet(package.m_av_packet)
 	{
 		package.m_av_packet = av_packet_alloc();
-		package.m_ref_flag = false;
 	}
 	MMAVPackage::~MMAVPackage()
 	{
 		if (this->m_av_packet != nullptr)
 		{
-			if (this->m_ref_flag)
-			{
-				av_packet_unref(this->m_av_packet);
-				return;
-			}
 			av_packet_free(&this->m_av_packet);
 			this->m_av_packet = nullptr;
 		}
 	}
-	MMAVPackage MMAVPackage::getRef()
+	void MMAVPackage::operator=(const MMAVPackage& package)
 	{
-		auto ret_pack = MMAVPackage();
-		ret_pack.m_ref_flag = true;
+		this->m_av_packet = av_packet_clone(package.m_av_packet);
+	}
+	MMAVPackage::MMAVPackageRef MMAVPackage::getRef()
+	{
+		auto ret_pack = MMAVPackageRef();
 		av_packet_ref(ret_pack.m_av_packet, this->m_av_packet);
 		return ret_pack;
 	}
