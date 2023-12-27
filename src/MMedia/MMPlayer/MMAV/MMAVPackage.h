@@ -27,6 +27,7 @@ namespace MUZI::ffmpeg
 		private:
 			AVPacket* m_av_packet;
 		};
+		using ref = MMAVPackageRef;
 	public:
 		MMAVPackage();
 		MMAVPackage(MMAVPackage&& package);

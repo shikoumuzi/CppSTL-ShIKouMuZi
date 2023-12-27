@@ -1135,6 +1135,14 @@ namespace MUZI
 		{
 			return MCIterator<T>();
 		}
+		inline T& front()
+		{
+			return *this->m_header;
+		}
+		inline T& back()
+		{
+			return *this->m_tail;
+		}
 	public:
 		inline size_t size() const
 		{
@@ -1167,6 +1175,14 @@ namespace MUZI
 		MCIterator<T> cend() const
 		{
 			return MCIterator<T>();
+		}
+		inline const T& front() const
+		{
+			return *this->m_header;
+		}
+		inline const T& back() const
+		{
+			return *this->m_tail;
 		}
 	public:
 		// ¼òÒ×ÄÚ´æ²Ù×÷

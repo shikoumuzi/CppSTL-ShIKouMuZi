@@ -46,6 +46,7 @@ namespace MUZI::ffmpeg
 		return 0;
 	}
 
+	// 因为发送和接收不一定数量对等，可以send一个package 可以获得好几个 frame 或者一个都获取不到
 	int MMAVDecoder::sendPackage(MMAVPackage& pkt)
 	{
 		int ret = avcodec_send_packet(this->m_av_codec_context, pkt.m_av_packet);

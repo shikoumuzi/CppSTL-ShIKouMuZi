@@ -23,6 +23,7 @@ namespace MUZI::ffmpeg
 		private:
 			AVFrame* m_av_frame;
 		};
+		using ref = MMAVFrameRef;
 	public:
 		MMAVFrame();
 		MMAVFrame(const MMAVFrame& av_frame);
