@@ -4,6 +4,7 @@
 #include"MSkipList.h"
 #include"MBase/MObjectBase.h"
 #include<compare>
+#include<concepts>
 namespace MUZI
 {
 	template<typename T = __MDefaultTypeDefine__>
@@ -24,7 +25,7 @@ namespace MUZI
 		}
 		bool operator==(const __MPriorityQueueNode__& node)
 		{
-			return this->priority == node.priority;
+			return (this->priority == node.priority) && this->value == this->value;
 		}
 	public:
 		std::weak_ordering operator<=>(const __MPriorityQueueNode__& node) const
@@ -40,25 +41,49 @@ namespace MUZI
 		T value;
 	};
 
-	template<typename T = __MDefaultTypeDefine__>
-	class MPriorityQueue : private MSkipList<struct __MPriorityQueueNode__<T>>
+	template<template <typename V> typename Node = __MPriorityQueueNode__>
+	class __MPriorityQueueNode_Wrapper__
+	{
+		template<typename V>
+		using node_type = Node<V>;
+	};
+
+	template<template<typename...> class Container, typename Elem>
+	concept __MPriorityQueueContainer__ = requires(Container<__MPriorityQueueNode__<Elem>> x, __MPriorityQueueNode__<Elem> node, Elem ele)
+	{
+		typename Container<__MPriorityQueueNode__<Elem>>::value_type;
+		typename Container<__MPriorityQueueNode__<Elem>>::size_type;
+		typename Container<__MPriorityQueueNode__<Elem>>::iterator;
+		{x.insert(node)} -> std::same_as<void>;
+		{x.size()} -> std::same_as<size_t>;
+		{x.front()};
+		{x.erase(node)} -> std::same_as<void>;
+		{x.begin()} -> std::same_as<typename Container<__MPriorityQueueNode__<Elem>>::iterator>;
+		{x.end()} -> std::same_as<typename Container<__MPriorityQueueNode__<Elem>>::iterator>;
+		std::is_same_v<typename Container<__MPriorityQueueNode__<Elem>>::value_type, __MPriorityQueueNode__<Elem>>;
+	};
+
+	template<typename T = __MDefaultTypeDefine__, template<typename> typename Container>
+		requires __MPriorityQueueContainer__<Container, T>// 无法直接限定，需要通过后接requires来进行限定
+	class MPriorityQueue
 	{
 	public:
 		using value_type = T;
 		using node_type = struct __MPriorityQueueNode__<T>;
+		using container_type = Container<node_type>;
 	public:
 		MPriorityQueue()
 		{}
 		~MPriorityQueue()
 		{}
 	public:
-		void push(const T& ele, int priority)
+		void push(const T& ele, int priority = 0)
 		{
-			this->MSkipList<node_type>::insert(node_type(priority, ele));
+			this->m_container.insert(node_type(ele, priority));
 		}
 		void pop()
 		{
-			this->MSkipList<node_type>::erase(this->MSkipList<node_type>::front());
+			this->m_container.erase(this->m_container.front());
 		}
 
 	public:
@@ -71,6 +96,8 @@ namespace MUZI
 		{
 			return this->MSkipList<node_type>::size();
 		}
+	private:
+		container_type m_container;
 	};
 }
 

@@ -24,7 +24,11 @@ namespace MUZI
 	{
 	public:
 		using value_type = T;
+		using size_type = size_t;
+		using reference = T&;
+		using const_reference = const T&;
 		using index_t = int;
+
 	private:
 		template<typename T = __MDefaultTypeDefine__>
 		struct __MSkipListNode__
@@ -458,7 +462,7 @@ namespace MUZI
 		//class MRIterator: private MIterator<T>
 		//{};
 	public:
-		using MIterator = class MSkipList<T>::MIterator<T>;
+		using iterator = class MSkipList<T>::MIterator<T>;
 		using const_iterator = class MSkipList<T>::MCIterator<T>;
 		//using reverse_iterator = class MSkipList<T>::MRIterator<T>;
 	public:
@@ -850,10 +854,30 @@ namespace MUZI
 			{
 				return this->end();
 			}
+			if (iter == this->begin())
+			{
+				this->pop();
+				return this->begin();
+			}
+
 			MIterator<T> ret_node = MIterator<T>(iter.data->next());
 			this->erase(iter.data->value);
 			iter.data = nullptr;
 			return ret_node;
+		}
+		void pop()
+		{
+			for (size_t i = 0; i < this->m_index_header, ++i)
+			{
+				if (this->m_index_header[i].pointer == this->m_header)
+				{
+					this->m_index_header[i].pointer = *this->m_header->index_next[i];
+				}
+				else
+				{
+					break;
+				}
+			}
 		}
 		MIterator<T> find(T value, const MIterator<T>& it = MIterator<T>(this->m_header))
 		{
@@ -1242,6 +1266,7 @@ namespace MUZI
 			if ((this->m_size & __MUZI_MSKIPLIST_DEFAULT_INDEX_LEVEL_UP_COEFFICIENT__) == 0)
 			{
 				this->m_max_level += 1;
+				this->m_index_header.push_back(__MSkipListIndexBround__<T>{nullptr})
 			}
 		}
 		/// @brief construct all index

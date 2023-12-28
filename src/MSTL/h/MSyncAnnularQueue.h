@@ -31,7 +31,10 @@ namespace MUZI
 	class MSyncAnnularQueue// 环形缓冲队列
 	{
 	public:
-		using Lock_Type = LOCK_TYPE;
+		using lock_type = LOCK_TYPE;
+		using value_type = T;
+		using reference = T&;
+		using const_reference = const T&;
 	public:
 		template<typename T>
 		struct MSyncAnnularQueueNode
@@ -136,7 +139,7 @@ namespace MUZI
 			return this->m_begin == this->m_end;
 		}
 	private:
-		Lock_Type m_lock;
+		lock_type m_lock;
 		struct MSyncAnnularQueueNode<T>* m_data;
 		struct MSyncAnnularQueueNode<T>* m_begin;
 		struct MSyncAnnularQueueNode<T>* m_end;// 代表的是一个单独的末尾元素，其内部不包含可用值

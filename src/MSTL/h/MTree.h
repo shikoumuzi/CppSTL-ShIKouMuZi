@@ -18,6 +18,10 @@ namespace MUZI
 	template<__Tree_Node_Inline_Ele_Type__ T, typename Node_Type, size_t LEN = 4>
 	struct __MTreeNode__
 	{
+	public:
+		using value_type = T;
+		using reference = T&;
+		using const_reference = const T&;
 	private:
 		static MAllocator* alloc;
 	public:
@@ -141,6 +145,10 @@ namespace MUZI
 	public:
 		using tree_type = Tree;
 		using ele_type = T;
+		using value_type = T;
+		using reference = T&;
+		using const_reference = const T&;
+		using size_type = size_t;
 	public:
 		MTree(Tree tree)
 		{
