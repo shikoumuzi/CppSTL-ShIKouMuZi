@@ -34,6 +34,7 @@ namespace MUZI::ffmpeg
 		~MMAVPackage();
 	public:
 		void operator=(const MMAVPackage& package);
+		void operator=(const MMAVPackageRef& package);
 	public:
 		MMAVPackageRef getRef();
 	private:

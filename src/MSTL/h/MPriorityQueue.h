@@ -48,7 +48,7 @@ namespace MUZI
 		using node_type = Node<V>;
 	};
 
-	template<template<typename...> class Container, typename Elem>
+	template<template<typename...> class Container = MSkipList, typename Elem = __MDefaultTypeDefine__>
 	concept __MPriorityQueueContainer__ = requires(Container<__MPriorityQueueNode__<Elem>> x, __MPriorityQueueNode__<Elem> node, Elem ele)
 	{
 		typename Container<__MPriorityQueueNode__<Elem>>::value_type;
@@ -56,14 +56,15 @@ namespace MUZI
 		typename Container<__MPriorityQueueNode__<Elem>>::iterator;
 		{x.insert(node)} -> std::same_as<void>;
 		{x.size()} -> std::same_as<size_t>;
-		{x.front()};
+		{x.front()} -> std::same_as<Elem&>;
 		{x.erase(node)} -> std::same_as<void>;
 		{x.begin()} -> std::same_as<typename Container<__MPriorityQueueNode__<Elem>>::iterator>;
 		{x.end()} -> std::same_as<typename Container<__MPriorityQueueNode__<Elem>>::iterator>;
+		{x.clear()} -> std::same_as<void>;
 		std::is_same_v<typename Container<__MPriorityQueueNode__<Elem>>::value_type, __MPriorityQueueNode__<Elem>>;
 	};
 
-	template<typename T = __MDefaultTypeDefine__, template<typename> typename Container>
+	template<typename T = __MDefaultTypeDefine__, template<typename> typename Container = MSkipList>
 		requires __MPriorityQueueContainer__<Container, T>// 无法直接限定，需要通过后接requires来进行限定
 	class MPriorityQueue
 	{
@@ -83,19 +84,32 @@ namespace MUZI
 		}
 		void pop()
 		{
-			this->m_container.erase(this->m_container.front());
+			this->m_container.erase(this->m_container.begin());
 		}
-
+		void clear()
+		{
+			this->m_container.clear();
+		}
 	public:
 		size_t size()
 		{
-			return this->MSkipList<node_type>::size();
+			return this->m_container.size();
 		}
+		T& front()
+		{
+			return this->m_container.front();
+		}
+
 	public:
 		size_t size() const
 		{
-			return this->MSkipList<node_type>::size();
+			return this->m_container.size();
 		}
+		const T& front() const
+		{
+			return this->m_container.front();
+		}
+
 	private:
 		container_type m_container;
 	};

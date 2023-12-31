@@ -28,81 +28,24 @@
 
 //void server()
 //{
-//	MUZI::net::sync::MSyncSocket socket(std::move(MUZI::net::MServerEndPoint(10086)));
-//	int error_code = 0;
-//	socket.bind();
-//	socket.listen();
-//	std::vector<std::thread> thread_list;
-//	const int LENGTH = 1024;
-//	int i = 0;
-//	while (1)
-//	{
-//		MUZI::net::sync::NetSyncIOAdapt adapt = socket.accept(error_code);
-//		if (error_code == 0)
-//		{
-//			thread_list.emplace_back(
-//				std::thread([&socket, adapt] {
-//					char data[LENGTH];
-//					while (1)
-//					{
-//						memset(data, '\0', LENGTH);
-//
-//						int ec = socket.read(adapt, data, 1024, true);
-//						if (ec != 0)
-//						{
-//							break;
-//						}
-//						std::cout << adapt.get()->remote_endpoint() << ": " << data  << std::endl;
-//
-//						ec = socket.write(adapt, std::string(data));
-//					}
-//
-//					}));
-//
-//		}
-//
-//
-//	}
 //
 //}
 //
 //void async_server()
 //{
-//	int error_code = 0;
-//	MUZI::net::async::MAsyncServer server(error_code, MUZI::net::MServerEndPoint(10086));
-//	if (error_code != 0)
-//	{
-//		return;
-//	}
-//	server.listen(20);
-//	//auto adapt = server.accept(error_code);
-//	int adapt = server.accept(
-//		[](MUZI::net::async::MAsyncServer& server, MUZI::net::async::NetAsyncIOAdapt adapt)->void
-//		{
-//			server.readAllFromeSocket(adapt, 100);
-//		});
-//
-//	//server.readAllFromeSocket(adapt, 20);
-//
-//	//auto msg = adapt->getPopFrontRecvMsg();
-//	/*std::cout << static_cast<char*>(msg->getData()) << std::endl;*/
-//	//server.wtiteAllToSocket(adapt, "sdada", 5);
-//	server.run();
 //}
 //
 
 #include<thread>
 #include"MMedia/MMPlayer/MMAV/example/MMAVExample.h"
 #include"concepts"
-
-
+#include<compare>
 int main(int arg, char* argv[])
 {
-	{
-		MUZI::ffmpeg::example::MMAVExample().example();
-	}
+	//{
+	//	MUZI::ffmpeg::example::MMAVExample().example_1();
+	//}
 
-
-
+	std::cout << std::strong_ordering()._Value << std::endl;
 	return 0;
 }

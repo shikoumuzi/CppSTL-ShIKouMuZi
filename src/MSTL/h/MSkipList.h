@@ -377,6 +377,20 @@ namespace MUZI
 			{
 				return this->data->value;
 			}
+			MIterator<T> operator+(MIterator::difference_type offset) const
+			{
+				MIterator<T> iter = *this;
+				while (offset--)
+				{
+					if (this->data != nullptr || this->data->next() != nullptr)
+					{
+						this->data = this->data->next();
+						continue;
+					}
+					break;
+				}
+				return iter;
+			}
 		private:
 			inline __MSkipListNode__<T>* getData()
 			{

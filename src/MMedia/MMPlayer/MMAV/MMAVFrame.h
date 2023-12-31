@@ -14,7 +14,7 @@ namespace MUZI::ffmpeg
 		private:
 			MMAVFrameRef();
 		public:
-			MMAVFrameRef(const MMAVFrameRef& av_frame);
+			MMAVFrameRef(MMAVFrameRef& av_frame);
 			MMAVFrameRef(MMAVFrameRef&& av_frame);
 			~MMAVFrameRef();
 		public:
@@ -33,6 +33,7 @@ namespace MUZI::ffmpeg
 		MMAVFrameRef getRef();
 	public:
 		void operator=(const MMAVFrame& av_frame);
+		void operator=(const MMAVFrameRef& av_frame);
 	private:
 		AVFrame* m_av_frame;
 	};

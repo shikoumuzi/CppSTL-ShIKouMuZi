@@ -13,7 +13,12 @@ namespace MUZI::ffmpeg
 		MMAVStream(const MMAVStream&);
 		MMAVStream(MMAVStream&&);
 		~MMAVStream();
-
+	private:
+		MMAVStream(int stream_index, AVCodecParameters* m_code_parm);
+	public:
+		void operator=(const MMAVStream& stream);
+		void operator=(MMAVStream&& stream);
+		inline int getStreamIndex();
 	private:
 		int m_stream_index;
 		AVCodecParameters* m_code_parm;

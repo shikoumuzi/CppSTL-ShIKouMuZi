@@ -7,7 +7,7 @@ namespace MUZI::ffmpeg
 	{
 	}
 
-	MMAVFrame::MMAVFrameRef::MMAVFrameRef(const MMAVFrameRef& av_frame) :
+	MMAVFrame::MMAVFrameRef::MMAVFrameRef(MMAVFrameRef& av_frame) :
 		MMAVFrameRef()
 	{
 		av_frame_ref(this->m_av_frame, av_frame.m_av_frame);
@@ -82,11 +82,27 @@ namespace MUZI::ffmpeg
 	MMAVFrame::MMAVFrameRef MMAVFrame::getRef()
 	{
 		auto ref = MMAVFrameRef();
+		if (this->m_av_frame == nullptr)
+		{
+			return ref;
+		}
 		av_frame_ref(ref.m_av_frame, this->m_av_frame);
 		return ref;
 	}
 	void MMAVFrame::operator=(const MMAVFrame& av_frame)
 	{
+		if (this->m_av_frame == nullptr)
+		{
+			this->m_av_frame = av_frame_alloc();
+		}
+		av_frame_copy(this->m_av_frame, av_frame.m_av_frame);
+	}
+	void MMAVFrame::operator=(const MMAVFrameRef& av_frame)
+	{
+		if (this->m_av_frame == nullptr)
+		{
+			this->m_av_frame = av_frame_alloc();
+		}
 		av_frame_copy(this->m_av_frame, av_frame.m_av_frame);
 	}
 }

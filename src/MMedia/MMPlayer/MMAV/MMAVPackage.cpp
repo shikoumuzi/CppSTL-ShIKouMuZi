@@ -69,6 +69,10 @@ namespace MUZI::ffmpeg
 	{
 		this->m_av_packet = av_packet_clone(package.m_av_packet);
 	}
+	void MMAVPackage::operator=(const MMAVPackage& package)
+	{
+		this->m_av_packet = av_packet_clone(package.m_av_packet);
+	}
 	MMAVPackage::MMAVPackageRef MMAVPackage::getRef()
 	{
 		auto ret_pack = MMAVPackageRef();
