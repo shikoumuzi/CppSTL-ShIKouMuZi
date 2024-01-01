@@ -3,6 +3,7 @@
 #define __MUZI_MPRIORITYQUEUE_H__
 #include"MSkipList.h"
 #include"MBase/MObjectBase.h"
+
 #include<compare>
 #include<concepts>
 namespace MUZI
@@ -113,6 +114,9 @@ namespace MUZI
 	private:
 		container_type m_container;
 	};
+
+	template<typename T>
+	using MPriorityQueueBaseOnSkipList = MPriorityQueue<T, MSkipList>;
 }
 
 #endif // !__MUZI_PRIORITYQUEUE_H__

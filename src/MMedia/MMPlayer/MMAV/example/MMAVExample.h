@@ -41,6 +41,8 @@ namespace MUZI::ffmpeg::example
 			MMAVPackage package;
 			MMAVDecoder decoder;
 			MMAVReader reader;
+			MMAVPackage packet;
+			MMAVFrame frame;
 
 			if (reader.open("E:/Ñ¸À×ÏÂÔØ/[231203][231124][¥Ô¥ó¥¯¥Ñ¥¤¥Ê¥Ã¥×¥ë]¤È¤Ê¤ê¤Î¼Ò¤Î¥¢¥Í¥Ã¥È¤µ¤ó THE ANIMATION µÚ2Ž†(No Watermark).mp4") < 0)
 			{
@@ -48,21 +50,14 @@ namespace MUZI::ffmpeg::example
 				reader.close();
 				return;
 			}
-			MMAVStream stream;
-			reader.getStream(stream, 0);
-			while (true)
-			{
-				MMAVPackage pack;
-				int ret = 0;
-				ret = reader.read(pack);
-				if (ret < 0)
-				{
-					reader.close();
-					return;
-				}
-				printf("Read Packet Success, now size is %d, now stream size is %d \n", ret, reader.getStreamSize());
 
-				std::this_thread::sleep_for(std::chrono::microseconds(500));
+			for (int i = 0; i < reader.getStreamSize(); ++i)
+			{
+				auto stream = reader.getStream(i);
+				decoder.initDecoder(stream);
+				reader.read(packet);
+				decoder.sendPackage(packet);
+				decoder.recvPackage(frame);
 			}
 			reader.close();
 		}

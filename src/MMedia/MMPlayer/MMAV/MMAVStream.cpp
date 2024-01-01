@@ -47,6 +47,11 @@ namespace MUZI::ffmpeg
 		return this->m_stream_index;
 	}
 
+	bool MMAVStream::isVaild()
+	{
+		return this->m_code_parm == nullptr;
+	}
+
 	MMAVStream::~MMAVStream()
 	{
 		if (this->m_code_parm != nullptr)

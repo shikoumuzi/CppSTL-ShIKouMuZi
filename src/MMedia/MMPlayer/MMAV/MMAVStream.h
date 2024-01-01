@@ -19,6 +19,8 @@ namespace MUZI::ffmpeg
 		void operator=(const MMAVStream& stream);
 		void operator=(MMAVStream&& stream);
 		inline int getStreamIndex();
+	public:
+		bool isVaild();
 	private:
 		int m_stream_index;
 		AVCodecParameters* m_code_parm;

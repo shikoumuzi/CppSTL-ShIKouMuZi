@@ -5,7 +5,8 @@
 namespace MUZI::ffmpeg
 {
 	MMAVReader::MStreamIterator::MStreamIterator() :
-		m_stream(nullptr)
+		m_stream(nullptr),
+		parent(nullptr)
 	{
 	}
 	MMAVReader::MStreamIterator::MStreamIterator(const MStreamIterator& iterator) :
@@ -18,7 +19,6 @@ namespace MUZI::ffmpeg
 		parent(iterator.parent)
 	{
 	}
-
 	MMAVReader::MStreamIterator::MStreamIterator(int stream_id, MMAVReader* parent) :
 		m_stream(std::make_unique<MMAVStream>(parent->getStream(stream_id))),
 		parent(parent)
@@ -29,11 +29,8 @@ namespace MUZI::ffmpeg
 	}
 	MMAVReader::MStreamIterator MMAVReader::MStreamIterator::operator+(size_t offset)
 	{
-		if (offset + this->m_stream->getStreamIndex() >= this->parent->getStreamSize())
-		{
-			return this->parent->end();
-		}
-		MStreamIterator iterator(this->m_stream->getStreamIndex() + offset, this->parent);
+		MStreamIterator iterator(*this);
+		iterator += offset;
 		return iterator;
 	}
 	void MMAVReader::MStreamIterator::operator+=(size_t offset)
@@ -47,11 +44,8 @@ namespace MUZI::ffmpeg
 	}
 	MMAVReader::MStreamIterator MMAVReader::MStreamIterator::operator-(size_t offset)
 	{
-		if (this->m_stream->getStreamIndex() - offset < 0)
-		{
-			return this->parent->end();
-		}
-		MStreamIterator iterator(this->m_stream->getStreamIndex() - offset, this->parent);
+		MStreamIterator iterator(*this);
+		iterator -= offset;
 		return iterator;
 	}
 	void MMAVReader::MStreamIterator::operator-=(size_t offset)
@@ -60,6 +54,11 @@ namespace MUZI::ffmpeg
 		{
 			this->m_stream.reset();
 			this->m_stream = nullptr;
+		}
+		if (this->m_stream == nullptr)
+		{
+			this->m_stream->operator=(this->parent->getStream(this->parent->getStreamSize()));
+			offset -= 1;
 		}
 		this->m_stream->operator=(this->parent->getStream(this->m_stream->getStreamIndex() - offset));
 	}
@@ -116,23 +115,16 @@ namespace MUZI::ffmpeg
 	}
 	const MMAVReader::MStreamIterator MMAVReader::MStreamIterator::operator-(size_t offset) const
 	{
-		if (this->m_stream->getStreamIndex() - offset < 0)
-		{
-			return this->parent->end();
-		}
 		MStreamIterator iterator(this->m_stream->getStreamIndex() - offset, this->parent);
+		iterator -= offset;
 		return iterator;
 	}
 	const MMAVReader::MStreamIterator MMAVReader::MStreamIterator::operator+(size_t offset) const
 	{
-		if (offset + this->m_stream->getStreamIndex() >= this->parent->getStreamSize())
-		{
-			return this->parent->end();
-		}
 		MStreamIterator iterator(this->m_stream->getStreamIndex() + offset, this->parent);
+		iterator += offset;
 		return iterator;
 	}
-
 	bool MMAVReader::MStreamIterator::operator==(const MStreamIterator& iterator) const
 	{
 		if (this->parent != iterator.parent)
@@ -145,7 +137,6 @@ namespace MUZI::ffmpeg
 		}
 		return this->m_stream->getStreamIndex() == iterator.m_stream->getStreamIndex();
 	}
-
 	std::strong_ordering MMAVReader::MStreamIterator::operator<=>(const MStreamIterator& iterator) const
 	{
 		if (this->parent != iterator.parent)
@@ -209,7 +200,6 @@ namespace MUZI::ffmpeg
 	{
 		return (av_read_frame(this->m_av_format_context, package.m_av_packet) < 0) ? -1 : package.m_av_packet->size;
 	}
-
 	int MMAVReader::getStreamSize()
 	{
 		if (this->m_av_format_context == nullptr)
@@ -218,7 +208,6 @@ namespace MUZI::ffmpeg
 		}
 		return this->m_av_format_context->nb_streams;
 	}
-
 	int MMAVReader::getStream(MMAVStream& stream, int stream_id)
 	{
 		if (this->m_av_format_context == nullptr)
