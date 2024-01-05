@@ -62,6 +62,7 @@ namespace MUZI::ffmpeg
 		int open(const Path& file_path);
 		int close();
 		int read(MMAVPackage& package);
+		MMAVPackage read(int& error_number);
 	public:
 		int getStreamSize();
 		int getStream(MMAVStream& dest_stream, int stream_id);

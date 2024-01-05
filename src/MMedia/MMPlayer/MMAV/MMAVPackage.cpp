@@ -75,4 +75,18 @@ namespace MUZI::ffmpeg
 		av_packet_ref(ret_pack.m_av_packet, this->m_av_packet);
 		return ret_pack;
 	}
+	size_t MMAVPackage::getStreamIndex()
+	{
+		return this->m_av_packet->stream_index;
+	}
+	const MMAVPackage::MMAVPackageRef MMAVPackage::getRef() const
+	{
+		auto ret_pack = MMAVPackageRef();
+		av_packet_ref(ret_pack.m_av_packet, this->m_av_packet);
+		return ret_pack;
+	}
+	size_t MMAVPackage::getStreamIndex() const
+	{
+		return this->m_av_packet->stream_index;
+	}
 }

@@ -89,6 +89,16 @@ namespace MUZI::ffmpeg
 		av_frame_ref(ref.m_av_frame, this->m_av_frame);
 		return ref;
 	}
+	const MMAVFrame::MMAVFrameRef MMAVFrame::getRef() const
+	{
+		auto ref = MMAVFrameRef();
+		if (this->m_av_frame == nullptr)
+		{
+			return ref;
+		}
+		av_frame_ref(ref.m_av_frame, this->m_av_frame);
+		return ref;
+	}
 	void MMAVFrame::operator=(const MMAVFrame& av_frame)
 	{
 		if (this->m_av_frame == nullptr)

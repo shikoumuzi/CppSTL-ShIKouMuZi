@@ -2,7 +2,8 @@
 namespace MUZI::ffmpeg
 {
 	MMAVDecoder::MMAVDecoder() :
-		m_av_codec_context(avcodec_alloc_context3(nullptr))
+		m_av_codec_context(avcodec_alloc_context3(nullptr)),
+		m_stream_index(-1)
 	{
 	}
 
@@ -42,13 +43,23 @@ namespace MUZI::ffmpeg
 		{
 			return MERROR::MAV_DECODER_OPEN_FAILED;
 		}
+		this->m_stream_index = av_stream.getStreamIndex();
+		return 0;
+	}
 
+	int MMAVDecoder::closeDecoder()
+	{
+		avcodec_close(this->m_av_codec_context);
 		return 0;
 	}
 
 	// 因为发送和接收不一定数量对等，可以send一个package 可以获得好几个 frame 或者一个都获取不到
-	int MMAVDecoder::sendPackage(MMAVPackage& pkt)
+	int MMAVDecoder::sendPackage(const MMAVPackage& pkt)
 	{
+		if (pkt.getStreamIndex() != this->m_stream_index)
+		{
+			return MERROR::MAV_DECODER_PACKAGE_NOT_MATCH;
+		}
 		int ret = avcodec_send_packet(this->m_av_codec_context, pkt.m_av_packet);
 		if (ret < 0)
 		{
@@ -57,7 +68,7 @@ namespace MUZI::ffmpeg
 		return 0;
 	}
 
-	int MMAVDecoder::recvPackage(MMAVFrame& frm)
+	int MMAVDecoder::recvFrame(MMAVFrame& frm)
 	{
 		int ret = avcodec_receive_frame(this->m_av_codec_context, frm.m_av_frame);
 		if (ret < 0)
@@ -65,5 +76,24 @@ namespace MUZI::ffmpeg
 			return (ret == AVERROR_EOF) ? MERROR::MAV_DECODER_RECV_EOF : MERROR::MAV_DECODER_RECV_PACKAGE_FAILED;
 		}
 		return 0;
+	}
+	MMAVFrame MMAVDecoder::recvFrame(int& error_number)
+	{
+		MMAVFrame frame;
+		error_number = this->recvFrame(frame);
+		return frame;
+	}
+	void MMAVDecoder::clearBuffer()
+	{
+		avcodec_send_packet(this->m_av_codec_context, nullptr);
+		AVFrame* frame = av_frame_alloc();
+
+		for (;;)
+		{
+			if (avcodec_receive_frame(this->m_av_codec_context, frame) == AVERROR_EOF)
+			{
+				break;
+			}
+		}
 	}
 }

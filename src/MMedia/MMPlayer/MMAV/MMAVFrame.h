@@ -32,6 +32,8 @@ namespace MUZI::ffmpeg
 	public:
 		MMAVFrameRef getRef();
 	public:
+		const MMAVFrameRef getRef() const;
+	public:
 		void operator=(const MMAVFrame& av_frame);
 		void operator=(const MMAVFrameRef& av_frame);
 	private:

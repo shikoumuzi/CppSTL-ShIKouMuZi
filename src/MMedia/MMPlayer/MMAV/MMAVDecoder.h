@@ -18,9 +18,15 @@ namespace MUZI::ffmpeg
 		~MMAVDecoder();
 	public:
 		int initDecoder(MMAVStream& av_stream);
-		int sendPackage(MMAVPackage& pkt);
-		int recvPackage(MMAVFrame& frm);
+		int closeDecoder();
+	public:
+		int sendPackage(const MMAVPackage& pkt); 
+		int recvFrame(MMAVFrame& frm);
+		MMAVFrame recvFrame(int& error_number);
+	public:
+		void clearBuffer();
 	private:
+		size_t m_stream_index;
 		AVCodecContext* m_av_codec_context;
 	};
 }

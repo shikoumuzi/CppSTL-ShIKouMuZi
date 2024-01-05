@@ -200,6 +200,12 @@ namespace MUZI::ffmpeg
 	{
 		return (av_read_frame(this->m_av_format_context, package.m_av_packet) < 0) ? -1 : package.m_av_packet->size;
 	}
+	MMAVPackage MMAVReader::read(int& error_number)
+	{
+		MMAVPackage ret_pack;
+		error_number = this->read(ret_pack);
+		return ret_pack;
+	}
 	int MMAVReader::getStreamSize()
 	{
 		if (this->m_av_format_context == nullptr)

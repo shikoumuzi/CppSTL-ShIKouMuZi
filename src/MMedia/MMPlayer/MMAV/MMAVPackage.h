@@ -37,6 +37,10 @@ namespace MUZI::ffmpeg
 		void operator=(const MMAVPackageRef& package);
 	public:
 		MMAVPackageRef getRef();
+		size_t getStreamIndex();
+	public:
+		const MMAVPackageRef getRef() const;
+		size_t getStreamIndex() const;
 	private:
 		AVPacket* m_av_packet;
 	};

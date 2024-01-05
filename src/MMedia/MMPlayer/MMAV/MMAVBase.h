@@ -11,7 +11,8 @@
 								friend class MMAVStream;\
 								friend class MMAVFrame;\
 								friend class MMAVPackageRef;\
-								friend class MMAVFrameRef;
+								friend class MMAVFrameRef;\
+								friend class MMAVEncoder;
 extern "C"
 {
 #include<libavcodec/avcodec.h>
