@@ -13,6 +13,7 @@
 namespace MUZI
 {
 	using __MDefaultTypeDefine__ = int;
+	using index_t = size_t;
 };
 
 #endif // !__MUZI_OBJECTBASE_H__
