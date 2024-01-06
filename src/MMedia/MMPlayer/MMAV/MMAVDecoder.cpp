@@ -29,7 +29,7 @@ namespace MUZI::ffmpeg
 	}
 	int MMAVDecoder::initDecoder(MMAVStream& av_stream)
 	{
-		// 拷贝解码器信息到流
+		// 拷贝流的解码信息到解码器
 		avcodec_parameters_to_context(this->m_av_codec_context, av_stream.m_code_parm);
 		auto p_av_codec = avcodec_find_decoder(this->m_av_codec_context->codec_id);
 
