@@ -5,7 +5,6 @@
 
 namespace MUZI::net::async
 {
-
 	class MAsyncServer::MAsyncServerData
 	{
 	public:
@@ -20,8 +19,8 @@ namespace MUZI::net::async
 		{
 			if (ec.value() != 0)
 			{
-				MLog::w("MAsyncServer::handle_accpet", "async_handle error, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message());
-				return MERROR::ACCEPT_ERROR;
+				MLog::w("MAsyncServer::handle_accpet", "async_handle error, Error Code is %d, Error Message is %s", MERROR::MNET_ACCEPT_ERROR, ec.message());
+				return MERROR::MNET_ACCEPT_ERROR;
 			}
 			// 连接成功了才放入池子当中
 			this->parent->getSessions().emplace(adapt->getUUID(), adapt);
@@ -34,20 +33,17 @@ namespace MUZI::net::async
 		MAsyncServer* parent;
 	};
 
-
 	MAsyncServer::MAsyncServer(int& error_code, const MServerEndPoint& endpoint, NotifiedFunction notified_fun)
 		:MAsyncSocket(notified_fun), m_data(new MAsyncServerData(this, this->getIOContext(), endpoint))
 	{}
 
-	MAsyncServer::MAsyncServer(int& error_code, IOContext & context, const MServerEndPoint & endpoint, NotifiedFunction notified_fun)
+	MAsyncServer::MAsyncServer(int& error_code, IOContext& context, const MServerEndPoint& endpoint, NotifiedFunction notified_fun)
 		:MAsyncSocket(context, notified_fun), m_data(new MAsyncServerData(this, this->getIOContext(), endpoint))
 	{
-
 	}
 
 	MAsyncServer::~MAsyncServer()
 	{
-		
 		if (this->m_data != nullptr)
 		{
 			delete this->m_data;
@@ -61,8 +57,8 @@ namespace MUZI::net::async
 		this->m_data->acceptor.listen(back_log, ec);
 		if (ec.value() != 0)
 		{
-			MLog::w("MAsyncServer::listen", "listen is error, Error Code is %d, Error Messahe is %s\n", MERROR::LISTEN_ERROR, ec.message().c_str());
-			return MERROR::LISTEN_ERROR;
+			MLog::w("MAsyncServer::listen", "listen is error, Error Code is %d, Error Messahe is %s\n", MERROR::MNET_LISTEN_ERROR, ec.message().c_str());
+			return MERROR::MNET_LISTEN_ERROR;
 		}
 		return 0;
 	}
@@ -71,8 +67,8 @@ namespace MUZI::net::async
 	{
 		EC ec;
 		NetAsyncIOAdapt adapt(new MSession(this->getIOContext()));
-		
-		this->m_data->acceptor.async_accept(adapt->socket, 
+
+		this->m_data->acceptor.async_accept(adapt->socket,
 			[this, adapt, adapt_output](const EC& ec)->void
 			{
 				if (this->m_data->accpetCallback(adapt, ec) == 0) {
@@ -82,8 +78,8 @@ namespace MUZI::net::async
 			});
 		if (ec.value() != 0)
 		{
-			MLog::w("MAsyncServer::accept", "Bind Error Code is %d, Error Message is %s\n", MERROR::ACCEPT_ERROR, ec.message().c_str());
-			return MERROR::ACCEPT_ERROR;
+			MLog::w("MAsyncServer::accept", "Bind Error Code is %d, Error Message is %s\n", MERROR::MNET_ACCEPT_ERROR, ec.message().c_str());
+			return MERROR::MNET_ACCEPT_ERROR;
 		}
 		return 0;
 	}
@@ -97,14 +93,10 @@ namespace MUZI::net::async
 		if (ec.value() != 0)
 		{
 			std::cerr << ec.message();
-			/*MLog::w("MSyncSocket::accept", "accept is failed, Error Code is %d, Error Message is %s", MERROR::ACCEPT_ERROR, ec.message().c_str());*/
-			error_code = MERROR::ACCEPT_ERROR;
+			/*MLog::w("MSyncSocket::accept", "accept is failed, Error Code is %d, Error Message is %s", MERROR::MNET_ACCEPT_ERROR, ec.message().c_str());*/
+			error_code = MERROR::MNET_ACCEPT_ERROR;
 			return NetAsyncIOAdapt();
 		}
 		return adapt;
 	}
-
-
-
-
 }

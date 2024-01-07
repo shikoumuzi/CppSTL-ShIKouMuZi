@@ -67,6 +67,9 @@ namespace MUZI::ffmpeg
 		int getStreamSize();
 		int getStream(MMAVStream& dest_stream, int stream_id);
 		MMAVStream getStream(int stream_id);
+		int getVideoStreamIndex();
+		int getAudioStreamIndex();
+
 	public:
 		MMAVStream operator[](size_t index);
 		MStreamIterator begin();

@@ -5,15 +5,10 @@
 #include"MMAVDecoder.h"
 namespace MUZI::ffmpeg
 {
-	struct MMAVDecoderWrapper
-	{
-		size_t& stream_index;
-	};
-
 	class MMAVDecoderManager
 	{
 	public:
-		using Map = std::map<MMAVDecoderWrapper, MMAVDecoder>;
+		using Map = std::map<size_t, MMAVDecoder>;
 	public:
 		int addDecoder();
 		int eraseDecoder();

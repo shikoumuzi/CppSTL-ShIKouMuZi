@@ -22,28 +22,25 @@ namespace MUZI
 	public:
 		friend class MIterator;
 	public:
-		class MIterator: std::iterator<std::random_access_iterator_tag, T, const T, T*, T&>
+		class MIterator : std::iterator<std::random_access_iterator_tag, T, const T, T*, T&>
 		{
 		public:
-			MIterator():
+			MIterator() :
 				parent(nullptr),
 				index(0)
 			{
-
 			}
 			MIterator(MStaskArray* parent, index_t index) :
 				parent(parent),
 				index(index)
 			{
-
 			}
-			MIterator(const MIterator& iter):
+			MIterator(const MIterator& iter) :
 				parent(iter.parent),
 				index(iter.index)
 			{
-
 			}
-			MIterator(MIterator&& iter):
+			MIterator(MIterator&& iter) :
 				parent(iter.parent),
 				index(iter.index)
 			{
@@ -74,7 +71,6 @@ namespace MUZI
 				{
 					this->index = this->parent->size();
 				}
-				
 			}
 			void operator--()
 			{
@@ -98,7 +94,7 @@ namespace MUZI
 				if (this->index < 0)
 				{
 					this->index = 0;
-				}	
+				}
 			}
 			T& operator*()
 			{
@@ -184,6 +180,10 @@ namespace MUZI
 		{
 			return MIterator(this, this->size());
 		}
+		T* data()
+		{
+			return this->m_data;
+		}
 	public:
 		const T& operator[](index_t index) const
 		{
@@ -213,6 +213,10 @@ namespace MUZI
 		{
 			return MIterator(this, this->size());
 		}
+		const T* data() const
+		{
+			return this->m_data;
+		}
 	public:
 		constexpr size_t size()
 		{
@@ -237,19 +241,16 @@ namespace MUZI
 				parent(nullptr),
 				index(0)
 			{
-
 			}
 			MIterator(MStaskArray* parent, index_t index) :
 				parent(parent),
 				index(index)
 			{
-
 			}
 			MIterator(const MIterator& iter) :
 				parent(iter.parent),
 				index(iter.index)
 			{
-
 			}
 			MIterator(MIterator&& iter) :
 				parent(iter.parent),
@@ -282,7 +283,6 @@ namespace MUZI
 				{
 					this->index = this->parent->size();
 				}
-
 			}
 			void operator--()
 			{
@@ -401,6 +401,10 @@ namespace MUZI
 		{
 			return MIterator(this, this->size());
 		}
+		T* data()
+		{
+			return this->m_data;
+		}
 	public:
 		const T& operator[](size_t index) const
 		{
@@ -429,6 +433,10 @@ namespace MUZI
 		MIterator end() const
 		{
 			return MIterator(this, this->size());
+		}
+		const T* data() const
+		{
+			return this->m_data;
 		}
 	public:
 		constexpr size_t size()

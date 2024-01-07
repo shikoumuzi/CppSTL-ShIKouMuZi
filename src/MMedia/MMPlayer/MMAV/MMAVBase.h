@@ -12,7 +12,8 @@
 								friend class MMAVFrame;\
 								friend class MMAVPackageRef;\
 								friend class MMAVFrameRef;\
-								friend class MMAVEncoder;
+								friend class MMAVEncoder;\
+								friend class MMAVVideoPrinter;
 extern "C"
 {
 #include<libavcodec/avcodec.h>

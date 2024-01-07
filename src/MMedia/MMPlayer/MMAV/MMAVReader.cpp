@@ -26,6 +26,7 @@ namespace MUZI::ffmpeg
 	}
 	MMAVReader::MStreamIterator::~MStreamIterator()
 	{
+		this->parent = nullptr;
 	}
 	MMAVReader::MStreamIterator MMAVReader::MStreamIterator::operator+(size_t offset)
 	{
@@ -240,6 +241,46 @@ namespace MUZI::ffmpeg
 		stream.m_stream_index = p_ffmepg_stream->index;
 		avcodec_parameters_copy(stream.m_code_parm, p_ffmepg_stream->codecpar);
 		return stream;
+	}
+	int MMAVReader::getVideoStreamIndex()
+	{
+		int video_stream_index = av_find_best_stream(this->m_av_format_context, AVMediaType::AVMEDIA_TYPE_VIDEO, -1, -1, NULL, NULL);
+
+		if (video_stream_index > 0)
+		{
+			return video_stream_index;
+		}
+		else
+		{
+			if (video_stream_index == AVERROR_STREAM_NOT_FOUND)
+			{
+				return MERROR::MAV_READER_TARGET_TYPE_STREAM_IS_NOT_FOUND;
+			}
+			else
+			{
+				return MERROR::MAV_READER_TARGET_TYPE_STREAM_HAVE_NOT_MATCHED_DECODER;
+			}
+		}
+	}
+	int MMAVReader::getAudioStreamIndex()
+	{
+		int aduio_stream_index = av_find_best_stream(this->m_av_format_context, AVMediaType::AVMEDIA_TYPE_AUDIO, -1, -1, NULL, NULL);
+
+		if (aduio_stream_index > 0)
+		{
+			return aduio_stream_index;
+		}
+		else
+		{
+			if (aduio_stream_index == AVERROR_STREAM_NOT_FOUND)
+			{
+				return MERROR::MAV_READER_TARGET_TYPE_STREAM_IS_NOT_FOUND;
+			}
+			else
+			{
+				return MERROR::MAV_READER_TARGET_TYPE_STREAM_HAVE_NOT_MATCHED_DECODER;
+			}
+		}
 	}
 	MMAVStream MMAVReader::operator[](size_t index)
 	{

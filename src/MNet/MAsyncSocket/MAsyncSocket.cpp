@@ -232,7 +232,7 @@ namespace MUZI::net::async
 		{
 			if (ec.value() != 0)
 			{
-				MLog::w("MAsyncServer::MAsyncServerData::handleRread", "Error Code is %d, Error Message is %s", MERROR::RECV_ERROR, ec.message().c_str());
+				MLog::w("MAsyncServer::MAsyncServerData::handleRread", "Error Code is %d, Error Message is %s", MERROR::MNET_RECV_ERROR, ec.message().c_str());
 				this->sessions.erase(adapt->getUUID());
 				return;
 			}
@@ -423,7 +423,7 @@ namespace MUZI::net::async
 		{
 			if (ec.value() != 0)
 			{
-				MLog::w("MAsyncServer::MAsyncServerData::handleWrite", "Error Code is %d, Error Message is %s", MERROR::SEND_ERROR, ec.message().c_str());
+				MLog::w("MAsyncServer::MAsyncServerData::handleWrite", "Error Code is %d, Error Message is %s", MERROR::MNET_SEND_ERROR, ec.message().c_str());
 				this->sessions.erase(adapt->getUUID());
 				return;
 			}
@@ -462,7 +462,7 @@ namespace MUZI::net::async
 		{
 			if (ec.value() != 0)
 			{
-				MLog::w("MAsyncServer::MAsyncServerData::handleRread", "Error Code is %d, Error Message is %s", MERROR::RECV_ERROR, ec.message().c_str());
+				MLog::w("MAsyncServer::MAsyncServerData::handleRread", "Error Code is %d, Error Message is %s", MERROR::MNET_RECV_ERROR, ec.message().c_str());
 				this->sessions.erase(adapt->getUUID());
 				return;
 			}
@@ -658,7 +658,7 @@ namespace MUZI::net::async
 		{
 			if (ec.value() != 0)
 			{
-				MLog::w("MAsyncServer::MAsyncServerData::handleWrite", "Error Code is %d, Error Message is %s", MERROR::SEND_ERROR, ec.message().c_str());
+				MLog::w("MAsyncServer::MAsyncServerData::handleWrite", "Error Code is %d, Error Message is %s", MERROR::MNET_SEND_ERROR, ec.message().c_str());
 				this->sessions.erase(adapt->getUUID());
 				return;
 			}
@@ -833,7 +833,7 @@ namespace MUZI::net::async
 	{
 		if (adapt->recv_pending)
 		{
-			return MERROR::READ_PENDING_NOW;
+			return MERROR::MNET_READ_PENDING_NOW;
 		}
 
 		adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
@@ -850,7 +850,7 @@ namespace MUZI::net::async
 		adapt->send_queue.push(std::make_shared<MSendMsgNode>(data, size, msg_id));
 		if (adapt->send_pending)
 		{
-			return MERROR::WRITE_PENDING_NOW;
+			return MERROR::MNET_WRITE_PENDING_NOW;
 		}
 
 		adapt->send_tmp_buff = *adapt->send_queue.front();
@@ -871,12 +871,12 @@ namespace MUZI::net::async
 
 	/// @brief this function is an improved version of readPackage used with io_pool
 	/// @param adapt A shared pointer packet MSession
-	/// @return 0 if success, MERROR::READ_PENDING_NOW if this function is reading in other thread
+	/// @return 0 if success, MERROR::MNET_READ_PENDING_NOW if this function is reading in other thread
 	int MAsyncSocket::readPackageWithStrand(NetAsyncIOAdapt adapt)
 	{
 		if (adapt->recv_pending)
 		{
-			return MERROR::READ_PENDING_NOW;
+			return MERROR::MNET_READ_PENDING_NOW;
 		}
 
 		adapt->socket.async_read_some(boost::asio::buffer(adapt->recv_tmp_buff->getData(), __MUZI_MMSGNODE_PACKAGE_MAX_SIZE_IN_BYTES__),
@@ -893,13 +893,13 @@ namespace MUZI::net::async
 	/// @param adapt A shared pointer packet MSession
 	/// @param data can transfer parameters include char*, char[] or other data struct witch can cast to void *
 	/// @param size data size in bytes
-	/// @return 0 if success, MERROR::WRITE_PENDING_NOW if this function is reading in other thread but data in write queue
+	/// @return 0 if success, MERROR::MNET_WRITE_PENDING_NOW if this function is reading in other thread but data in write queue
 	int MAsyncSocket::writePackageWithStrand(NetAsyncIOAdapt adapt, const void* data, uint32_t size, int msg_id)
 	{
 		adapt->send_queue.push(std::make_shared<MSendMsgNode>(data, size, msg_id));
 		if (adapt->send_pending)
 		{
-			return MERROR::WRITE_PENDING_NOW;
+			return MERROR::MNET_WRITE_PENDING_NOW;
 		}
 
 		adapt->send_tmp_buff = *adapt->send_queue.front();

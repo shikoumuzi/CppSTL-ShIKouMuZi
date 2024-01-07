@@ -83,7 +83,7 @@ namespace MUZI::ffmpeg::example
 					continue;
 				}
 
-				while (ret != MERROR::MAV_DECODER_RECV_EOF) 
+				while (ret != MERROR::MAV_DECODER_RECV_FRAME_EOF)
 				{
 					MMAVFrame frame;
 					ret = decoder.recvFrame(frame);
