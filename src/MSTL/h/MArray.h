@@ -437,7 +437,7 @@ namespace MUZI
 		{
 			return this->m_data;
 		}
-	public:
+	public: 
 		constexpr size_t size()
 		{
 			return ElementSize;
@@ -452,6 +452,7 @@ namespace MUZI
 	public:
 		using element_type = char[sizeof(T)];
 	};
+
 }
 
 #endif // !__MUZI_MARRAY_H__

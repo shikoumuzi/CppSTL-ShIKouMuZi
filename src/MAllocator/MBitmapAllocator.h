@@ -1,6 +1,9 @@
-#include"MAllocator.h"
 #ifndef __MUZI_MBITMAPALLOCATOR_H__
 #define __MUZI_MBITMAPALLOCATOR_H__
+#include"MAllocator.h"
+#include"MBase/MObjectBase.h"
+#include"MSTL/h/MArray.h"
+#define __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__ 1024 /*每次allocator申请内存的数量*/
 
 namespace MUZI {
 	// 相比起普通POOL 这里采用数组代替链表的方式保管内存块
@@ -12,7 +15,7 @@ namespace MUZI {
 	//	sizeof(T) <= sizeof(uint64_t) * 2;
 	//};
 
-	template<typename T = uint64_t>
+	template<typename T = __MDefaultTypeDefine__>
 	class MBitmapAllocator :public MAllocator
 	{
 	public:
@@ -21,15 +24,7 @@ namespace MUZI {
 		{
 			return dynamic_cast<MAllocator*>(new MBitmapAllocator<T>());
 		}
-
-	public:
-		MBitmapAllocator()
-		{}
-		MBitmapAllocator(MBitmapAllocator&& allocator) {}
-		~MBitmapAllocator()
-		{}
 	private:
-		//template<typename T>
 		class BitMapVector
 		{
 		public:
@@ -232,9 +227,9 @@ namespace MUZI {
 			BitMapVectorData* p_data;
 			size_t capacity;
 			size_t bitmap_size;
+			size_t end_index;
 		};
 
-		//template<typename T>
 		class BitMapVectors
 		{
 		public:
@@ -320,8 +315,38 @@ namespace MUZI {
 			BitMapVectorsData* p_data;
 			size_t allocated_num;
 		};
+	private:
+		class BitmapVector
+		{
+		public:
+			struct BitForByte
+			{
+				bool _0 : 1;
+				bool _1 : 1;
+				bool _2 : 1;
+				bool _3 : 1;
+				bool _4 : 1;
+				bool _5 : 1;
+				bool _6 : 1;
+				bool _7 : 1;
+			};
+		public:
+			constexpr size_t size()
+			{
+				return __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__;
+			}
+		public:
+			MUnInitHeapArray<T, __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__> m_memory_array;
+			MHeapArray<BitForByte, __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__ / 8> m_bitmap_array;
+			size_t capacity;
+			size_t bitmap_size;
+		};
 
-		//template<typename T>
+		class BitmapVectorManager
+		{
+
+		};
+
 		class MBitmapMemory
 		{
 		public:
@@ -333,10 +358,18 @@ namespace MUZI {
 		public:
 			size_t size;
 		};
+	public:
+		MBitmapAllocator()
+		{}
+		MBitmapAllocator(MBitmapAllocator&& allocator) {}
+		~MBitmapAllocator()
+		{}
 	private:
 		BitMapVectors bitmap_data;
 		void* bitmap_allocate(size_t size)
-		{/*未实现*/ return nullptr;
+		{
+			/*未实现*/ 
+			return nullptr;
 		}
 		void bitmap_deallocate(void* p)
 		{/*未实现*/
@@ -358,4 +391,4 @@ namespace MUZI {
 		void receive(MBitmapAllocator&&) {}
 	};
 }
-#endif // !__MUZI_MBITMAPALLOCATOR_H__
+#endif // !__MUZI_MBITMAPALLOCATOR_H_
