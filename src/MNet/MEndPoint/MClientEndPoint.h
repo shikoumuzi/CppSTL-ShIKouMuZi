@@ -8,7 +8,7 @@
 #include"MEndPoint.h"
 namespace MUZI::net
 {
-	class MClientEndPoint:public IMEndPoint
+	class MClientEndPoint :public IMEndPoint
 	{
 	public:
 		struct MClientEndPointData;
@@ -18,14 +18,11 @@ namespace MUZI::net
 		MClientEndPoint(MClientEndPoint&& endpoint);
 		~MClientEndPoint();
 	public:
-		EndPoint* getEndPoint() override;
-		EndPoint* getEndPoint() const;
+		TCPEndPoint* getEndPoint() override;
+		TCPEndPoint* getEndPoint() const;
 	private:
 		struct MClientEndPointData* m_data;
 	};
 }
-
-
-
 
 #endif // !__MENDPOINT_H__

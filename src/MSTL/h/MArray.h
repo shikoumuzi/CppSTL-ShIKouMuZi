@@ -132,7 +132,7 @@ namespace MUZI
 				ret_iter += offset;
 				return ret_iter;
 			}
-			MIterator operator-(int) const
+			MIterator operator-(int offset) const
 			{
 				auto ret_iter = *this;
 				ret_iter -= offset;
@@ -242,7 +242,7 @@ namespace MUZI
 				index(0)
 			{
 			}
-			MIterator(MStaskArray* parent, index_t index) :
+			MIterator(MHeapArray<T>* parent, index_t index) :
 				parent(parent),
 				index(index)
 			{
@@ -344,7 +344,7 @@ namespace MUZI
 				ret_iter += offset;
 				return ret_iter;
 			}
-			MIterator operator-(int) const
+			MIterator operator-(int offset) const
 			{
 				auto ret_iter = *this;
 				ret_iter -= offset;
@@ -359,14 +359,13 @@ namespace MUZI
 				return this->index <=> iter.index;
 			}
 		public:
-			MStaskArray* parent;
+			MHeapArray<T>* parent;
 			index_t index;
 		};
 		using iterator = MIterator;
 	public:
 		MHeapArray() :
-			m_data(new T[ElementSize]),
-			m_size(ElementSize) {}
+			m_data(new T[ElementSize]) {}
 		~MHeapArray()
 		{
 			delete[] this->m_data;

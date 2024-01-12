@@ -42,7 +42,7 @@ namespace MUZI::ffmpeg
 		stream.m_stream_index = -1;
 	}
 
-	inline int MMAVStream::getStreamIndex()
+	int MMAVStream::getStreamIndex()
 	{
 		return this->m_stream_index;
 	}

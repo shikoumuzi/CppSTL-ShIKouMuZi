@@ -20,13 +20,15 @@ namespace MUZI::net
 {
 	using String = std::string;
 	using Address = boost::asio::ip::address;
-	using EndPoint = boost::asio::ip::tcp::endpoint;
 	using EC = boost::system::error_code;
+	using TCPEndPoint = boost::asio::ip::tcp::endpoint;
 	using AddressSeccion = boost::asio::ip::address_v4;
-	using Protocol = boost::asio::ip::tcp;
+	using TCPProtocol = boost::asio::ip::tcp;
 	using TCPSocket = boost::asio::ip::tcp::socket;
 	using TCPAcceptor = boost::asio::ip::tcp::acceptor;
 	using TCPResolver = boost::asio::ip::tcp::resolver;
+	using UDPSocket = boost::asio::ip::udp::socket;
+	using UDPEndPoint = boost::asio::ip::udp::endpoint;
 	using IOContext = boost::asio::io_context;
 	using IOContextWork = boost::asio::io_context::work; // 用以防止没有注册事件，但run就直接返回了
 	using IOContextWorkPackage = std::unique_ptr<IOContextWork>;

@@ -9,7 +9,7 @@
 #include"MEndPoint.h"
 namespace MUZI::net
 {
-	class MServerEndPoint:public IMEndPoint
+	class MServerEndPoint :public IMEndPoint
 	{
 	public:
 		struct MServerEndPointData;
@@ -19,12 +19,11 @@ namespace MUZI::net
 		MServerEndPoint(MServerEndPoint&& endpoint) = delete;
 		~MServerEndPoint();
 	public:
-		EndPoint* getEndPoint() override;
-		EndPoint* getEndPoint() const;
+		TCPEndPoint* getEndPoint() override;
+		TCPEndPoint* getEndPoint() const;
 	private:
 		struct MServerEndPointData* m_data;
 	};
 }
-
 
 #endif // !__MUZI_MSERVERENDPOINT_H__

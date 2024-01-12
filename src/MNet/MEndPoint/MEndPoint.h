@@ -7,10 +7,8 @@ namespace MUZI::net
 {
 	__interface IMEndPoint
 	{
-		virtual EndPoint* getEndPoint() = 0;
+		virtual TCPEndPoint* getEndPoint() = 0;
 	};
-
 }
-
 
 #endif // !__MUZI_MENDPOINT_H__

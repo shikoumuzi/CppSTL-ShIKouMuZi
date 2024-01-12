@@ -18,7 +18,7 @@ namespace MUZI::ffmpeg
 	public:
 		void operator=(const MMAVStream& stream);
 		void operator=(MMAVStream&& stream);
-		inline int getStreamIndex();
+		int getStreamIndex();
 	public:
 		bool isVaild();
 	private:

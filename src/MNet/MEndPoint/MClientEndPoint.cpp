@@ -6,7 +6,7 @@ namespace MUZI::net
 	{
 		Address server_address;
 		Port server_port;
-		EndPoint endpoint;
+		TCPEndPoint endpoint;
 	};
 
 	MClientEndPoint::MClientEndPoint(String raw_ip_address, Port port, int& ec) :m_data(new MClientEndPointData())
@@ -49,12 +49,12 @@ namespace MUZI::net
 		}
 	}
 
-	EndPoint* MClientEndPoint::getEndPoint()
+	TCPEndPoint* MClientEndPoint::getEndPoint()
 	{
 		return &this->m_data->endpoint;
 	}
 
-	EndPoint* MClientEndPoint::getEndPoint() const
+	TCPEndPoint* MClientEndPoint::getEndPoint() const
 	{
 		return &this->m_data->endpoint;
 	}

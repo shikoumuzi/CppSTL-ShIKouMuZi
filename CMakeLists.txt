@@ -4,11 +4,11 @@
 cmake_minimum_required (VERSION 3.0)
 
 # Enable Hot Reload for MSVC compilers if supported.
-# if (POLICY CMP0141)
-#   cmake_policy(SET CMP0141 NEW)
-#   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT 
-#   "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-# endif()
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT 
+  "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+endif()
 
 project (CppSTL-shikounuzi)
 set(PROJECT_NAME CppSTL-shikounuzi)
@@ -94,11 +94,11 @@ macro(initBoost)
 endmacro()
 initBoost()
 
-macro(initSQLite)
+macro(initSQLite) 
 	# sqlte配置
 	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-amalgamation-3440200)
 	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SQLITE3_CODE_LIBRARY_PATH}/sqlite-dll-win-x64-3440200)
-	set(SQLITE3_ROOT ${SQLITE3_CODE_LIBRARY_PATH})
+	set(SQLite3_ROOT ${SQLITE3_CODE_LIBRARY_PATH})
 
 	# 连接sqlite
 	find_package(SQLite3 REQUIRED)
@@ -304,7 +304,7 @@ add_executable (CppSTL-shikounuzi
  "src/MMedia/MMPlayer/MMAV/MMAVDecoder.cpp" 
  "src/MMedia/MMPlayer/MMAV/MMAVStream.h" 
  "src/MMedia/MMPlayer/MMAV/MMAVStream.cpp" 
- "src/MMedia/MMPlayer/MMAV/MMAVBase.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.cpp" "src/MMedia/MMPlayer/MMAV/example/MMAVExample.h" "src/MSTL/example/MSyncAnnularQueueExample.h" "src/MSTL/h/MPriorityQueue.h" "src/MSTL/h/MHeap.h" "src/MNet/example/MSyncSocketExample.h" "src/MNet/example/MAsyncSocketExample.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoder.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoder.cpp" "src/MMedia/MMPlayer/MMAV/MMAVEncoderManager.h" "src/MMedia/MMPlayer/MMAV/MMAVDecoderManager.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoderManager.cpp" "src/MMedia/MMPlayer/MMAV/MMAVVideoPrinter.h" "src/MMedia/MMPlayer/MMAV/MMAVVideoPrinter.cpp" "src/MNet/MKCP/MKCP.h")
+ "src/MMedia/MMPlayer/MMAV/MMAVBase.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.cpp" "src/MMedia/MMPlayer/MMAV/example/MMAVExample.h" "src/MSTL/example/MSyncAnnularQueueExample.h" "src/MSTL/h/MPriorityQueue.h" "src/MSTL/h/MHeap.h" "src/MNet/example/MSyncSocketExample.h" "src/MNet/example/MAsyncSocketExample.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoder.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoder.cpp" "src/MMedia/MMPlayer/MMAV/MMAVEncoderManager.h" "src/MMedia/MMPlayer/MMAV/MMAVDecoderManager.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoderManager.cpp" "src/MMedia/MMPlayer/MMAV/MMAVVideoPrinter.h" "src/MMedia/MMPlayer/MMAV/MMAVVideoPrinter.cpp" "src/MNet/MKCP/MKCP.h" "src/MSTL/h/MBaseString.h")
 
 
 
