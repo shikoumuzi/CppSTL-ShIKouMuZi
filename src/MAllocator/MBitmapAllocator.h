@@ -227,7 +227,6 @@ namespace MUZI {
 			BitMapVectorData* p_data;
 			size_t capacity;
 			size_t bitmap_size;
-			size_t end_index;
 		};
 
 		class BitMapVectors
@@ -331,15 +330,48 @@ namespace MUZI {
 				bool _7 : 1;
 			};
 		public:
-			constexpr size_t size()
+			/// @brief This function represents the number of allocated blocks of memory
+			/// @return the number of allocated blocks of memory
+			size_t size()
 			{
-				return __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__;
+				return this->m_allocated_memory_size;
+			}
+			/// @brief This function represents the number of state bitmaps for all memory blocks
+			/// @return  the number of state bitmaps for all memory blocks
+			constexpr size_t bitmapSize()
+			{
+				return __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__ / 8;
+			}
+			constexpr size_t capacity()
+			{
+				return this->m_memory_array.size();
+			}
+		public:
+			bool isSubMemoryPointer(void* p)
+			{
+				return (static_cast<char*>(p) > this->m_memory_array.data() && (static_cast<char*>(p) - this->capacity()) < this->m_memory_array.data());			
+			}
+			bool isAllMemoryDealloced()
+			{
+				for (int i = 0; i < this->m_bitmap_array.size(); ++i)
+				{
+					if (this->m_bitmap_array[i] != 0)
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+			bool isNotFull()
+			{
+
 			}
 		public:
 			MUnInitHeapArray<T, __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__> m_memory_array;
 			MHeapArray<BitForByte, __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__ / 8> m_bitmap_array;
-			size_t capacity;
-			size_t bitmap_size;
+			size_t m_allocated_memory_size; // 表示已经分配出去的内存块数量
+			size_t end; // end 表示最后一个分配出去的内存快的索引号
+			
 		};
 
 		class BitmapVectorManager

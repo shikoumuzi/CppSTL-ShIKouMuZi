@@ -115,9 +115,9 @@ namespace MUZI::_event
 			int event_type;
 		
 		};
-		struct SignalTriggerMsg
+		struct SignalTriggerMsg // 信号触发消息
 		{
-			std::function<void()>* callback;
+			std::function<void()> callback;
 		};
 	public:
 		MEvent();

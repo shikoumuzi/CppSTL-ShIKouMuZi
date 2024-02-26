@@ -89,7 +89,7 @@ namespace MUZI::_event
 		{
 			MEvent::SignalTriggerMsg* event_msg = static_cast<MEvent::SignalTriggerMsg*>(*event.m_event_msg.get());
 			// 调用槽函数返回
-			(*(event_msg->callback))();
+			event_msg->callback();
 			break;
 		}
 		default:
