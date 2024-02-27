@@ -26,13 +26,11 @@ namespace MUZI::_event
 		public:
 			SignalTriggerEvent(MSignal<T, SlotCallBack, Args>::SlotMsg* _msg, Args... args)
 			{
-				auto args_pack = std::make_tuple(args...);
-				
 				this->m_event_msg = 
 					std::shared_ptr<void*>
 					(new MEvent::SignalTriggerMsg({
-						.callback = [_msg, args_pack]() {
-										std::apply(_msg.callback, args_pack);
+						.callback = [_msg, args...]() {
+										std::invoke(_msg.callback, args...);
 									};
 					}));
 
