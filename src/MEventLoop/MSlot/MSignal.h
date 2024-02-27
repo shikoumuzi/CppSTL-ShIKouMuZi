@@ -33,7 +33,8 @@ namespace MUZI::_event
 										std::invoke(_msg.callback, args...);
 									};
 					}));
-
+				this->m_event_type = MEvent::EVENT_TYPE::SIGNAL_TRIGGER;
+				this->m_priority = __MUZI_MEVENT_DEFAULT_PRIORITY__;
 			}
 		};
 	public:

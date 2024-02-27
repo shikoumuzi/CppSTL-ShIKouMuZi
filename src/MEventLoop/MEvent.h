@@ -5,6 +5,8 @@
 #include<functional>
 #include<compare>
 
+#define __MUZI_MEVENT_DEFAULT_PRIORITY__ 0
+
 namespace MUZI::_event
 {
 	class MEvent

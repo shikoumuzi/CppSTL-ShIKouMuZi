@@ -7,6 +7,7 @@
 #include<queue>
 #include<mutex>
 #include"MSTL/h/MAtomicLock.h"
+#include"MSTL/h/MSkipList.h"
 #include<atomic>
 
 #define __MUZI_MEVENTLOOP_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__ std::this_thread::sleep_for(std::chrono::milliseconds(10))
@@ -15,6 +16,7 @@ namespace MUZI::_event
 	class MEventLoop
 	{
 	public:
+		// 这个可以用跳表代替
 		using MEventQueue = std::priority_queue<MEvent>;
 		using MThreadId = std::thread::id;
 		using MRMutex = std::recursive_mutex;
