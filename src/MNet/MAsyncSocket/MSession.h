@@ -8,16 +8,14 @@
 #include<boost/uuid/uuid_io.hpp>
 #include<boost/lockfree/spsc_queue.hpp>
 #include<queue>
-#include"MSTL/h/MSyncAnnularQueue.h"
+#include"MSTL/include/MSyncAnnularQueue.h"
 #include<mutex>
 #include"../MMsgNode/MSendMsgNode.h"
 #include"../MMsgNode/MRecvMsgNode.h"
 #define __MUZI_MASYNCSOCKET_LOCKFREE_SPSE_QUEUE_CAPACITY__ 2048
 namespace MUZI::net::async
 {
-
 	class MAsyncSocket;
-
 
 	// std::enable_shared_from_this<MSession> 用以同步引用计数
 	class MSession
@@ -62,12 +60,9 @@ namespace MUZI::net::async
 		uint64_t send_id;
 		bool head_parse;
 		Strand m_strand;
-
 	};
 
 	using NetAsyncIOAdapt = std::shared_ptr<MSession>;
-
-
 }
-  
+
 #endif // !__MUZI_MSYNCSOCKET_MSession_H__

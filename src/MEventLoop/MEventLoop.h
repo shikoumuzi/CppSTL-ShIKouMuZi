@@ -6,8 +6,8 @@
 #include<thread>
 #include<queue>
 #include<mutex>
-#include"MSTL/h/MAtomicLock.h"
-#include"MSTL/h/MSkipList.h"
+#include"MSTL/include/MAtomicLock.h"
+#include"MSTL/include/MSkipList.h"
 #include<atomic>
 
 #define __MUZI_MEVENTLOOP_DEFAULT_SLEEP_TIME_IN_MILLISECOND_FOR_ENDLESS_LOOP__ std::this_thread::sleep_for(std::chrono::milliseconds(10))
@@ -38,7 +38,6 @@ namespace MUZI::_event
 		std::atomic<bool> m_atomic_mode;
 		std::atomic<bool> m_work_flag;
 		EventCtrlCallBack m_event_ctrl_callback;
-
 	};
 }
 #endif // !__MUZI_MEVENTLOOP_H__

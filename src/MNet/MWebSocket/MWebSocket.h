@@ -10,8 +10,8 @@
 #include<boost/uuid/random_generator.hpp>
 #include<boost/uuid/uuid_io.hpp>
 #include<queue>
-#include"MSTL/h/MSyncAnnularQueue.h"
-#include"MSTL/h/MAtomicLock.h"
+#include"MSTL/include/MSyncAnnularQueue.h"
+#include"MSTL/include/MAtomicLock.h"
 #include"MDesignModel/MSingleton/MSingleton.h"
 #include<mutex>
 namespace MUZI::net

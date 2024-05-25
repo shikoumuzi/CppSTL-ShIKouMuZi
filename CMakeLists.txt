@@ -285,6 +285,7 @@ set(SOURCES
 )
 
 
+
 # 将源代码添加到此项目的可执行文件。
 # 将测试添加到此项目的可执行文件。
 # add_executable (TESTMAIN ${TEST_PATH} ${H_FILE_PATH} "src/MAllocator/MPoolAllocator.h" "src/MAllocator/MLOKIAllocator.h" "src/MAllocator/MArrayAllocaor.h" "src/MAllocator/MPoolAllocator.cpp" "src/MAllocator/MLOKIAllocator.cpp")
@@ -293,18 +294,11 @@ add_executable (CppSTL-shikounuzi
 	"CppSTL-shikounuzi.h" 
 	${SOURCES}
 	${HEADERS}
+	${H_FILE_PATH}
+	${CPP_FILE_PATH}
 
 
- "src/MMedia/MMPlayer/MMAV/MMAVPackage.h"
- "src/MMedia/MMPlayer/MMAV/MMAVReader.cpp"
- "src/MMedia/MMPlayer/MMAV/MMAVPackage.cpp" 
- "src/MMedia/MMPlayer/MMAV/MMAVReader.h" 
- "src/MMedia/MMPlayer/MMAV/MMAV.h" 
- "src/MMedia/MMPlayer/MMAV/MMAVDecoder.h" 
- "src/MMedia/MMPlayer/MMAV/MMAVDecoder.cpp" 
- "src/MMedia/MMPlayer/MMAV/MMAVStream.h" 
- "src/MMedia/MMPlayer/MMAV/MMAVStream.cpp" 
- "src/MMedia/MMPlayer/MMAV/MMAVBase.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.h" "src/MMedia/MMPlayer/MMAV/MMAVFrame.cpp" "src/MMedia/MMPlayer/MMAV/example/MMAVExample.h" "src/MSTL/example/MSyncAnnularQueueExample.h" "src/MSTL/h/MPriorityQueue.h" "src/MSTL/h/MHeap.h" "src/MNet/example/MSyncSocketExample.h" "src/MNet/example/MAsyncSocketExample.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoder.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoder.cpp" "src/MMedia/MMPlayer/MMAV/MMAVEncoderManager.h" "src/MMedia/MMPlayer/MMAV/MMAVDecoderManager.h" "src/MMedia/MMPlayer/MMAV/MMAVEncoderManager.cpp" "src/MMedia/MMPlayer/MMAV/MMAVVideoPrinter.h" "src/MMedia/MMPlayer/MMAV/MMAVVideoPrinter.cpp" "src/MNet/MKCP/MKCP.h" "src/MSTL/h/MBaseString.h"    "src/MSTL/h/MTypeTraits.h" "src/MSTL/h/MPolymorphicFunctional.h")
+ )
 
 
 

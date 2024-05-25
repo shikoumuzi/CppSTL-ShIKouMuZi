@@ -2,7 +2,7 @@
 include("src/MLog/MLog.cmake")
 include("src/MSTL/MSTL.cmake")
 include("src/MDesignModel/MDesignModel.cmake")
-set(${H_FILE_PATH},
+set(H_FILE_PATH,
 	${H_FILE_PATH}
 		
 	"src/MNet/MEndPoint/MClientEndPoint.h"
@@ -29,9 +29,11 @@ set(${H_FILE_PATH},
 	"src/MNet/MCoroutineSocket/MCoroutineServer.h" 
 	"src/MNet/MCoroutineSocket/MCoroutineClient.h" 
 	"src/MNet/MHttpSocket/MHttpClient.h" 
+	"src/MNet/example/MAsyncSocketExample.h" 
+
 )
 
-set(${CPP_FILE_PATH},
+set(CPP_FILE_PATH,
 	${CPP_FILE_PATH}
 	"src/MNet/MEndPoint/MClientEndPoint.cpp"
 	"src/MNet/MEndPoint/MServerEndPoint.cpp" 

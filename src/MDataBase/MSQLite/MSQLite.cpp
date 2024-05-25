@@ -1,5 +1,5 @@
 #include"MSQLiite.h"
-#include"MRBTree.h"
+#include"MSTL/include/MRBTree.h"
 #include<string>
 #include<compare>
 #include<boost/filesystem.hpp>
@@ -9,7 +9,6 @@
 #include<stdarg.h>
 #include<vector>
 
-
 namespace MUZI::SQLite
 {
 	struct MSQLite::__SQL_TABLE__
@@ -17,7 +16,6 @@ namespace MUZI::SQLite
 		size_t attributes_num;// 属性个数
 		unsigned char attribute_type[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 变量类型数组
 		unsigned char attribute_size[__MUZI_MSQLITE_MAX_ATTRIBUTE_SIZE__];// 变量大小数组, 如果是字符串则是最大字符串char长度
-
 	};
 	struct MSQLite::__SQL_MESSAGE__
 	{
@@ -34,15 +32,14 @@ namespace MUZI::SQLite
 	{
 		struct MSQLite::__SQL_MESSAGE__* sqls;
 		sqlite3* sq3;
-
 	};
 
 	// MSelectResult
 	MSQLite::MSelectResult::MSelectResult(char* stream, int* index_list, size_t attribute_num, size_t size)
-		:bin_data_stream(stream), 
-		index_list(index_list), 
-		attribute_num(attribute_num), 
-		size (size), 
+		:bin_data_stream(stream),
+		index_list(index_list),
+		attribute_num(attribute_num),
+		size(size),
 		objectnum(new int(1))
 	{}
 
@@ -128,7 +125,6 @@ namespace MUZI::SQLite
 		p_data += sizeof(int);
 
 		return *reinterpret_cast<int64_t*>(p_data);
-
 	}
 
 	double MSQLite::MSelectResult::getDOUBLE(DataStream data, int& err)
@@ -226,19 +222,18 @@ namespace MUZI::SQLite
 		*that.objectnum += 1;
 	}
 
-
 	// MSQLite
-	MSQLite::MSQLite():m_data(new struct MSQLite::__MSQLite_Data__)
+	MSQLite::MSQLite() :m_data(new struct MSQLite::__MSQLite_Data__)
 	{
 		boost::filesystem::current_path(boost::filesystem::initial_path<boost::filesystem::path>());
 		this->m_data->sqls = new struct __SQL_MESSAGE__[__MUZI_MSQLITE_SQL_CODE_SIZE__];
-		__SQL_MESSAGE__ sql_message = {-1, 0, nullptr, 0};
+		__SQL_MESSAGE__ sql_message = { -1, 0, nullptr, 0 };
 		for (int i = 0; i < __MUZI_MSQLITE_SQL_CODE_SIZE__; ++i)
 		{
 			memcpy(&this->m_data->sqls[i], &sql_message, sizeof(__SQL_MESSAGE__));
 		}
 	}
-	MSQLite::MSQLite(MSQLite&& that):m_data(that.m_data)
+	MSQLite::MSQLite(MSQLite&& that) :m_data(that.m_data)
 	{
 		that.m_data = nullptr;
 	}
@@ -277,17 +272,11 @@ namespace MUZI::SQLite
 
 	int MSQLite::createDB(const char* database_name)
 	{
-
-
-
-
 		return 0;
 	}
 
 	int MSQLite::createTable(const char* sql)
 	{
-
-
 		return 0;
 	}
 
@@ -301,7 +290,6 @@ namespace MUZI::SQLite
 		int err_no = 0;
 		if ((err_no = sqlite3_exec(this->m_data->sq3, sql, callback, flag, nullptr)) != SQLITE_OK)
 		{
-
 		}
 
 		return 0;
@@ -309,8 +297,6 @@ namespace MUZI::SQLite
 
 	MSQLite::sql_id_t MSQLite::registerSQL(const char* sql, int type)
 	{
-
-
 		return 0;
 	}
 	MSQLite::sql_type_t MSQLite::getSQLType(sql_id_t sql_id)
@@ -337,7 +323,6 @@ namespace MUZI::SQLite
 
 		va_list args; // 定义一个va_list类型的变量
 		va_start(args, sql_id);// va_start需要是最后一个有名参数
-
 
 		switch (sql->sql_type)
 		{
@@ -392,7 +377,6 @@ namespace MUZI::SQLite
 					return MERROR::ARG_IS_UNEXPECTED;
 					break;
 				}
-
 			}
 			int rc = 0;
 
@@ -488,7 +472,6 @@ namespace MUZI::SQLite
 						return MERROR::ARG_IS_UNEXPECTED;
 						break;
 					}
-
 				}
 				ret_datas->emplace(ret_datas->end(), MSelectResult(p_data_stream_index, index_list, data_stream_size, index_list_size));
 				if (ret_datas->size() >= ret_data_reserve_szie)
@@ -499,7 +482,6 @@ namespace MUZI::SQLite
 				sqlite3_reset(sql->pstmt);
 				sqlite_colnum = 0;
 			}
-
 
 			break;
 		}
@@ -550,7 +532,6 @@ namespace MUZI::SQLite
 					return MERROR::ARG_IS_UNEXPECTED;
 					break;
 				}
-
 			}
 			// 执行全部内容直到执行完全为止
 			while (sqlite3_step(sql->pstmt) == SQLITE_ROW);
@@ -605,7 +586,6 @@ namespace MUZI::SQLite
 					return MERROR::ARG_IS_UNEXPECTED;
 					break;
 				}
-
 			}
 			sqlite3_step(sql->pstmt);
 			sqlite3_reset(sql->pstmt);
@@ -644,7 +624,6 @@ namespace MUZI::SQLite
 
 	void MSQLite::MSelectResultFinalize(MSQLite::MSelectResult**)
 	{
-
 	}
 
 	bool MSQLite::isSELECTT(sql_type_t sql_type)
@@ -671,6 +650,4 @@ namespace MUZI::SQLite
 	{
 		return sql_type > SQLType::SQL_INSERT || sql_type < SQLType::SQL_SELECT;
 	}
-
 }
-

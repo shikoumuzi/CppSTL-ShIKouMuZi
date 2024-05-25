@@ -2,7 +2,7 @@
 #define __MUZI_MBITMAPALLOCATOR_H__
 #include"MAllocator.h"
 #include"MBase/MObjectBase.h"
-#include"MSTL/h/MArray.h"
+#include"MSTL/include/MArray.h"
 #define __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__ 1024 /*每次allocator申请内存的数量*/
 
 namespace MUZI {
@@ -349,7 +349,7 @@ namespace MUZI {
 		public:
 			bool isSubMemoryPointer(void* p)
 			{
-				return (static_cast<char*>(p) > this->m_memory_array.data() && (static_cast<char*>(p) - this->capacity()) < this->m_memory_array.data());			
+				return (static_cast<char*>(p) > this->m_memory_array.data() && (static_cast<char*>(p) - this->capacity()) < this->m_memory_array.data());
 			}
 			bool isAllMemoryDealloced()
 			{
@@ -364,19 +364,16 @@ namespace MUZI {
 			}
 			bool isNotFull()
 			{
-
 			}
 		public:
 			MUnInitHeapArray<T, __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__> m_memory_array;
 			MHeapArray<BitForByte, __MUZI_MBITMAPALLOCATOR_MEMEORY_PART_SIZE__ / 8> m_bitmap_array;
 			size_t m_allocated_memory_size; // 表示已经分配出去的内存块数量
 			size_t end; // end 表示最后一个分配出去的内存快的索引号
-			
 		};
 
 		class BitmapVectorManager
 		{
-
 		};
 
 		class MBitmapMemory
@@ -400,7 +397,7 @@ namespace MUZI {
 		BitMapVectors bitmap_data;
 		void* bitmap_allocate(size_t size)
 		{
-			/*未实现*/ 
+			/*未实现*/
 			return nullptr;
 		}
 		void bitmap_deallocate(void* p)

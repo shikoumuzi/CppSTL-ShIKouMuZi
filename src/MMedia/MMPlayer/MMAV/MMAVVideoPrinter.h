@@ -3,7 +3,7 @@
 #define __MUZI_MMAVVIDEOPRINTER_H__
 #include"MMAVFrame.h"
 #include"MMAVBase.h"
-#include"MSTL/h/MArray.h"
+#include"MSTL/include/MArray.h"
 
 extern "C"
 {
