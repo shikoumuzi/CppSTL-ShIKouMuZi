@@ -20,7 +20,7 @@ namespace MUZI
 	class MStaskArray : public MArray<T>
 	{
 	public:
-		friend class MIterator;
+		friend class MStaskArray<T>::MIterator;
 	public:
 		class MIterator : std::iterator<std::random_access_iterator_tag, T, const T, T*, T&>
 		{
@@ -232,8 +232,6 @@ namespace MUZI
 	public:
 		using value_type = T;
 	public:
-		friend class MIterator;
-	public:
 		class MIterator : std::iterator<std::random_access_iterator_tag, T, const T, T*, T&>
 		{
 		public:
@@ -363,6 +361,8 @@ namespace MUZI
 			index_t index;
 		};
 		using iterator = MIterator;
+	public:
+		friend class MHeapArray<T>::MIterator;
 	public:
 		MHeapArray() :
 			m_data(new T[ElementSize]) {}

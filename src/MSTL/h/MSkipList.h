@@ -28,9 +28,11 @@ namespace MUZI
 		using reference = T&;
 		using const_reference = const T&;
 		using index_t = int;
+	private:
+		template<typename T>
+		friend struct __MSkipListIndexBround__;
 
 	private:
-		template<typename T = __MDefaultTypeDefine__>
 		struct __MSkipListNode__
 		{
 		public:
@@ -43,21 +45,20 @@ namespace MUZI
 		public:
 			__MSkipListNode__() :
 				value(),
-				next(nullptr),
 				index_level(0),
 				index_next(nullptr)
 			{}
-			__MSkipListNode__(__MSkipListNode__<T>* next, int max_level) :
+			__MSkipListNode__(__MSkipListNode__* next, int max_level) :
 				value(),
 				index_level(this->randLevel(max_level)),
 				index_next(nullptr)
 			{}
-			__MSkipListNode__(const T& value, __MSkipListNode__<T>* next, int max_level) :
+			__MSkipListNode__(const T& value, __MSkipListNode__* next, int max_level) :
 				value(value),
 				index_level(this->randLevel(max_level)),
 				index_next(nullptr)
 			{}
-			__MSkipListNode__(T&& value, __MSkipListNode__<T>* next, int max_level) :
+			__MSkipListNode__(T&& value, __MSkipListNode__* next, int max_level) :
 				value(value),
 				index_level(this->randLevel(max_level)),
 				index_next(nullptr)
@@ -89,10 +90,10 @@ namespace MUZI
 			{}
 			~__MSkipListNode__()
 			{
-				this->next = nullptr;
+				this->index_next = nullptr;
 			}
 		public:
-			inline __MSkipListNode__<T>*& next()
+			inline __MSkipListNode__*& next()
 			{
 				return this->index_next[0];
 			}
@@ -111,15 +112,16 @@ namespace MUZI
 			}
 		public:
 			T value; // 值
-			//__MSkipListNode__<T>* next; // 下一个节点
-			__MSkipListNode__<T>** index_next;// 索引和下一个节点集合
+			//__MSkipListNode__* next; // 下一个节点
+			__MSkipListNode__** index_next;// 索引和下一个节点集合
 			index_t index_level; // 索引层数
 			std::atomic<bool> m_writing_flag; // 用以在并发条件下判断当前结点是否需要修改
 		};
 		template<typename T = __MDefaultTypeDefine__>
 		struct __MSkipListIndexBround__
 		{
-			struct MSkipList<T>::__MSkipListNode__<T>* pointer;
+		public:
+			struct MSkipList<T>::__MSkipListNode__* pointer;
 		};
 
 		template<typename T = __MDefaultTypeDefine__>
@@ -133,87 +135,87 @@ namespace MUZI
 				m_capacity(capacity)
 			{}
 		public:
-			__MSkipListNode__<T>* initNode()
+			__MSkipListNode__* initNode()
 			{
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>();
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__();
 				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
 				return p_ret;
 			}
-			__MSkipListNode__<T>* initNode(__MSkipListNode__<T>* next, int max_level)
+			__MSkipListNode__* initNode(__MSkipListNode__* next, int max_level)
 			{
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>(next, max_level);
-				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
-				p_ret->m_writing_flag = false;
-				return p_ret;
-			}
-			__MSkipListNode__<T>* initNode(const T& value, __MSkipListNode__<T>* next, int max_level)
-			{
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>(value, next, max_level);
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__(next, max_level);
 				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
 				p_ret->m_writing_flag = false;
 				return p_ret;
 			}
-			__MSkipListNode__<T>* initNode(T&& value, __MSkipListNode__<T>* next, int max_level)
+			__MSkipListNode__* initNode(const T& value, __MSkipListNode__* next, int max_level)
 			{
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>(std::move(value), next, max_level);
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__(value, next, max_level);
 				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
 				p_ret->m_writing_flag = false;
 				return p_ret;
 			}
-			__MSkipListNode__<T>* initNode(const T& value, int max_level)
+			__MSkipListNode__* initNode(T&& value, __MSkipListNode__* next, int max_level)
 			{
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>(value, max_level);
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__(std::move(value), next, max_level);
 				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
 				p_ret->m_writing_flag = false;
 				return p_ret;
 			}
-			__MSkipListNode__<T>* initNode(const T& value, int max_level, bool isMax)
+			__MSkipListNode__* initNode(const T& value, int max_level)
+			{
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__(value, max_level);
+				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
+				p_ret->m_writing_flag = false;
+				return p_ret;
+			}
+			__MSkipListNode__* initNode(const T& value, int max_level, bool isMax)
 			{
 				if (!isMax)
 				{
 					return this->initNode(value, max_level);
 				}
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>(std::move(value), max_level, isMax);
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__(std::move(value), max_level, isMax);
 				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
 				p_ret->m_writing_flag = false;
 				return p_ret;
 			}
-			__MSkipListNode__<T>* initNode(T&& value, int max_level)
+			__MSkipListNode__* initNode(T&& value, int max_level)
 			{
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>(std::move(value), max_level);
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__(std::move(value), max_level);
 				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
 				p_ret->m_writing_flag = false;
 				return p_ret;
 			}
-			__MSkipListNode__<T>* initNode(T&& value, int max_level, bool isMax)
+			__MSkipListNode__* initNode(T&& value, int max_level, bool isMax)
 			{
 				if (!isMax)
 				{
 					return this->initNode(value, max_level);
 				}
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>(std::move(value), max_level, isMax);
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__(std::move(value), max_level, isMax);
 				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
 				p_ret->m_writing_flag = false;
 				return p_ret;
 			}
-			__MSkipListNode__<T>* initNode(const __MSkipListNode__<T>& node)
+			__MSkipListNode__* initNode(const __MSkipListNode__& node)
 			{
-				__MSkipListNode__<T>* p_ret = this->__getNewNode__();
-				new(p_ret) __MSkipListNode__<T>(std::move(value));
+				__MSkipListNode__* p_ret = this->__getNewNode__();
+				new(p_ret) __MSkipListNode__(std::move(node));
 				p_ret->index_next = this->__getNewIndexNextList__(p_ret->index_level);
 				p_ret->m_writing_flag = false;
 				return p_ret;
 			}
 		public:
-			void releaseNode(__MSkipListNode__<T>* node)
+			void releaseNode(__MSkipListNode__* node)
 			{
 				this->m_node_allocator.deallocate(node);
 			}
@@ -224,18 +226,18 @@ namespace MUZI
 				this->m_capacity += factory.m_capacity;
 			}
 		private:
-			__MSkipListNode__<T>* __getNewNode__()
+			__MSkipListNode__* __getNewNode__()
 			{
 				// 为新节点分配内存空间
-				__MSkipListNode__<T>* node = nullptr;
+				__MSkipListNode__* node = nullptr;
 				// 检查战备池
 				if (this->m_null_node_header == nullptr)
 				{
-					this->m_null_node_header = static_cast<__MSkipListNode__<T>*>\
+					this->m_null_node_header = static_cast<__MSkipListNode__*>\
 						(this->m_node_allocator.allocate(this->m_capacity * __MUZI_MSKIPLIST_DEFAULT_EXTEAND_COEFFICIENT__));
 					this->m_capacity *= __MUZI_MSKIPLIST_DEFAULT_EXTEAND_COEFFICIENT__;
 					// 切分分配的内存
-					__MSkipListNode__<T>* tmp_ptr = this->m_null_node_header;
+					__MSkipListNode__* tmp_ptr = this->m_null_node_header;
 					for (; tmp_ptr != nullptr && tmp_ptr->next != nullptr; tmp_ptr = tmp_ptr->next)
 					{
 						tmp_ptr->next = tmp_ptr + 1;
@@ -246,9 +248,9 @@ namespace MUZI
 				this->m_null_node_header = this->m_null_node_header->next;
 				return node;
 			}
-			__MSkipListNode__<T>** __getNewIndexNextList__(size_t index_level)
+			__MSkipListNode__** __getNewIndexNextList__(size_t index_level)
 			{
-				return static_cast<__MSkipListNode__<T>**>(this->m_index_allocator.allocate(index_level + 1));
+				return static_cast<__MSkipListNode__**>(this->m_index_allocator.allocate(index_level + 1));
 			}
 		public:
 			void clear()
@@ -260,7 +262,7 @@ namespace MUZI
 			}
 			void clearNullNodePool()
 			{
-				for (__MSkipListNode__<T>* it = this->m_null_node_header; it != nullptr; it = it->next())
+				for (__MSkipListNode__* it = this->m_null_node_header; it != nullptr; it = it->next())
 				{
 					this->m_node_allocator.deallocate(it, 1);
 				}
@@ -271,41 +273,41 @@ namespace MUZI
 			{
 			}
 		private:
-			MBitmapAllocator<__MSkipListNode__<T>*> m_index_allocator; // 索引分配器
-			MBitmapAllocator<__MSkipListNode__<T>> m_node_allocator; // 节点分配器
-			__MSkipListNode__<T>* m_null_node_header; //扩容的还未使用的战备池
+			MBitmapAllocator<__MSkipListNode__*> m_index_allocator; // 索引分配器
+			MBitmapAllocator<__MSkipListNode__> m_node_allocator; // 节点分配器
+			__MSkipListNode__* m_null_node_header; //扩容的还未使用的战备池
 			size_t m_capacity; // 容量
 			index_t& m_max_level; // 最大索引等级
 		};
 	public:
 		template<typename T = __MDefaultTypeDefine__>
-		class MIterator : public std::iterator<std::forward_iterator_tag, T, size_t, const T*, T>
+		class MSkipListIterator : public std::iterator<std::forward_iterator_tag, T, size_t, const T*, T>
 		{
 		public:
 			friend class MSkipList<T>;
-			friend class MCIterator<T>;
+			//friend class MCIterator<T>;
 		public:
-			MIterator() :
+			MSkipListIterator() :
 				data(nullptr)
 			{}
-			MIterator(const MIterator<T>& iter) :
+			MSkipListIterator(const MSkipListIterator<T>& iter) :
 				data(iter.data)
 			{}
-			MIterator(MIterator<T>&& iter) :
+			MSkipListIterator(MSkipListIterator<T>&& iter) :
 				data(iter.data)
 			{
 				iter.data = nullptr;
 			}
 		private:
-			MIterator(__MSkipListNode__<T>* data) :
+			MSkipListIterator(__MSkipListNode__* data) :
 				data(data)
 			{}
 		public:
-			bool operator==(const MIterator<T>& iter)
+			bool operator==(const MSkipListIterator<T>& iter)
 			{
 				return this->data == iter.data || this->data->value == iter.data->value;
 			}
-			std::weak_ordering operator<=>(const MIterator<T>& iter)
+			std::weak_ordering operator<=>(const MSkipListIterator<T>& iter)
 			{
 				return this->data->value <=> iter.data->value;
 			}
@@ -316,15 +318,15 @@ namespace MUZI
 					this->data = this->data->next();
 				}
 			}
-			MIterator<T> operator++(int)
+			MSkipListIterator<T> operator++(int)
 			{
-				MIterator<T> ret_iter = *this;
+				MSkipListIterator<T> ret_iter = *this;
 				this->operator++();
 				return ret_iter;
 			}
-			MIterator<T> operator+(MIterator::difference_type offset)
+			MSkipListIterator<T> operator+(MSkipListIterator::difference_type offset)
 			{
-				MIterator<T> iter = *this;
+				MSkipListIterator<T> iter = *this;
 				while (offset--)
 				{
 					if (this->data != nullptr || this->data->next() != nullptr)
@@ -336,7 +338,7 @@ namespace MUZI
 				}
 				return iter;
 			}
-			void operator+=(MIterator::difference_type offset)
+			void operator+=(MSkipListIterator::difference_type offset)
 			{
 				while (offset--)
 				{
@@ -348,7 +350,7 @@ namespace MUZI
 					break;
 				}
 			}
-			void operator=(const MIterator<T>& iter)
+			void operator=(const MSkipListIterator<T>& iter)
 			{
 				this->data = iter->data;
 			}
@@ -361,11 +363,11 @@ namespace MUZI
 				return this->data->value;
 			}
 		public:
-			bool operator==(const MIterator<T>& iter) const
+			bool operator==(const MSkipListIterator<T>& iter) const
 			{
 				return this->data == iter.data || this->data->value == iter.data->value;
 			}
-			std::weak_ordering operator<=>(const MIterator<T>& iter) const
+			std::weak_ordering operator<=>(const MSkipListIterator<T>& iter) const
 			{
 				return this->data->value <=> iter.data->value;
 			}
@@ -377,9 +379,9 @@ namespace MUZI
 			{
 				return this->data->value;
 			}
-			MIterator<T> operator+(MIterator::difference_type offset) const
+			MSkipListIterator<T> operator+(MSkipListIterator::difference_type offset) const
 			{
-				MIterator<T> iter = *this;
+				MSkipListIterator<T> iter = *this;
 				while (offset--)
 				{
 					if (this->data != nullptr || this->data->next() != nullptr)
@@ -392,7 +394,7 @@ namespace MUZI
 				return iter;
 			}
 		private:
-			inline __MSkipListNode__<T>* getData()
+			inline __MSkipListNode__* getData()
 			{
 				return this->data;
 			}
@@ -406,11 +408,11 @@ namespace MUZI
 				return this->data == nullptr;
 			}
 		public:
-			__MSkipListNode__<T>* data;
+			__MSkipListNode__* data;
 		};
 
 		template<typename T = __MDefaultTypeDefine__>
-		class MCIterator : private MIterator<T>
+		class MCIterator : private MSkipListIterator<T>
 		{
 		public:
 			friend class MSkipList<T>;
@@ -424,16 +426,16 @@ namespace MUZI
 			{
 				iter.data = nullptr;
 			}
-			MCIterator(const MIterator<T>& iter) :
+			MCIterator(const MSkipListIterator<T>& iter) :
 				data(iter.data)
 			{}
-			MCIterator(MIterator<T>&& iter) :
+			MCIterator(MSkipListIterator<T>&& iter) :
 				data(iter.data)
 			{
 				iter.data = nullptr;
 			}
 		private:
-			MCIterator(__MSkipListNode__<T>* data) :
+			MCIterator(__MSkipListNode__* data) :
 				data(data)
 			{}
 		public:
@@ -476,7 +478,9 @@ namespace MUZI
 		//class MRIterator: private MIterator<T>
 		//{};
 	public:
-		using iterator = class MSkipList<T>::MIterator<T>;
+		template<T>
+		using iterator = class MSkipList<T>::MSkipListIterator<T>;
+		template<T>
 		using const_iterator = class MSkipList<T>::MCIterator<T>;
 		//using reverse_iterator = class MSkipList<T>::MRIterator<T>;
 	public:
@@ -588,7 +592,7 @@ namespace MUZI
 			// 先检查表内是否无值，有的话单独初始化内容
 			if (this->m_size == 0)
 			{
-				__MSkipListNode__<T>* node = this->m_node_factory.initNode(ele, this->m_max_level, true);
+				__MSkipListNode__* node = this->m_node_factory.initNode(ele, this->m_max_level, true);
 				this->m_header = node;
 				this->m_tail = node;
 				this->m_index_header[0].pointer = node;
@@ -598,7 +602,7 @@ namespace MUZI
 			// 如果说ele小于头结点的值, 就直接插入到头
 			if (ele < this->m_header->value)
 			{
-				__MSkipListNode__<T>* node = this->m_node_factory.initNode(ele, this->m_header, this->m_max_level);
+				__MSkipListNode__* node = this->m_node_factory.initNode(ele, this->m_header, this->m_max_level);
 				for (int i = 0; i <= node->index_level; ++i)
 				{
 					this->m_index_header[0].pointer = node;
@@ -606,10 +610,10 @@ namespace MUZI
 				this->m_header = node;
 				return;
 			}
-			__MSkipListNode__<T>* node = this->m_node_factory.initNode(ele, this->m_max_level);
+			__MSkipListNode__* node = this->m_node_factory.initNode(ele, this->m_max_level);
 			// 便递归下降索引边插入更新索引
 			// 先将未索引的部分删选以快速找到需要选择的区间
-			__MSkipListNode__<T>* front_node = this->m_index_header[this->m_max_level].pointer;
+			__MSkipListNode__* front_node = this->m_index_header[this->m_max_level].pointer;
 			size_t i = this->m_max_level;
 			for (; i > node->index_level; )
 			{
@@ -671,7 +675,7 @@ namespace MUZI
 					// 不是最后一层都是索引
 
 					// 将node节点插入当前级别索引
-					__MSkipListNode__<T>* front_next_node = front_node->index_next[i - 1];
+					__MSkipListNode__* front_next_node = front_node->index_next[i - 1];
 					front_node->index_next[i - 1] = node;
 					node->index_next[i - 1] = front_next_node;
 
@@ -699,7 +703,7 @@ namespace MUZI
 			// 先检查表内是否无值，有的话单独初始化内容
 			if (this->m_size == 0)
 			{
-				__MSkipListNode__<T>* node = this->m_node_factory.initNode(std::move(ele), this->m_max_level, true);
+				__MSkipListNode__* node = this->m_node_factory.initNode(std::move(ele), this->m_max_level, true);
 				this->m_header = node;
 				this->m_tail = node;
 				this->m_index_header[0].pointer = node;
@@ -709,7 +713,7 @@ namespace MUZI
 			// 如果说ele小于头结点的值, 就直接插入到头
 			if (ele < this->m_header->value)
 			{
-				__MSkipListNode__<T>* node = this->m_node_factory.initNode(std::move(ele), this->m_header, this->m_max_level);
+				__MSkipListNode__* node = this->m_node_factory.initNode(std::move(ele), this->m_header, this->m_max_level);
 				for (int i = 0; i <= node->index_level; ++i)
 				{
 					this->m_index_header[0].pointer = node;
@@ -717,10 +721,10 @@ namespace MUZI
 				this->m_header = node;
 				return;
 			}
-			__MSkipListNode__<T>* node = this->m_node_factory.initNode(std::move(ele), this->m_max_level);
+			__MSkipListNode__* node = this->m_node_factory.initNode(std::move(ele), this->m_max_level);
 			// 便递归下降索引边插入更新索引
 			// 先将未索引的部分删选以快速找到需要选择的区间
-			__MSkipListNode__<T>* front_node = this->m_index_header[this->m_max_level].pointer;
+			__MSkipListNode__* front_node = this->m_index_header[this->m_max_level].pointer;
 			size_t i = this->m_max_level;
 			for (; i > node->index_level; )
 			{
@@ -782,7 +786,7 @@ namespace MUZI
 					// 不是最后一层都是索引
 
 					// 将node节点插入当前级别索引
-					__MSkipListNode__<T>* front_next_node = front_node->index_next[i - 1];
+					__MSkipListNode__* front_next_node = front_node->index_next[i - 1];
 					front_node->index_next[i - 1] = node;
 					node->index_next[i - 1] = front_next_node;
 
@@ -820,8 +824,8 @@ namespace MUZI
 				return;
 			}
 			size_t i = this->m_max_level;
-			__MSkipListNode__<T>* front_node = this->m_header;
-			__MSkipListNode__<T>* tar_del_node = nullptr;
+			__MSkipListNode__* front_node = this->m_header;
+			__MSkipListNode__* tar_del_node = nullptr;
 			// 当size 不为0时 一定存在一个节点, 寻找节点
 			for (; i >= 0;)
 			{
@@ -862,7 +866,7 @@ namespace MUZI
 			this->m_node_factory.releaseNode(tar_del_node);
 			this->m_size -= 1;
 		}
-		MIterator<T> erase(MIterator<T>& iter)
+		MSkipListIterator<T> erase(MSkipListIterator<T>& iter)
 		{
 			if (iter.data == nullptr || iter.data->next() == nullptr)
 			{
@@ -874,18 +878,18 @@ namespace MUZI
 				return this->begin();
 			}
 
-			MIterator<T> ret_node = MIterator<T>(iter.data->next());
+			MSkipListIterator<T> ret_node = MSkipListIterator<T>(iter.data->next());
 			this->erase(iter.data->value);
 			iter.data = nullptr;
 			return ret_node;
 		}
 		void pop()
 		{
-			for (size_t i = 0; i < this->m_index_header, ++i)
+			for (size_t i = 0; i < this->m_index_header.size(); ++i)
 			{
 				if (this->m_index_header[i].pointer == this->m_header)
 				{
-					this->m_index_header[i].pointer = *this->m_header->index_next[i];
+					this->m_index_header[i].pointer = this->m_header->index_next[i];
 				}
 				else
 				{
@@ -893,7 +897,7 @@ namespace MUZI
 				}
 			}
 		}
-		MIterator<T> find(T value, const MIterator<T>& it = MIterator<T>(this->m_header))
+		MSkipListIterator<T> find(T value, const MSkipListIterator<T>& it = MSkipListIterator<T>(this->m_header))
 		{
 			if (it.data == nullptr ||
 				this->m_size == 0 ||
@@ -903,7 +907,7 @@ namespace MUZI
 			}
 
 			size_t i = it.data->index_level;
-			__MSkipListNode__<T>* front_node = it.data;
+			__MSkipListNode__* front_node = it.data;
 			for (; i >= 0;)
 			{
 				// 代表直到末尾也都没有找到值
@@ -929,10 +933,10 @@ namespace MUZI
 				}
 				if (value == front_node->index_next[i]->value)
 				{
-					return MIterator<T>(front_node);
+					return MSkipListIterator<T>(front_node);
 				}
 			}
-			return MIterator<T>();
+			return MSkipListIterator<T>();
 		}
 		void append(const MSkipList<T>& list)
 		{
@@ -951,7 +955,7 @@ namespace MUZI
 			{
 				if (this->m_size == 0)
 				{
-					__MSkipListNode__<T>* node = it.data;
+					__MSkipListNode__* node = it.data;
 					this->m_header = node;
 					this->m_tail = node;
 					this->m_index_header[0].pointer = node;
@@ -961,7 +965,7 @@ namespace MUZI
 				// 如果说ele小于头结点的值, 就直接插入到头
 				if (*it < this->m_header->value)
 				{
-					__MSkipListNode__<T>* node = it.data;
+					__MSkipListNode__* node = it.data;
 					for (int i = 0; i <= node->index_level; ++i)
 					{
 						this->m_index_header[0].pointer = node;
@@ -969,10 +973,10 @@ namespace MUZI
 					this->m_header = node;
 					return;
 				}
-				__MSkipListNode__<T>* node = it.data;
+				__MSkipListNode__* node = it.data;
 				// 便递归下降索引边插入更新索引
 				// 先将未索引的部分删选以快速找到需要选择的区间
-				__MSkipListNode__<T>* front_node = this->m_index_header[this->m_max_level].pointer;
+				__MSkipListNode__* front_node = this->m_index_header[this->m_max_level].pointer;
 				size_t i = this->m_max_level;
 				for (; i > node->index_level; )
 				{
@@ -1034,7 +1038,7 @@ namespace MUZI
 						// 不是最后一层都是索引
 
 						// 将node节点插入当前级别索引
-						__MSkipListNode__<T>* front_next_node = front_node->index_next[i - 1];
+						__MSkipListNode__* front_next_node = front_node->index_next[i - 1];
 						front_node->index_next[i - 1] = node;
 						node->index_next[i - 1] = front_next_node;
 
@@ -1091,7 +1095,7 @@ namespace MUZI
 			this->append(list);
 		}
 	public:
-		MIterator<T> find(T value, const MIterator<T>& it = MIterator<T>(this->m_header)) const
+		MSkipListIterator<T> find(T value, const MSkipListIterator<T>& it = MSkipListIterator<T>(this->m_header)) const
 		{
 			if (it.data == nullptr ||
 				this->m_size == 0 ||
@@ -1101,7 +1105,7 @@ namespace MUZI
 			}
 
 			size_t i = this->m_max_level;
-			__MSkipListNode__<T>* front_node = this->m_header;
+			__MSkipListNode__* front_node = this->m_header;
 			for (; i >= 0;)
 			{
 				// 代表直到末尾也都没有找到值
@@ -1127,10 +1131,10 @@ namespace MUZI
 				}
 				if (value == front_node->index_next[i]->value)
 				{
-					return MIterator<T>(front_node);
+					return MSkipListIterator<T>(front_node);
 				}
 			}
-			return MIterator<T>();
+			return MSkipListIterator<T>();
 		}
 	public: // 获取信息 和 迭代器
 		void data()
@@ -1155,13 +1159,13 @@ namespace MUZI
 		{
 			return this->m_max_level + 1;
 		}
-		MIterator<T> begin()
+		MSkipListIterator<T> begin()
 		{
-			return MIterator<T>(this->m_header);
+			return MSkipListIterator<T>(this->m_header);
 		}
-		MIterator<T> end()
+		MSkipListIterator<T> end()
 		{
-			return MIterator<T>();
+			return MSkipListIterator<T>();
 		}
 		/// @brief this function will return iterator which is read only
 		/// @return
@@ -1175,11 +1179,11 @@ namespace MUZI
 		}
 		inline T& front()
 		{
-			return *this->m_header;
+			return this->m_header->value;
 		}
 		inline T& back()
 		{
-			return *this->m_tail;
+			return this->m_tail->value;
 		}
 	public:
 		inline size_t size() const
@@ -1198,13 +1202,13 @@ namespace MUZI
 		{
 			return (this->m_size == 0);
 		}
-		MIterator<T> begin() const
+		MSkipListIterator<T> begin() const
 		{
-			return MIterator<T>(this->m_header);
+			return MSkipListIterator<T>(this->m_header);
 		}
-		MIterator<T> end() const
+		MSkipListIterator<T> end() const
 		{
-			return MIterator<T>();
+			return MSkipListIterator<T>();
 		}
 		MCIterator<T> cbegin() const
 		{
@@ -1216,11 +1220,11 @@ namespace MUZI
 		}
 		inline const T& front() const
 		{
-			return *this->m_header;
+			return this->m_header->value;
 		}
 		inline const T& back() const
 		{
-			return *this->m_tail;
+			return this->m_tail->value;
 		}
 	public:
 		// 简易内存操作
@@ -1233,7 +1237,7 @@ namespace MUZI
 		//	else if (this->m_size < size)
 		//	{
 		//		size_t i = 0;
-		//		__MSkipListNode__<T>* node = this->m_header;
+		//		__MSkipListNode__* node = this->m_header;
 		//		for (; node != nullptr; node = node->next())
 		//		{
 		//			if (i < size)
@@ -1280,7 +1284,7 @@ namespace MUZI
 			if ((this->m_size & __MUZI_MSKIPLIST_DEFAULT_INDEX_LEVEL_UP_COEFFICIENT__) == 0)
 			{
 				this->m_max_level += 1;
-				this->m_index_header.push_back(__MSkipListIndexBround__<T>{nullptr})
+				this->m_index_header.push_back(__MSkipListIndexBround__<T>{nullptr});
 			}
 		}
 		/// @brief construct all index
@@ -1293,8 +1297,8 @@ namespace MUZI
 			// 该循环遍历所有层级
 			for (size_t i = 1; i < this->m_max_level; ++i)
 			{
-				//__MSkipListNode__<T>* tmp_index_ptr = this->m_level_header[i].pointer;
-				__MSkipListNode__<T>* tmp_ptr = this->m_header;
+				//__MSkipListNode__* tmp_index_ptr = this->m_level_header[i].pointer;
+				__MSkipListNode__* tmp_ptr = this->m_header;
 				// 该循环扫描所有节点
 				for (; tmp_ptr != nullptr && tmp_ptr->next() != nullptr; tmp_ptr = tmp_ptr->next())
 				{
@@ -1312,7 +1316,7 @@ namespace MUZI
 		/// @brief this function will find a location which can insert node orderly and will set writting_flag to be true
 		/// @param node a node which be constructed
 		/// @return a node which in the front of the target location
-		__MSkipListNode__<T>* __findLocationByValue__(const T& value, __MSkipListNode__<T>* start_node = nullptr)
+		__MSkipListNode__* __findLocationByValue__(const T& value, __MSkipListNode__* start_node = nullptr)
 		{
 			// 如果找到就返回相等的，如果找不到就找小于该value的节点和大于该value的节点的可插入位置
 			if (this->m_size == 0)
@@ -1324,7 +1328,7 @@ namespace MUZI
 				return nullptr;
 			}
 			size_t i = this->m_max_level;
-			__MSkipListNode__<T>* front_node = this->m_header;
+			__MSkipListNode__* front_node = this->m_header;
 			// 当size 不为0时 一定存在一个节点, 寻找节点
 			for (; i >= 0;)
 			{
@@ -1358,8 +1362,8 @@ namespace MUZI
 		}
 
 	private:
-		__MSkipListNode__<T>* m_header; // 数据头
-		__MSkipListNode__<T>* m_tail; // 数据尾
+		__MSkipListNode__* m_header; // 数据头
+		__MSkipListNode__* m_tail; // 数据尾
 		std::vector<__MSkipListIndexBround__<T>> m_index_header; // 索引头集合
 		__MSkipListNodeFactory__<T> m_node_factory;
 		size_t m_size; // 元素数
