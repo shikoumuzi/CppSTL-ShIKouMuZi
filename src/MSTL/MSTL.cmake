@@ -22,6 +22,7 @@ set(MSTL_HEAD_FILE_PATH
 	"src/MSTL/include/MPolymorphicFunctional.h"
 
 	"src/MSTL/example/MSyncAnnularQueueExample.h" 
+
 )
 
 set(H_FILE_PATH,
