@@ -1,5 +1,5 @@
 macro(initMMplayer)
-set(H_FILE_PAT
+set(H_FILE_PATH
 	${H_FILE_PATH}
 	"src/MMedia/MMPlayer/MMAV/MMAVPackage.h"
 
