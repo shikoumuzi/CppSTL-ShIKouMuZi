@@ -23,7 +23,7 @@ namespace MUZI {
 			is_error_flag(true) {}
 	public:
 
-		value_type unwrap_or_default() {
+		value_type unwrapOrDefault() {
 			if (this->is_error_flag) {
 				return value_type();
 			}
@@ -49,7 +49,7 @@ namespace MUZI {
 		MResultBase(Err error) : error(value) {
 		}
 	public:
-		MOptional<T> unwrap_or_default() {
+		MOptional<T> unwrapOrDefault() {
 			if (this->is_error_flag) {
 				return MOptional<T>::None;
 			}
@@ -72,10 +72,10 @@ namespace MUZI {
 			return value;
 		}
 	public:
-		inline bool is_err() {
+		inline bool isErr() {
 			return this->is_error_flag;
 		}
-		inline bool is_ok() {
+		inline bool isOk() {
 			return !this->is_error_flag;
 		}
 	public:
@@ -84,7 +84,7 @@ namespace MUZI {
 				return MOptional<T>::None;
 			}
 			else {
-				return MOptional<T>(MOptional<T>::InPlacement(), value);
+				return MOptional<T>(MOptional<T>::InPlacement(), this->value);
 			}
 		}
 		MOptional<Err> error() {
